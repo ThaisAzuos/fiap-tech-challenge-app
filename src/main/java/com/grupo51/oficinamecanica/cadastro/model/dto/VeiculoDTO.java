@@ -4,6 +4,7 @@ public record VeiculoDTO(
         String placa,
         String modelo,
         String marca,
-        int ano,
-        String cor
+        Integer ano,
+        String cor,
+        String cpfDono
 ) {}

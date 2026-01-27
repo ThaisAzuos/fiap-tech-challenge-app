@@ -1,15 +1,14 @@
 package com.grupo51.oficinamecanica.cadastro.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "veiculos")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Veiculo {
     @Id
     private String placa; // ID Natural
@@ -19,14 +18,18 @@ public class Veiculo {
     private int ano;
     private String cor;
 
-    protected Veiculo() {} // JPA
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonIgnore // Evita que o dono venha detalhado no JSON do veículo, se desejar
+    private Cliente dono;
 
-    public Veiculo(String placa, String modelo, String marca, int ano, String cor) {
-        this.placa = new Placa(placa).valor(); // Validação imediata
+    public Veiculo(Placa placa, String modelo, String marca, Integer ano, String cor, Cliente dono) {
+        this.placa = placa.valor();
         this.modelo = modelo;
         this.marca = marca;
         this.ano = ano;
         this.cor = cor;
+        this.dono = dono;
         validarAno();
     }
 
