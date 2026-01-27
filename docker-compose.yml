@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: oficina-db
+    restart: always
+    environment:
+      POSTGRES_DB: oficina_db
+      POSTGRES_USER: oficina_admin
+      POSTGRES_PASSWORD: oficina_password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U oficina_admin -d oficina_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: oficina-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/oficina_db
+      SPRING_DATASOURCE_USERNAME: oficina_admin
+      SPRING_DATASOURCE_PASSWORD: oficina_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
