@@ -2,14 +2,17 @@ package com.grupo51.oficinamecanica.cadastro.model;
 
 import com.grupo51.oficinamecanica.cadastro.model.dto.EnderecoDTO;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "clientes")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Cliente {
     @Id
-    private String cpf; // ID natural e validado
+    private String cpf;
 
     @Column(nullable = false)
     private String nome;
@@ -23,15 +26,13 @@ public class Cliente {
     @Embedded
     private Endereco endereco;
 
-    public Cliente(String nome, String cpf, String email, String telefone, EnderecoDTO endereco) {}
-
     public Cliente(String nome, Cpf cpf, Email email, String telefone, Endereco endereco) {
+        if (nome == null || nome.isBlank()) throw new IllegalArgumentException("Nome é obrigatório");
+
         this.cpf = cpf.numero();
-        this.email = email.email();
+        this.email = email.endereco();
         this.nome = nome;
         this.telefone = telefone;
         this.endereco = endereco;
     }
-
-
 }
