@@ -67,4 +67,24 @@ public class OrdemServico {
         BigDecimal valorItem = peca.getPreco().multiply(BigDecimal.valueOf(quantidade));
         this.valorTotal = this.valorTotal.add(valorItem);
     }
+
+    public void atualizarStatus(StatusOS novoStatus) {
+        // 1. Validar se a OS já está encerrada
+        if (this.status == StatusOS.ENTREGUE) {
+            throw new BusinessException("Esta ordem de serviço já foi entregue e não pode mais ser alterada.");
+        }
+
+        // 2. Exemplo de regra de negócio: não pode pular do RECEBIDA direto para FINALIZADA
+        if (this.status == StatusOS.RECEBIDA &&
+                (novoStatus == StatusOS.FINALIZADA || novoStatus == StatusOS.ENTREGUE)) {
+            throw new BusinessException("A OS precisa passar por diagnóstico antes de ser finalizada ou entregue.");
+        }
+
+        // 3. Bloqueio de retrocesso
+        if (novoStatus.ordinal() < this.status.ordinal()) {
+            throw new BusinessException("Não é permitido retornar a Ordem de Serviço para um status anterior: " + this.status);
+        }
+
+        this.status = novoStatus;
+    }
 }

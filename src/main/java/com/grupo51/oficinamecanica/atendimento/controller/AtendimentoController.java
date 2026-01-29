@@ -4,6 +4,7 @@ import com.grupo51.oficinamecanica.atendimento.controller.dto.AberturaOSDTO;
 import com.grupo51.oficinamecanica.atendimento.controller.dto.IncluirPecaDTO;
 import com.grupo51.oficinamecanica.atendimento.controller.dto.OrdemServicoDetalhesDTO;
 import com.grupo51.oficinamecanica.atendimento.model.OrdemServico;
+import com.grupo51.oficinamecanica.atendimento.model.StatusOS;
 import com.grupo51.oficinamecanica.atendimento.service.AtendimentoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,5 +41,13 @@ public class AtendimentoController {
     @GetMapping("/os/{osId}")
     public ResponseEntity<OrdemServicoDetalhesDTO> buscarDetalhes(@PathVariable UUID osId) {
         return ResponseEntity.ok(atendimentoService.consultarDetalhes(osId));
+    }
+
+    @PatchMapping("/os/{osId}/status")
+    public ResponseEntity<Void> mudarStatus(
+            @PathVariable UUID osId,
+            @RequestParam StatusOS novoStatus) {
+        atendimentoService.atualizarStatus(osId, novoStatus);
+        return ResponseEntity.noContent().build();
     }
 }

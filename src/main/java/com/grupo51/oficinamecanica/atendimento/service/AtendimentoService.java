@@ -3,6 +3,7 @@ package com.grupo51.oficinamecanica.atendimento.service;
 import com.grupo51.oficinamecanica.atendimento.controller.dto.AberturaOSDTO;
 import com.grupo51.oficinamecanica.atendimento.controller.dto.OrdemServicoDetalhesDTO;
 import com.grupo51.oficinamecanica.atendimento.model.OrdemServico;
+import com.grupo51.oficinamecanica.atendimento.model.StatusOS;
 import com.grupo51.oficinamecanica.atendimento.repository.OrdemServicoRepository;
 import com.grupo51.oficinamecanica.cadastro.model.Veiculo;
 import com.grupo51.oficinamecanica.cadastro.repository.VeiculoRepository;
@@ -81,5 +82,14 @@ public class AtendimentoService {
                 itensDTO,
                 os.getValorTotal()
         );
+    }
+
+    @Transactional
+    public void atualizarStatus(UUID osId, StatusOS novoStatus) {
+        OrdemServico os = osRepository.findById(osId)
+                .orElseThrow(() -> new BusinessException("OS não encontrada."));
+
+        os.atualizarStatus(novoStatus);
+        osRepository.save(os);
     }
 }
