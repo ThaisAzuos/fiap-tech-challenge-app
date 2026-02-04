@@ -1,0 +1,91 @@
+{
+  "info": {
+    "name": "Oficina Mecânica API - Tech Challenge",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Cadastrar Cliente",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"João da Silva\",\n  \"cpf\": \"45678912300\",\n  \"email\": \"joao@email.com\",\n  \"telefone\": \"11999998888\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/clientes" }
+      }
+    },
+    {
+      "name": "2. Cadastrar Veículo",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"placa\": \"ABC1D23\",\n  \"modelo\": \"Civic\",\n  \"marca\": \"Honda\",\n  \"ano\": 2022,\n  \"cor\": \"Prata\",\n  \"cpfDono\": \"45678912300\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/veiculos" }
+      }
+    },
+    {
+      "name": "3. Cadastrar Peça",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Pastilha de Freio\",\n  \"preco\": 150.00,\n  \"quantidadeEstoque\": 10\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/pecas" }
+      }
+    },
+    {
+      "name": "4. Abrir Ordem de Serviço",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"placa\": \"ABC1D23\",\n  \"descricaoProblema\": \"Barulho na suspensão dianteira\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/atendimento/os" }
+      }
+    },
+    {
+      "name": "5. Incluir Peça na OS",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pecaId\": \"COLOQUE_O_ID_DA_PECA_AQUI\",\n  \"quantidade\": 2\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/atendimento/os/COLOQUE_O_ID_DA_OS_AQUI/pecas" }
+      }
+    },
+    {
+      "name": "6. Mudar Status da OS",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/atendimento/os/ID_DA_OS/status?novoStatus=EM_DIAGNOSTICO"
+        }
+      }
+    },
+    {
+      "name": "7. Consultar Detalhes da OS",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "http://localhost:8080/api/v1/atendimento/os/ID_DA_OS" }
+      }
+    }
+  ]
+}
