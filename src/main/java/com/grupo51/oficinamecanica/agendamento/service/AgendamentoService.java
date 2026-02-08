@@ -2,6 +2,7 @@ package com.grupo51.oficinamecanica.agendamento.service;
 
 import com.grupo51.oficinamecanica.agendamento.model.Agendamento;
 import com.grupo51.oficinamecanica.agendamento.repository.AgendamentoRepository;
+import com.grupo51.oficinamecanica.comum.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class AgendamentoService {
             agendamento.setConfirmado(true);
             return repository.save(agendamento);
         }
-        throw new RuntimeException("Recurso ocupado para esta Janela de Serviço.");
+        throw new BusinessException("Recurso ocupado para esta Janela de Serviço.");
     }
 
     private boolean estaDisponivel(Agendamento novo) {

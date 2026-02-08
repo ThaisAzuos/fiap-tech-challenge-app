@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record AgendamentoRequestDTO(
-        UUID clienteId,
-        UUID veiculoId,
+        String clienteId,
+        String veiculoId,
         String recursoId,
         LocalDateTime dataHoraInicio,
         LocalDateTime dataHoraFim,

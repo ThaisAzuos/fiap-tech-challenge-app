@@ -6,5 +6,6 @@ public record EnderecoDTO(
         String complemento,
         String bairro,
         String cidade,
+         String uf,
         String cep
 ){}
