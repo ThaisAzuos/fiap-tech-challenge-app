@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 public class Peca {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) // O Hibernate cuidará da geração do UUID
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 

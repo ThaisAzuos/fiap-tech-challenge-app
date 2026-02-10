@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA Friendly
 public class ItemOS {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // Alinhado com OrdemServico
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private UUID pecaId;
