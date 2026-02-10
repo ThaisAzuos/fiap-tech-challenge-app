@@ -11,7 +11,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nome\": \"João da Silva\",\n  \"cpf\": \"45678912300\",\n  \"email\": \"joao@email.com\",\n  \"telefone\": \"11999998888\"\n}",
+          "raw": "{\n  \"nome\": \"João da Silva\",\n  \"cpf\": \"45678912300\",\n  \"email\": \"joao@email.com\",\n  \"telefone\": \"11999998888\",\n  \"endereco\": {\n    \"logradouro\": \"Rua das Flores\",\n    \"numero\": \"123\",\n    \"complemento\": \"Apto 1\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"São Paulo\",\n    \"uf\": \"SP\",\n    \"cep\": \"01234567\"\n  }\n}",
           "options": { "raw": { "language": "json" } }
         },
         "url": { "raw": "http://localhost:8080/api/v1/clientes" }
@@ -31,7 +31,46 @@
       }
     },
     {
-      "name": "3. Cadastrar Peça",
+      "name": "3. Cadastrar Mecânico",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Mestre Joda\",\n  \"cpf\": \"12345678901\",\n  \"especialidade\": \"MOTORES\",\n  \"registroFuncional\": \"MF-001\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/mecanicos" }
+      }
+    },
+    {
+      "name": "4. Cadastrar Funcionário",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Atendente Solo\",\n  \"cpf\": \"98765432100\",\n  \"email\": \"solo@oficina.com\",\n  \"cargo\": \"ATENDENTE\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/funcionarios" }
+      }
+    },
+    {
+      "name": "5. Realizar Agendamento",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"clienteId\": \"45678912300\",\n  \"veiculoId\": \"ABC1D23\",\n  \"recursoId\": \"12345678901\",\n  \"dataHoraInicio\": \"2026-02-10T08:00:00\",\n  \"dataHoraFim\": \"2026-02-10T10:00:00\",\n  \"tipo\": \"REPARO\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "http://localhost:8080/api/v1/agendamentos" }
+      }
+    },
+    {
+      "name": "6. Cadastrar Peça",
       "request": {
         "method": "POST",
         "header": [],
@@ -44,7 +83,7 @@
       }
     },
     {
-      "name": "4. Abrir Ordem de Serviço",
+      "name": "7. Abrir Ordem de Serviço",
       "request": {
         "method": "POST",
         "header": [],
@@ -57,30 +96,7 @@
       }
     },
     {
-      "name": "5. Incluir Peça na OS",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"pecaId\": \"COLOQUE_O_ID_DA_PECA_AQUI\",\n  \"quantidade\": 2\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/atendimento/os/COLOQUE_O_ID_DA_OS_AQUI/pecas" }
-      }
-    },
-    {
-      "name": "6. Mudar Status da OS",
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8080/api/v1/atendimento/os/ID_DA_OS/status?novoStatus=EM_DIAGNOSTICO"
-        }
-      }
-    },
-    {
-      "name": "7. Consultar Detalhes da OS",
+      "name": "8. Consultar Detalhes da OS",
       "request": {
         "method": "GET",
         "header": [],

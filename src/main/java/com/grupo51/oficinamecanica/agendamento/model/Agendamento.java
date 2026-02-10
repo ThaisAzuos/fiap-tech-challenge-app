@@ -13,12 +13,12 @@ import java.util.UUID;
 public class Agendamento {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     // Referência ao ID do Cliente e Veículo (Contexto de Cadastro)
-    private UUID clienteId;
-    private UUID veiculoId;
+    private String clienteId;
+    private String veiculoId;
 
     @Embedded
     private JanelaServico janela;

@@ -16,6 +16,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<String> handleBusinessException(BusinessException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ex.getMessage());
+        // Se for erro de horário, devolve Conflict (409), senão devolve Unprocessable (422)
+        HttpStatus status = ex.getMessage().contains("Recurso ocupado")
+                ? HttpStatus.CONFLICT
+                : HttpStatus.UNPROCESSABLE_ENTITY;
+
+        return ResponseEntity.status(status).body(ex.getMessage());
     }
 }
