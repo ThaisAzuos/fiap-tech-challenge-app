@@ -12,6 +12,7 @@ O projeto foi construído focando em boas práticas de desenvolvimento, separaç
 * **Docker & Docker Compose** (Containerização e orquestração)
 * **Maven** (Gerenciamento de dependências)
 * **Postman** (Documentação e testes das rotas)
+* **SonarQube** (Qualidade do Código e vulnerabilidades de segurança)
 
 ---
 
@@ -41,25 +42,6 @@ Diferente de arquiteturas anêmicas, a lógica de negócio está protegida nas e
 - **Lazy Loading:** Implementado para carregar coleções apenas sob demanda.
 - **Transactional Read-Only:** Consultas otimizadas com `@Transactional(readOnly = true)` para evitar processamento desnecessário do Hibernate.
 - **Records:** Uso de Java Records para DTOs de entrada e saída, garantindo imutabilidade e clareza no contrato da API.
-
----
-
-## 📋 Guia de Testes (Sequence Flow)
-
-Siga a ordem abaixo no Postman para testar o fluxo completo:
-
-### 1. Contexto de Cadastro
-- **POST** `/api/v1/clientes`: Cadastre um cliente (use CPF válido).
-- **POST** `/api/v1/veiculos`: Vincule um veículo ao CPF do dono.
-
-### 2. Contexto de Estoque
-- **POST** `/api/v1/pecas`: Cadastre peças (ex: Pastilha de freio, Óleo).
-
-### 3. Contexto de Atendimento (Fluxo Principal)
-- **POST** `/api/v1/atendimento/os`: Abra uma O.S. informando apenas a placa e o problema.
-- **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
-- **PATCH** `/api/v1/atendimento/os/{osId}/status`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
-- **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
 
 ---
 
@@ -95,3 +77,24 @@ Para facilitar os testes, incluímos o arquivo `Oficina_Mecanica.postman_collect
 5. As requisições já estão configuradas com os corpos (JSON) e URLs padrão (`http://localhost:8080`).
 
 > **Nota:** Nas requisições de **Incluir Peça**, **Mudar Status** e **Consultar Detalhes**, lembre-se de substituir o `ID` na URL ou no corpo pelo UUID gerado nas etapas anteriores.
+
+---
+
+## 📋 Guia de Testes (Sequence Flow)
+
+Siga a ordem abaixo no Postman para testar o fluxo completo:
+
+### 1. Contexto de Cadastro
+- **POST** `/api/v1/clientes`: Cadastre um cliente (use CPF válido).
+- **POST** `/api/v1/veiculos`: Vincule um veículo ao CPF do dono.
+
+### 2. Contexto de Estoque
+- **POST** `/api/v1/pecas`: Cadastre peças (ex: Pastilha de freio, Óleo).
+
+### 3. Contexto de Atendimento (Fluxo Principal)
+- **POST** `/api/v1/atendimento/os`: Abra uma O.S. informando apenas a placa e o problema.
+- **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
+- **PATCH** `/api/v1/atendimento/os/{osId}/status?novoStatus={Status de evolução}`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
+- **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
+
+---
