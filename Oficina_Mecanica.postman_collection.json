@@ -1,107 +1,915 @@
 {
-  "info": {
-    "name": "Oficina Mecânica API - Tech Challenge",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "1. Cadastrar Cliente",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nome\": \"João da Silva\",\n  \"cpf\": \"45678912300\",\n  \"email\": \"joao@email.com\",\n  \"telefone\": \"11999998888\",\n  \"endereco\": {\n    \"logradouro\": \"Rua das Flores\",\n    \"numero\": \"123\",\n    \"complemento\": \"Apto 1\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"São Paulo\",\n    \"uf\": \"SP\",\n    \"cep\": \"01234567\"\n  }\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/clientes" }
-      }
-    },
-    {
-      "name": "2. Cadastrar Veículo",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"placa\": \"ABC1D23\",\n  \"modelo\": \"Civic\",\n  \"marca\": \"Honda\",\n  \"ano\": 2022,\n  \"cor\": \"Prata\",\n  \"cpfDono\": \"45678912300\"\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/veiculos" }
-      }
-    },
-    {
-      "name": "3. Cadastrar Mecânico",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nome\": \"Mestre Joda\",\n  \"cpf\": \"12345678901\",\n  \"especialidade\": \"MOTORES\",\n  \"registroFuncional\": \"MF-001\"\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/mecanicos" }
-      }
-    },
-    {
-      "name": "4. Cadastrar Funcionário",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nome\": \"Atendente Solo\",\n  \"cpf\": \"98765432100\",\n  \"email\": \"solo@oficina.com\",\n  \"cargo\": \"ATENDENTE\"\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/funcionarios" }
-      }
-    },
-    {
-      "name": "5. Realizar Agendamento",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"clienteId\": \"45678912300\",\n  \"veiculoId\": \"ABC1D23\",\n  \"recursoId\": \"12345678901\",\n  \"dataHoraInicio\": \"2026-02-10T08:00:00\",\n  \"dataHoraFim\": \"2026-02-10T10:00:00\",\n  \"tipo\": \"REPARO\"\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/agendamentos" }
-      }
-    },
-    {
-      "name": "6. Cadastrar Peça",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nome\": \"Pastilha de Freio\",\n  \"preco\": 150.00,\n  \"quantidadeEstoque\": 10\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/pecas" }
-      }
-    },
-    {
-      "name": "7. Abrir Ordem de Serviço",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"placa\": \"ABC1D23\",\n  \"descricaoProblema\": \"Barulho na suspensão dianteira\"\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": { "raw": "http://localhost:8080/api/v1/atendimento/os" }
-      }
-    },
-    {
-      "name": "8. Consultar Detalhes da OS",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": { "raw": "http://localhost:8080/api/v1/atendimento/os/ID_DA_OS" }
-      }
-    }
-  ]
+	"info": {
+		"_postman_id": "aed279b4-b117-495a-805b-0cebce230ada",
+		"name": "Oficina Mecânica API - Tech Challenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41411638"
+	},
+	"item": [
+		{
+			"name": "1. Cadastrar Cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Captura o corpo da resposta",
+							"let response = pm.response.json();",
+							"",
+							"// Se o campo for \"cpf\"",
+							"if (response.cpf) {",
+							"    pm.collectionVariables.set(\"cpf_cliente\", response.cpf);",
+							"    console.log(\"CPF salvo:\", response.cpf);",
+							"}",
+							"",
+							"// Se o campo for \"cpfDono\"",
+							"if (response.cpfDono) {",
+							"    pm.collectionVariables.set(\"cpf_cliente\", response.cpfDono);",
+							"    console.log(\"CPF do dono salvo:\", response.cpfDono);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"function gerarCpf() {",
+							"    let cpfArray;",
+							"    do {",
+							"        const nums = [];",
+							"        for (let i = 0; i < 9; i++) {",
+							"            nums.push(Math.floor(Math.random() * 10));",
+							"        }",
+							"        const dig1 = calcularDigito(nums);",
+							"        const dig2 = calcularDigito([...nums, dig1]);",
+							"        cpfArray = [...nums, dig1, dig2];",
+							"    } while (sequenciaInvalida(cpfArray));",
+							"    return { semPontuacao: cpfArray.join('') };",
+							"}",
+							"",
+							"function calcularDigito(digs) {",
+							"    let soma = 0;",
+							"    for (let i = 0; i < digs.length; i++) {",
+							"        soma += digs[i] * ((digs.length + 1) - i);",
+							"    }",
+							"    const resto = soma % 11;",
+							"    return resto < 2 ? 0 : 11 - resto;",
+							"}",
+							"",
+							"function sequenciaInvalida(cpfArray) {",
+							"    return cpfArray.every(d => d === cpfArray[0]);",
+							"}",
+							"",
+							"// Lista de nomes possíveis",
+							"const nomesClientes = [",
+							"    \"João da Silva\",",
+							"    \"Maria Oliveira\",",
+							"    \"Carlos Pereira\",",
+							"    \"Ana Souza\",",
+							"    \"Roberto Lima\",",
+							"    \"Fernanda Costa\",",
+							"    \"Paulo Henrique\",",
+							"    \"Mariana Torres\",",
+							"    \"Lucas Almeida\",",
+							"    \"Patrícia Gomes\"",
+							"];",
+							"",
+							"// Seleciona nome aleatório",
+							"const nomeCliente = nomesClientes[Math.floor(Math.random() * nomesClientes.length)];",
+							"",
+							"// Gera e-mail baseado no nome",
+							"function gerarEmail(nome) {",
+							"    return nome.toLowerCase()",
+							"               .replace(/\\s+/g, '')   // remove espaços",
+							"               .normalize(\"NFD\")      // remove acentos",
+							"               .replace(/[\\u0300-\\u036f]/g, '') ",
+							"               + \"@email.com.br\";",
+							"}",
+							"const emailCliente = gerarEmail(nomeCliente);",
+							"",
+							"// Gera telefone aleatório (DDD + número)",
+							"function gerarTelefone() {",
+							"    const ddd = Math.floor(Math.random() * 90) + 10; // DDD entre 10 e 99",
+							"    const prefixo = Math.floor(Math.random() * 9000) + 1000; // 4 dígitos",
+							"    const sufixo = Math.floor(Math.random() * 9000) + 1000;  // 4 dígitos",
+							"    return ddd + prefixo + sufixo;",
+							"}",
+							"const telefoneCliente = gerarTelefone();",
+							"",
+							"// Gerar CPF",
+							"const cpf = gerarCpf();",
+							"",
+							"// Armazenar nas variáveis da collection",
+							"pm.collectionVariables.set(\"cpf_valido\", cpf.semPontuacao);",
+							"pm.collectionVariables.set(\"nome_cliente\", nomeCliente);",
+							"pm.collectionVariables.set(\"email_cliente\", emailCliente);",
+							"pm.collectionVariables.set(\"telefone_cliente\", telefoneCliente);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_cliente}}\",\n  \"cpf\": \"{{cpf_valido}}\",\n  \"email\": \"{{email_cliente}}\",\n  \"telefone\": \"{{telefone_cliente}}\",\n  \"endereco\": {\n    \"logradouro\": \"Rua das Flores\",\n    \"numero\": \"123\",\n    \"complemento\": \"Apto 1\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"São Paulo\",\n    \"uf\": \"SP\",\n    \"cep\": \"01234567\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/clientes",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clientes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Cadastrar Veículo",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"function gerarPlaca() {",
+							"    const letras = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";",
+							"    const numeros = \"0123456789\";",
+							"    const parte1 = Array.from({length: 3}, () => letras[Math.floor(Math.random() * letras.length)]).join('');",
+							"    const parte2 = numeros[Math.floor(Math.random() * numeros.length)];",
+							"    const parte3 = letras[Math.floor(Math.random() * letras.length)];",
+							"    const parte4 = Array.from({length: 2}, () => numeros[Math.floor(Math.random() * numeros.length)]).join('');",
+							"    return parte1 + parte2 + parte3 + parte4;",
+							"}",
+							"",
+							"const modelos = [\"Civic\", \"Corolla\", \"Gol\", \"Onix\", \"Fiesta\", \"Uno\"];",
+							"const marcas = [\"Honda\", \"Toyota\", \"Volkswagen\", \"Chevrolet\", \"Ford\", \"Fiat\"];",
+							"const cores = [\"Prata\", \"Preto\", \"Branco\", \"Vermelho\", \"Azul\", \"Verde\"];",
+							"",
+							"pm.collectionVariables.set(\"placa\", gerarPlaca());",
+							"pm.collectionVariables.set(\"modelo\", modelos[Math.floor(Math.random() * modelos.length)]);",
+							"pm.collectionVariables.set(\"marca\", marcas[Math.floor(Math.random() * marcas.length)]);",
+							"pm.collectionVariables.set(\"ano\", Math.floor(Math.random() * (2025 - 2000 + 1)) + 2000);",
+							"pm.collectionVariables.set(\"cor\", cores[Math.floor(Math.random() * cores.length)]);",
+							"",
+							"// Recupera o valor já salvo",
+							"let cpfCliente = pm.collectionVariables.get(\"cpf_cliente\");",
+							"",
+							"// Se quiser conferir",
+							"console.log(\"CPF recuperado:\", cpfCliente);",
+							"",
+							"// Você pode setar novamente em variáveis locais se precisar",
+							"pm.variables.set(\"cpf_cliente\", cpfCliente);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// recupera a placa usada na requisição",
+							"const placa = pm.collectionVariables.get(\"placa\");",
+							"",
+							"// regrava para garantir persistência",
+							"pm.collectionVariables.set(\"placa\", placa);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"placa\": \"{{placa}}\",\n  \"modelo\": \"{{modelo}}\",\n  \"marca\": \"{{marca}}\",\n  \"ano\": {{ano}},\n  \"cor\": \"{{cor}}\",\n  \"cpfDono\": \"{{cpf_cliente}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/veiculos",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"veiculos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Cadastrar Mecânico",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Função para gerar CPF válido",
+							"function gerarCpf() {",
+							"    let cpfArray;",
+							"    do {",
+							"        const nums = [];",
+							"        for (let i = 0; i < 9; i++) {",
+							"            nums.push(Math.floor(Math.random() * 10));",
+							"        }",
+							"        const dig1 = calcularDigito(nums);",
+							"        const dig2 = calcularDigito([...nums, dig1]);",
+							"        cpfArray = [...nums, dig1, dig2];",
+							"    } while (cpfArray.every(d => d === cpfArray[0])); // evita sequências repetidas",
+							"    return cpfArray.join('');",
+							"}",
+							"",
+							"function calcularDigito(digs) {",
+							"    let soma = 0;",
+							"    for (let i = 0; i < digs.length; i++) {",
+							"        soma += digs[i] * ((digs.length + 1) - i);",
+							"    }",
+							"    const resto = soma % 11;",
+							"    return resto < 2 ? 0 : 11 - resto;",
+							"}",
+							"",
+							"// Lista de especialidades conforme enum",
+							"const especialidades = [\"MOTORES\", \"SUSPENSAO\", \"ELETRICA\", \"GERAL\"];",
+							"",
+							"// Lista de nomes possíveis para mecânicos",
+							"const nomes = [",
+							"    \"Mestre Ioda\",",
+							"    \"Carlos Mecânico\",",
+							"    \"Ana Torres\",",
+							"    \"Pedro Souza\",",
+							"    \"Mariana Lima\",",
+							"    \"Roberto Santos\",",
+							"    \"Fernanda Oliveira\",",
+							"    \"João Batista\"",
+							"];",
+							"",
+							"// Gera registro funcional simples (prefixo + número aleatório)",
+							"function gerarRegistro() {",
+							"    const numero = Math.floor(Math.random() * 900) + 100; // entre 100 e 999",
+							"    return \"MF-\" + numero;",
+							"}",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"nome_mecanico\", nomes[Math.floor(Math.random() * nomes.length)]);",
+							"pm.collectionVariables.set(\"cpf_mecanico\", gerarCpf());",
+							"pm.collectionVariables.set(\"especialidade\", especialidades[Math.floor(Math.random() * especialidades.length)]);",
+							"pm.collectionVariables.set(\"registroFuncional\", gerarRegistro());",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Recupera o CPF gerado no Pre-request Script",
+							"const cpfMecanico = pm.collectionVariables.get(\"cpf_mecanico\") || pm.environment.get(\"cpf_mecanico\");",
+							"",
+							"// Regrava para garantir persistência",
+							"pm.collectionVariables.set(\"cpf_mecanico\", cpfMecanico);",
+							"",
+							"// Opcional: logar no console para verificar",
+							"console.log(\"CPF do mecânico mantido:\", cpfMecanico);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_mecanico}}\",\n  \"cpf\": \"{{cpf_mecanico}}\",\n  \"especialidade\": \"{{especialidade}}\",\n  \"registroFuncional\": \"{{registroFuncional}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/mecanicos",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"mecanicos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Cadastrar Funcionário",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Função para gerar CPF válido",
+							"function gerarCpf() {",
+							"    let cpfArray;",
+							"    do {",
+							"        const nums = [];",
+							"        for (let i = 0; i < 9; i++) {",
+							"            nums.push(Math.floor(Math.random() * 10));",
+							"        }",
+							"        const dig1 = calcularDigito(nums);",
+							"        const dig2 = calcularDigito([...nums, dig1]);",
+							"        cpfArray = [...nums, dig1, dig2];",
+							"    } while (cpfArray.every(d => d === cpfArray[0])); // evita sequências repetidas",
+							"    return cpfArray.join('');",
+							"}",
+							"",
+							"function calcularDigito(digs) {",
+							"    let soma = 0;",
+							"    for (let i = 0; i < digs.length; i++) {",
+							"        soma += digs[i] * ((digs.length + 1) - i);",
+							"    }",
+							"    const resto = soma % 11;",
+							"    return resto < 2 ? 0 : 11 - resto;",
+							"}",
+							"",
+							"// Lista de nomes possíveis",
+							"const nomes = [",
+							"    \"Jonas Severino\",",
+							"    \"Carla Mendes\",",
+							"    \"Paulo Henrique\",",
+							"    \"Mariana Costa\",",
+							"    \"Roberto Almeida\",",
+							"    \"Fernanda Souza\",",
+							"    \"Lucas Oliveira\",",
+							"    \"Ana Paula\"",
+							"];",
+							"",
+							"// Gera e-mail baseado no nome",
+							"function gerarEmail(nome) {",
+							"    return nome.toLowerCase().replace(/\\s+/g, '') + \"@oficina.com\";",
+							"}",
+							"",
+							"// Cargos permitidos",
+							"const cargos = [\"ATENDENTE\", \"GERENTE\"];",
+							"",
+							"// Seleciona aleatoriamente nome e cargo",
+							"const nome = nomes[Math.floor(Math.random() * nomes.length)];",
+							"const cargo = cargos[Math.floor(Math.random() * cargos.length)];",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"nome_funcionario\", nome);",
+							"pm.collectionVariables.set(\"cpf_funcionario\", gerarCpf());",
+							"pm.collectionVariables.set(\"email_funcionario\", gerarEmail(nome));",
+							"pm.collectionVariables.set(\"cargo_funcionario\", cargo);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_funcionario}}\",\n  \"cpf\": \"{{cpf_funcionario}}\",\n  \"email\": \"{{email_funcionario}}\",\n  \"cargo\": \"{{cargo_funcionario}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/funcionarios",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"funcionarios"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Realizar Agendamento",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Lê o corpo da resposta como JSON",
+							"const responseJson = pm.response.json();",
+							"",
+							"// Recupera o campo \"id\"",
+							"const atendimentoId = responseJson.id;",
+							"",
+							"// Salva em variável da collection (ou ambiente, se preferir)",
+							"pm.collectionVariables.set(\"atendimentoId\", atendimentoId);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Função para adicionar minutos a uma data",
+							"function addMinutes(date, minutes) {",
+							"    return new Date(date.getTime() + minutes * 60000);",
+							"}",
+							"",
+							"// Função para adicionar dias a uma data",
+							"function addDays(date, days) {",
+							"    return new Date(date.getTime() + days * 24 * 60 * 60000);",
+							"}",
+							"",
+							"// Hora atual",
+							"const agora = new Date();",
+							"",
+							"// Hora de início: 30 minutos após agora",
+							"const inicio = addMinutes(agora, 30);",
+							"",
+							"// Hora de fim: entre 1 hora e 5 dias após o início",
+							"const maxFim = addDays(inicio, 5);",
+							"const fim = new Date(inicio.getTime() + Math.floor(Math.random() * (maxFim.getTime() - inicio.getTime())));",
+							"",
+							"// Enum de tipos permitidos",
+							"const tipos = [\"ANALISE\", \"EXECUCAO\"];",
+							"const tipo = tipos[Math.floor(Math.random() * tipos.length)];",
+							"",
+							"// Formata em ISO 8601 (sem timezone)",
+							"function formatISO(date) {",
+							"    return date.toISOString().split('.')[0];",
+							"}",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"dataHoraInicio\", formatISO(inicio));",
+							"pm.collectionVariables.set(\"dataHoraFim\", formatISO(fim));",
+							"pm.collectionVariables.set(\"tipo\", tipo);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"clienteId\": \"{{cpf_cliente}}\",\n  \"veiculoId\": \"{{placa}}\",\n  \"recursoId\": \"{{cpf_mecanico}}\",\n  \"dataHoraInicio\": \"{{dataHoraInicio}}\",\n  \"dataHoraFim\": \"{{dataHoraFim}}\",\n  \"tipo\": \"{{tipo}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/agendamentos",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"agendamentos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Cadastrar Peça",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Lista de peças possíveis",
+							"const pecas = [",
+							"    \"Pastilha de Freio\",",
+							"    \"Disco de Freio\",",
+							"    \"Filtro de Óleo\",",
+							"    \"Filtro de Ar\",",
+							"    \"Amortecedor\",",
+							"    \"Correia Dentada\",",
+							"    \"Bateria\",",
+							"    \"Velas de Ignição\"",
+							"];",
+							"",
+							"// Seleciona uma peça aleatória",
+							"const nome = pecas[Math.floor(Math.random() * pecas.length)];",
+							"",
+							"// Gera preço entre 50 e 1000 reais (com duas casas decimais)",
+							"const preco = (Math.random() * (1000 - 50) + 50).toFixed(2);",
+							"",
+							"// Gera quantidade em estoque entre 1 e 50",
+							"const quantidadeEstoque = Math.floor(Math.random() * 50) + 1;",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"nome_peca\", nome);",
+							"pm.collectionVariables.set(\"preco_peca\", preco);",
+							"pm.collectionVariables.set(\"quantidadeEstoque\", quantidadeEstoque);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_peca}}\",\n  \"preco\": {{preco_peca}},\n  \"quantidadeEstoque\": {{quantidadeEstoque}}\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/pecas",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"pecas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. Abrir Ordem de Serviço",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Lista de problemas possíveis",
+							"const problemas = [",
+							"    \"Barulho na suspensão traseira\",",
+							"    \"Ruído no motor\",",
+							"    \"Freio com pouca eficiência\",",
+							"    \"Luz da injeção acesa\",",
+							"    \"Vazamento de óleo\",",
+							"    \"Direção puxando para o lado\",",
+							"    \"Bateria descarregando rápido\",",
+							"    \"Pneus desgastados irregularmente\"",
+							"];",
+							"",
+							"// Seleciona um problema aleatório",
+							"const descricaoProblema = problemas[Math.floor(Math.random() * problemas.length)];",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"descricaoProblema\", descricaoProblema);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Lê o corpo da resposta como JSON",
+							"const responseJson = pm.response.json();",
+							"",
+							"// Recupera o campo \"id\"",
+							"const osId = responseJson.id;",
+							"",
+							"// Salva em variável da collection",
+							"pm.collectionVariables.set(\"osId\", osId);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"placa\": \"{{placa}}\",\n  \"descricaoProblema\": \"{{descricaoProblema}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8. Avançar Status OS",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=EM_DIAGNOSTICO",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "novoStatus",
+							"value": "EM_DIAGNOSTICO"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9. Consultar Detalhes da OS",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {},
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"// Verifica se está rodando no Collection Runner",
+					"if (pm.collectionVariables.get(\"runMode\") === \"runner\") {",
+					"    // Percorre todas as variáveis da collection",
+					"    Object.keys(pm.collectionVariables.toObject()).forEach(key => {",
+					"        if (key !== \"baseURL\") {",
+					"            pm.collectionVariables.set(key, \"\");",
+					"        }",
+					"    });",
+					"",
+					"    console.log(\"Variáveis resetadas, exceto baseURL\");",
+					"} else {",
+					"    console.log(\"Execução isolada, não resetando variáveis\");",
+					"}",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"pm.test(\"Status code é 200 ou 201 ou 204\", function () {",
+					"    pm.expect([200, 201, 204]).to.include(pm.response.code);",
+					"});",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": ""
+		},
+		{
+			"key": "placa",
+			"value": ""
+		},
+		{
+			"key": "modelo",
+			"value": ""
+		},
+		{
+			"key": "marca",
+			"value": ""
+		},
+		{
+			"key": "ano",
+			"value": ""
+		},
+		{
+			"key": "cor",
+			"value": ""
+		},
+		{
+			"key": "nome_mecanico",
+			"value": ""
+		},
+		{
+			"key": "cpf_mecanico",
+			"value": ""
+		},
+		{
+			"key": "especialidade",
+			"value": ""
+		},
+		{
+			"key": "registroFuncional",
+			"value": ""
+		},
+		{
+			"key": "nome_funcionario",
+			"value": ""
+		},
+		{
+			"key": "cpf_funcionario",
+			"value": ""
+		},
+		{
+			"key": "email_funcionario",
+			"value": ""
+		},
+		{
+			"key": "cargo_funcionario",
+			"value": ""
+		},
+		{
+			"key": "dataHoraInicio",
+			"value": ""
+		},
+		{
+			"key": "dataHoraFim",
+			"value": ""
+		},
+		{
+			"key": "tipo",
+			"value": ""
+		},
+		{
+			"key": "osId",
+			"value": ""
+		},
+		{
+			"key": "nome_peca",
+			"value": ""
+		},
+		{
+			"key": "preco_peca",
+			"value": ""
+		},
+		{
+			"key": "quantidadeEstoque",
+			"value": ""
+		},
+		{
+			"key": "nome_cliente",
+			"value": ""
+		},
+		{
+			"key": "email_cliente",
+			"value": ""
+		},
+		{
+			"key": "telefone_cliente",
+			"value": ""
+		},
+		{
+			"key": "atendimentoId",
+			"value": ""
+		},
+		{
+			"key": "descricaoProblema",
+			"value": ""
+		},
+		{
+			"key": "cpf_cliente",
+			"value": ""
+		},
+		{
+			"key": "cpf_valido",
+			"value": ""
+		}
+	]
 }
