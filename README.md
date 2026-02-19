@@ -58,12 +58,13 @@ O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Comp
 
 1. **Certifique-se de ter o Docker instalado em sua máquina.**
 2. No terminal, navegue até a raiz do projeto e execute:
-   a) Recriar a rede e os containers, mas sem precisar “derrubar tudo” manualmente.
+
+   a. Recriar a rede e os containers, mas sem precisar “derrubar tudo” manualmente.
    ```bash
    docker compose down --remove-orphans
    ```
    
-   b) Forçar a recriação dos containers e redes necessárias.
+   b. Forçar a recriação dos containers e redes necessárias.
    ```bash
    docker-compose up --build --force-recreate 
    ``` 
