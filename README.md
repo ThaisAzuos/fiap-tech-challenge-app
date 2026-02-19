@@ -58,12 +58,15 @@ O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Comp
 
 1. **Certifique-se de ter o Docker instalado em sua máquina.**
 2. No terminal, navegue até a raiz do projeto e execute:
+   a) Recriar a rede e os containers, mas sem precisar “derrubar tudo” manualmente.
    ```bash
-1. Recriar a rede e os containers, mas sem precisar “derrubar tudo” manualmente.
-   ## docker compose down --remove-orphans
-2. Forçar a recriação dos containers e redes necessárias. 
-   ## docker-compose up --build --force-recreate 
-
+   docker compose down --remove-orphans
+   ```
+   
+   b) Forçar a recriação dos containers e redes necessárias.
+   ```bash
+   docker-compose up --build --force-recreate 
+   ``` 
 ---
 
 ## 📥 Como usar a Collection do Postman
