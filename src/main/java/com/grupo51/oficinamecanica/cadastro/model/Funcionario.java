@@ -24,16 +24,21 @@ public class Funcionario {
     @Column(nullable = false)
     private Cargo cargo;
 
-    public Funcionario(String nome, Cpf cpf, Email email, Cargo cargo) {
+    @Column(nullable = false)
+    private String senha;
+
+    public Funcionario(String nome, Cpf cpf, Email email, Cargo cargo, String senha) {
         // Validações básicas de domínio (Fail-fast)
         if (nome == null || nome.isBlank()) throw new IllegalArgumentException("Nome é obrigatório");
         if (cpf == null) throw new IllegalArgumentException("CPF é obrigatório");
         if (email == null) throw new IllegalArgumentException("E-mail é obrigatório");
         if (cargo == null) throw new IllegalArgumentException("Cargo é obrigatório");
+        if (senha == null || senha.isBlank()) throw new IllegalArgumentException("Senha é obrigatória");
 
         this.cpf = cpf.numero();
         this.nome = nome;
         this.email = email.endereco();
         this.cargo = cargo;
+        this.senha = senha;
     }
 }

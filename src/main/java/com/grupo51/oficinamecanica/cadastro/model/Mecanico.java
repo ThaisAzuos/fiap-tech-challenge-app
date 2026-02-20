@@ -1,6 +1,5 @@
 package com.grupo51.oficinamecanica.cadastro.model;
 
-import com.grupo51.oficinamecanica.cadastro.model.Cpf;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

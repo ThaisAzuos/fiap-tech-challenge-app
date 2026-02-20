@@ -59,13 +59,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // 3. Mecânico
         if (!mecanicoRepository.existsById(idMec.numero())) {
-            mecanicoRepository.save(new Mecanico("Mestre Joda", idMec, Especialidade.MOTORES, "MF-001"));
+            mecanicoRepository.save(new Mecanico("Mestre Ioda", idMec, Especialidade.MOTORES, "MF-001"));
             System.out.println(">>> Mecânico de teste inserido.");
         }
 
         // 4. Atendente
         if (!funcionarioRepository.existsById(idAtend.numero())) {
-            funcionarioRepository.save(new Funcionario("Atendente Solo", idAtend, new Email("solo@oficina.com"), Cargo.ATENDENTE));
+            funcionarioRepository.save(new Funcionario("Atendente Solo", idAtend, new Email("solo@oficina.com"), Cargo.ATENDENTE,"Senh@316497"));
             System.out.println(">>> Funcionário de teste inserido.");
         }
     }

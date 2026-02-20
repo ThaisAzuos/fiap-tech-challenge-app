@@ -1,8 +1,13 @@
 package com.grupo51.oficinamecanica.cadastro.controller;
 
+import com.grupo51.oficinamecanica.cadastro.controller.dto.FuncionarioCadastroDTO;
 import com.grupo51.oficinamecanica.cadastro.model.Funcionario;
 import com.grupo51.oficinamecanica.cadastro.service.FuncionarioService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.util.List;
 
 @RestController
@@ -15,8 +20,10 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public Funcionario cadastrar(@RequestBody Funcionario funcionario) {
-        return service.salvar(funcionario);
+    public ResponseEntity<Funcionario> cadastrar(@RequestBody @Valid FuncionarioCadastroDTO dados, UriComponentsBuilder uriBuilder) {
+        var funcionario = service.salvar(dados);
+        var uri = uriBuilder.path("/api/v1/funcionarios/{cpf}").buildAndExpand(funcionario.getCpf()).toUri();
+        return ResponseEntity.created(uri).body(funcionario);
     }
 
     @GetMapping
