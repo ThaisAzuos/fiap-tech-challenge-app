@@ -10,16 +10,13 @@ import org.springframework.context.annotation.Profile;
 @Profile("dev")
 public class DataInitializer implements CommandLineRunner {
 
-    private final MecanicoRepository mecanicoRepository;
     private final FuncionarioRepository funcionarioRepository;
     private final ClienteRepository clienteRepository;
     private final VeiculoRepository veiculoRepository;
 
-    public DataInitializer(MecanicoRepository mecanicoRepository,
-                           FuncionarioRepository funcionarioRepository,
+    public DataInitializer(FuncionarioRepository funcionarioRepository,
                            ClienteRepository clienteRepository,
                            VeiculoRepository veiculoRepository) {
-        this.mecanicoRepository = mecanicoRepository;
         this.funcionarioRepository = funcionarioRepository;
         this.clienteRepository = clienteRepository;
         this.veiculoRepository = veiculoRepository;
@@ -57,15 +54,31 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println(">>> Veículo de teste inserido.");
         }
 
-        // 3. Mecânico
-        if (!mecanicoRepository.existsById(idMec.numero())) {
-            mecanicoRepository.save(new Mecanico("Mestre Ioda", idMec, Especialidade.MOTORES, "MF-001"));
+        // 3. Mecânico (agora é um Funcionário)
+        if (!funcionarioRepository.existsById(idMec.numero())) {
+            funcionarioRepository.save(new Funcionario(
+                "Mestre Ioda", 
+                idMec, 
+                new Email("ioda@oficina.com"), 
+                Cargo.MECANICO, 
+                "Senh@316497", 
+                Especialidade.MOTORES, 
+                "MF-001"
+            ));
             System.out.println(">>> Mecânico de teste inserido.");
         }
 
         // 4. Atendente
         if (!funcionarioRepository.existsById(idAtend.numero())) {
-            funcionarioRepository.save(new Funcionario("Atendente Solo", idAtend, new Email("solo@oficina.com"), Cargo.ATENDENTE,"Senh@316497"));
+            funcionarioRepository.save(new Funcionario(
+                "Atendente Solo", 
+                idAtend, 
+                new Email("solo@oficina.com"), 
+                Cargo.ATENDENTE,
+                "Senh@316497",
+                null,
+                null
+            ));
             System.out.println(">>> Funcionário de teste inserido.");
         }
     }

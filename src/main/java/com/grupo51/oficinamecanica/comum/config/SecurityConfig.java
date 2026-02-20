@@ -1,4 +1,3 @@
-
 package com.grupo51.oficinamecanica.comum.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,9 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers(HttpMethod.POST, "/login").permitAll();
+                    req.requestMatchers("/api/v1/atendentes/**").hasRole("ATENDENTE");
+                    req.requestMatchers("/api/v1/gerentes/**").hasRole("GERENTE");
+                    req.requestMatchers("/api/v1/mecanicos/**").hasRole("MECANICO");
                     req.anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)

@@ -27,18 +27,39 @@ public class Funcionario {
     @Column(nullable = false)
     private String senha;
 
-    public Funcionario(String nome, Cpf cpf, Email email, Cargo cargo, String senha) {
-        // Validações básicas de domínio (Fail-fast)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true) // Apenas para mecânicos
+    private Especialidade especialidade;
+
+    @Column(unique = true, nullable = true) // Apenas para mecânicos
+    private String registroFuncional;
+
+    private boolean ativo = true;
+
+    // Construtor para todos os funcionários
+    public Funcionario(String nome, Cpf cpf, Email email, Cargo cargo, String senha, Especialidade especialidade, String registroFuncional) {
         if (nome == null || nome.isBlank()) throw new IllegalArgumentException("Nome é obrigatório");
         if (cpf == null) throw new IllegalArgumentException("CPF é obrigatório");
         if (email == null) throw new IllegalArgumentException("E-mail é obrigatório");
         if (cargo == null) throw new IllegalArgumentException("Cargo é obrigatório");
         if (senha == null || senha.isBlank()) throw new IllegalArgumentException("Senha é obrigatória");
 
+        if (cargo == Cargo.MECANICO) {
+            if (especialidade == null) throw new IllegalArgumentException("Especialidade é obrigatória para mecânicos");
+            if (registroFuncional == null || registroFuncional.isBlank()) throw new IllegalArgumentException("Registro funcional é obrigatório para mecânicos");
+        }
+
         this.cpf = cpf.numero();
         this.nome = nome;
         this.email = email.endereco();
         this.cargo = cargo;
         this.senha = senha;
+        this.especialidade = especialidade;
+        this.registroFuncional = registroFuncional;
+        this.ativo = true;
+    }
+
+    public void desativar() {
+        this.ativo = false;
     }
 }

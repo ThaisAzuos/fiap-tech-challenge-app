@@ -30,10 +30,21 @@ public class FuncionarioService {
     @Transactional
     public Funcionario salvar(FuncionarioCadastroDTO dados) {
         var senhaCriptografada = passwordEncoder.encode(dados.senha());
-        var funcionario = new Funcionario(dados.nome(), new Cpf(dados.cpf()), new Email("email@example.com"), Cargo.ATENDENTE, senhaCriptografada);
+        
+        var funcionario = new Funcionario(
+            dados.nome(), 
+            new Cpf(dados.cpf()), 
+            new Email("email@example.com"), 
+            dados.cargo(), 
+            senhaCriptografada,
+            dados.especialidade(),
+            dados.registroFuncional()
+        );
+
         funcionarioRepository.save(funcionario);
 
-        var usuario = new Usuario(null, funcionario.getCpf(), senhaCriptografada, Perfil.ATENDENTE);
+        var perfil = converterCargoParaPerfil(dados.cargo());
+        var usuario = new Usuario(null, funcionario.getCpf(), senhaCriptografada, perfil);
         usuarioRepository.save(usuario);
 
         return funcionario;
@@ -41,5 +52,13 @@ public class FuncionarioService {
 
     public List<Funcionario> listarTodos() {
         return funcionarioRepository.findAll();
+    }
+
+    private Perfil converterCargoParaPerfil(Cargo cargo) {
+        return switch (cargo) {
+            case ATENDENTE -> Perfil.ATENDENTE;
+            case GERENTE -> Perfil.GERENTE;
+            case MECANICO -> Perfil.MECANICO;
+        };
     }
 }
