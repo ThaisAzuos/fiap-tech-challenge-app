@@ -1,26 +1,33 @@
-# Estágio 1: Build (Compilação)
-# Usamos uma imagem do Maven com Java 21 para gerar o JAR
+# syntax=docker/dockerfile:1
+FROM alpine
+RUN echo "Hello"
+
+# Estágio 1: Build
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
-
-# Copia apenas o pom.xml primeiro para baixar as dependências (otimiza o cache do Docker)
 COPY pom.xml .
 RUN mvn dependency:go-offline
-
-# Copia o código fonte e compila
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Estágio 2: Runtime (Execução)
-# Usamos uma imagem leve (JRE) para rodar a aplicação
-FROM eclipse-temurin:21-jre-jammy
+# Estágio 2: Runtime
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+VOLUME /tmp
 
-# Copia o JAR gerado no estágio anterior
-COPY --from=build /app/target/*.jar app.jar
+# Copia o JAR (nome fixo para evitar problemas no CD)
+COPY --from=build /app/target/meu-projeto-*.jar app.jar
 
-# Define a porta da aplicação
 EXPOSE 8080
 
-# Comando para iniciar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Cria grupo e usuário não-root
+RUN addgroup -S javauser && adduser -S -G javauser javauser
+USER javauser
+
+# Healthcheck para Kubernetes
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
+# Otimização JVM para container
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XshowSettings:vm -XX:MaxRAMPercentage=75.0"
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
