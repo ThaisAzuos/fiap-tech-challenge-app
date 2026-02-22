@@ -1,74 +1,38 @@
 version: '3.8'
 
 services:
+  app:
+    container_name: oficina-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://oficina-db:5432/oficina_db
+      SPRING_DATASOURCE_USERNAME: oficina_admin
+      SPRING_DATASOURCE_PASSWORD: oficina_password
+      API_SECURITY_TOKEN_SECRET: dev_secret_key_for_jwt_development
+    depends_on:
+      - db
+    networks:
+      - app-network
+
   db:
-    image: postgres:15-alpine
     container_name: oficina-db
-    restart: always
+    image: postgres:13
     environment:
       POSTGRES_DB: oficina_db
       POSTGRES_USER: oficina_admin
       POSTGRES_PASSWORD: oficina_password
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U oficina_admin -d oficina_db" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  app:
-    build: .
-    container_name: oficina-app
-    ports:
-      - "8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/oficina_db
-      SPRING_DATASOURCE_USERNAME: oficina_admin
-      SPRING_DATASOURCE_PASSWORD: oficina_password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-
-  postgres:
-    image: postgres
-    container_name: postgres_sonar
-    restart: always
-    environment:
-      POSTGRES_DB: sonar
-      POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: sonar
-    ports:
-      - "5433:5432"   # alterado para evitar conflito
     volumes:
-      - ./postgres/data:/var/lib/postgresql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  sonarqube:
-    image: sonarqube:latest
-    container_name: sonarqube
-    ports:
-      - "9000:9000"
-    environment:
-      - SONARQUBE_JDBC_URL=jdbc:postgresql://postgres:5432/sonar
-      - SONARQUBE_JDBC_USERNAME=sonar
-      - SONARQUBE_JDBC_PASSWORD=sonar
-    volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
-      - sonarqube_logs:/opt/sonarqube/logs
-      - sonarqube_temp:/opt/sonarqube/temp
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
 volumes:
-  sonarqube_data:
-  sonarqube_extensions:
-  sonarqube_logs:
-  sonarqube_temp:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge

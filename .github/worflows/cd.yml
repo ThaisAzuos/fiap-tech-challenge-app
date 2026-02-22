@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/meu-projeto:${{ github.sha }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/oficina-mecanica:${{ github.sha }}
           context: .
 
       - name: Set up kubectl
@@ -48,6 +48,6 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/meu-projeto-deployment \
-            meu-projeto=${{ secrets.DOCKER_USERNAME }}/meu-projeto:${{ github.sha }}
-          kubectl rollout status deployment/meu-projeto-deployment --timeout=60s
+          kubectl set image deployment/oficina-mecanica-deployment \
+            oficina-mecanica=${{ secrets.DOCKER_USERNAME }}/oficina-mecanica:${{ github.sha }}
+          kubectl rollout status deployment/oficina-mecanica-deployment --timeout=60s

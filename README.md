@@ -10,6 +10,7 @@ O projeto foi construído focando em boas práticas de desenvolvimento, separaç
 * **Spring Data JPA** (Persistência de dados)
 * **PostgreSQL 15** (Banco de dados relacional)
 * **Docker & Docker Compose** (Containerização e orquestração)
+* **Kubernetes (K8s)** (Orquestração de containers e escalabilidade)
 * **Maven** (Gerenciamento de dependências)
 * **Postman** (Documentação e testes das rotas)
 * **SonarQube** (Qualidade do Código e vulnerabilidades de segurança)
@@ -45,7 +46,7 @@ Diferente de arquiteturas anêmicas, a lógica de negócio está protegida nas e
 
 ---
 
-## 🐳 Como Rodar com Docker (Recomendado)
+## 🐳 Como Rodar com Docker (Desenvolvimento Local)
 
 O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Compose** para orquestrar a API e o banco de dados PostgreSQL. O processo utiliza **Multi-stage Build**, garantindo uma imagem final leve e segura.
 
@@ -59,15 +60,80 @@ O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Comp
 1. **Certifique-se de ter o Docker instalado em sua máquina.**
 2. No terminal, navegue até a raiz do projeto e execute:
 
-   a. Recriar a rede e os containers, mas sem precisar “derrubar tudo” manualmente.
+   a. Limpar containers antigos e órfãos (importante para evitar conflitos):
    ```bash
-   docker compose down --remove-orphans
+   docker-compose down --remove-orphans
    ```
    
-   b. Forçar a recriação dos containers e redes necessárias.
+   b. Subir a aplicação e o banco de dados:
    ```bash
-   docker-compose up --build --force-recreate 
+   docker-compose up --build
    ``` 
+
+A API estará disponível em `http://localhost:8080`.
+
+### 🛑 Como Parar (Docker)
+
+Para parar a aplicação e remover os containers criados:
+```bash
+docker-compose down
+```
+
+---
+
+## ☸️ Como Rodar com Kubernetes (Escalabilidade)
+
+Para ambientes de produção ou simulação de escalabilidade, o projeto inclui manifestos Kubernetes completos.
+
+### 📋 Pré-requisitos
+- Um cluster Kubernetes rodando (Minikube, Kind, ou Docker Desktop com Kubernetes habilitado).
+- Ferramenta de linha de comando `kubectl` instalada e configurada.
+
+### 🚀 Passo a Passo
+
+1. **Aplicar os Manifestos:**
+   Na raiz do projeto, execute o comando abaixo para criar todos os recursos (Secrets, ConfigMaps, Deployment, Service e HPA):
+   ```bash
+   kubectl apply -f k8s-secret.yaml -f k8s-configmap.yaml -f k8s-deployment.yaml -f k8s-service.yaml -f k8s-hpa.yaml
+   ```
+   *Ou simplesmente:*
+   ```bash
+   kubectl apply -f .
+   ```
+   *(Ignore os erros de validação sobre arquivos que não são YAML do K8s, como o README ou docker-compose)*
+
+2. **Verificar os Pods:**
+   Aguarde alguns instantes e verifique se os pods estão rodando:
+   ```bash
+   kubectl get pods
+   ```
+
+3. **Acessar a Aplicação:**
+   Verifique o serviço criado para obter o IP/Porta de acesso:
+   ```bash
+   kubectl get svc oficina-service
+   ```
+   *Se estiver usando Minikube, pode ser necessário rodar `minikube service oficina-service` para acessar.*
+
+4. **Escalabilidade Automática (HPA):**
+   O projeto inclui um **Horizontal Pod Autoscaler** configurado para escalar a aplicação automaticamente com base no uso de CPU.
+   - **Mínimo de Réplicas:** 2
+   - **Máximo de Réplicas:** 10
+   - **Gatilho:** 70% de uso de CPU
+
+   Para monitorar o HPA:
+   ```bash
+   kubectl get hpa
+   ```
+
+### 🛑 Como Parar (Kubernetes)
+
+Para remover todos os recursos criados no cluster (Pods, Services, Secrets, etc.):
+```bash
+kubectl delete -f .
+```
+*(Isso deletará todos os recursos definidos nos arquivos YAML da pasta atual)*
+
 ---
 
 ## 📥 Como usar a Collection do Postman
