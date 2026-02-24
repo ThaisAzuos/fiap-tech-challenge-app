@@ -146,13 +146,16 @@ Para facilitar os testes, incluímos o arquivo `Oficina_Mecanica.postman_collect
 4. Uma nova coleção chamada **"Oficina Mecânica API - Tech Challenge"** aparecerá na sua aba lateral.
 5. As requisições já estão configuradas com os corpos (JSON) e URLs padrão (`http://localhost:8080`).
 
-> **Nota:** Nas requisições de **Incluir Peça**, **Mudar Status** e **Consultar Detalhes**, lembre-se de substituir o `ID` na URL ou no corpo pelo UUID gerado nas etapas anteriores.
+> **Nota Importante:** A primeira requisição da coleção, **"0. Login (Obter JWT)"**, deve ser executada primeiro para obter o token de autenticação. As demais requisições usarão este token automaticamente.
 
 ---
 
 ## 📋 Guia de Testes (Sequence Flow)
 
 Siga a ordem abaixo no Postman para testar o fluxo completo:
+
+### 0. Autenticação
+- **POST** `/login`: Execute a requisição "0. Login (Obter JWT)" para obter o token de autenticação.
 
 ### 1. Contexto de Cadastro
 - **POST** `/api/v1/clientes`: Cadastre um cliente (use CPF válido).

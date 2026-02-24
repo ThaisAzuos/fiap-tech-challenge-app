@@ -7,6 +7,51 @@
 	},
 	"item": [
 		{
+			"name": "0. Login (Obter JWT)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"login\": \"{{login_cpf}}\",\n  \"senha\": \"{{login_senha}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/login",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": [],
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"if (jsonData && jsonData.token) {",
+							"    pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
+							"    console.log(\"JWT Token obtido e salvo: \" + jsonData.token);",
+							"} else {",
+							"    console.log(\"Erro: Token JWT não encontrado na resposta.\");",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			]
+		},
+		{
 			"name": "1. Cadastrar Cliente",
 			"event": [
 				{
@@ -115,6 +160,21 @@
 						"packages": {},
 						"requests": {}
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
 				}
 			],
 			"request": {
@@ -197,6 +257,21 @@
 							"pm.collectionVariables.set(\"placa\", placa);",
 							"",
 							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -312,6 +387,21 @@
 						"packages": {},
 						"requests": {}
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
 				}
 			],
 			"request": {
@@ -406,6 +496,40 @@
 						"packages": {},
 						"requests": {}
 					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Recupera o CPF gerado no Pre-request Script",
+							"const cpfFuncionario = pm.collectionVariables.get(\"cpf_funcionario\") || pm.environment.get(\"cpf_funcionario\");",
+							"",
+							"// Regrava para garantir persistência",
+							"pm.collectionVariables.set(\"cpf_funcionario\", cpfFuncionario);",
+							"",
+							"// Opcional: logar no console para verificar",
+							"console.log(\"CPF do funcionário mantido:\", cpfFuncionario);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
 				}
 			],
 			"request": {
@@ -413,7 +537,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"nome\": \"{{nome_funcionario}}\",\n  \"cpf\": \"{{cpf_funcionario}}\",\n  \"email\": \"{{email_funcionario}}\",\n  \"cargo\": \"{{cargo_funcionario}}\"\n}\n",
+					"raw": "{\n  \"nome\": \"{{nome_funcionario}}\",\n  \"cpf\": \"{{cpf_funcionario}}\",\n  \"email\": \"{{email_funcionario}}\",\n  \"cargo\": \"{{cargo_funcionario}}\",\n  \"senha\": \"Senh@316497\"\n}\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -500,6 +624,21 @@
 						"packages": {},
 						"requests": {}
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
 				}
 			],
 			"request": {
@@ -561,6 +700,21 @@
 							"pm.collectionVariables.set(\"preco_peca\", preco);",
 							"pm.collectionVariables.set(\"quantidadeEstoque\", quantidadeEstoque);",
 							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -644,6 +798,21 @@
 						"packages": {},
 						"requests": {}
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
 				}
 			],
 			"request": {
@@ -675,6 +844,23 @@
 		},
 		{
 			"name": "8. Avançar Status OS",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
 			"request": {
 				"method": "PATCH",
 				"header": [
@@ -723,6 +909,23 @@
 				"disabledSystemHeaders": {},
 				"strictSSL": false
 			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [
@@ -770,12 +973,12 @@
 					"if (pm.collectionVariables.get(\"runMode\") === \"runner\") {",
 					"    // Percorre todas as variáveis da collection",
 					"    Object.keys(pm.collectionVariables.toObject()).forEach(key => {",
-					"        if (key !== \"baseURL\") {",
+					"        if (key !== \"baseURL\" && key !== \"login_cpf\" && key !== \"login_senha\") {",
 					"            pm.collectionVariables.set(key, \"\");",
 					"        }",
 					"    });",
 					"",
-					"    console.log(\"Variáveis resetadas, exceto baseURL\");",
+					"    console.log(\"Variáveis resetadas, exceto baseURL, login_cpf e login_senha\");",
 					"} else {",
 					"    console.log(\"Execução isolada, não resetando variáveis\");",
 					"}",
@@ -801,7 +1004,7 @@
 	"variable": [
 		{
 			"key": "baseURL",
-			"value": ""
+			"value": "http://localhost:8080"
 		},
 		{
 			"key": "placa",
@@ -910,6 +1113,21 @@
 		{
 			"key": "cpf_valido",
 			"value": ""
+		},
+		{
+			"key": "login_cpf",
+			"value": "25390437021",
+			"type": "string"
+		},
+		{
+			"key": "login_senha",
+			"value": "Senh@316497",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
 		}
 	]
 }
