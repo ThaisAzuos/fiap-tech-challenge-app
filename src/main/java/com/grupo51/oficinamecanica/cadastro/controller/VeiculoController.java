@@ -3,11 +3,11 @@ package com.grupo51.oficinamecanica.cadastro.controller;
 import com.grupo51.oficinamecanica.cadastro.model.Veiculo;
 import com.grupo51.oficinamecanica.cadastro.model.dto.VeiculoDTO;
 import com.grupo51.oficinamecanica.cadastro.service.VeiculoService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,21 +16,14 @@ public class VeiculoController {
 
     private final VeiculoService veiculoService;
 
-    // Injeção via construtor
     public VeiculoController(VeiculoService veiculoService) {
         this.veiculoService = veiculoService;
     }
 
     @PostMapping
-    public ResponseEntity<Veiculo> criarVeiculo(@RequestBody VeiculoDTO dto) {
+    public ResponseEntity<Veiculo> criarVeiculo(@RequestBody @Valid VeiculoDTO dto, UriComponentsBuilder uriBuilder) {
         Veiculo novoVeiculo = veiculoService.salvarVeiculo(dto);
-
-        // Retorna 201 Created e o objeto criado no corpo da resposta
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(novoVeiculo.getPlaca())
-                .toUri();
-
+        var uri = uriBuilder.path("/api/v1/veiculos/{placa}").buildAndExpand(novoVeiculo.getPlaca()).toUri();
         return ResponseEntity.created(uri).body(novoVeiculo);
     }
 

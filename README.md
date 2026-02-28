@@ -10,8 +10,10 @@ O projeto foi construído focando em boas práticas de desenvolvimento, separaç
 * **Spring Data JPA** (Persistência de dados)
 * **PostgreSQL 15** (Banco de dados relacional)
 * **Docker & Docker Compose** (Containerização e orquestração)
+* **Kubernetes (K8s)** (Orquestração de containers e escalabilidade)
 * **Maven** (Gerenciamento de dependências)
 * **Postman** (Documentação e testes das rotas)
+* **SonarQube** (Qualidade do Código e vulnerabilidades de segurança)
 
 ---
 
@@ -44,26 +46,7 @@ Diferente de arquiteturas anêmicas, a lógica de negócio está protegida nas e
 
 ---
 
-## 📋 Guia de Testes (Sequence Flow)
-
-Siga a ordem abaixo no Postman para testar o fluxo completo:
-
-### 1. Contexto de Cadastro
-- **POST** `/api/v1/clientes`: Cadastre um cliente (use CPF válido).
-- **POST** `/api/v1/veiculos`: Vincule um veículo ao CPF do dono.
-
-### 2. Contexto de Estoque
-- **POST** `/api/v1/pecas`: Cadastre peças (ex: Pastilha de freio, Óleo).
-
-### 3. Contexto de Atendimento (Fluxo Principal)
-- **POST** `/api/v1/atendimento/os`: Abra uma O.S. informando apenas a placa e o problema.
-- **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
-- **PATCH** `/api/v1/atendimento/os/{osId}/status`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
-- **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
-
----
-
-## 🐳 Como Rodar com Docker (Recomendado)
+## 🐳 Como Rodar com Docker (Desenvolvimento Local)
 
 O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Compose** para orquestrar a API e o banco de dados PostgreSQL. O processo utiliza **Multi-stage Build**, garantindo uma imagem final leve e segura.
 
@@ -76,8 +59,80 @@ O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Comp
 
 1. **Certifique-se de ter o Docker instalado em sua máquina.**
 2. No terminal, navegue até a raiz do projeto e execute:
+
+   a. Limpar containers antigos e órfãos (importante para evitar conflitos):
+   ```bash
+   docker-compose down --remove-orphans
+   ```
+   
+   b. Subir a aplicação e o banco de dados:
    ```bash
    docker-compose up --build
+   ``` 
+
+A API estará disponível em `http://localhost:8080`.
+
+### 🛑 Como Parar (Docker)
+
+Para parar a aplicação e remover os containers criados:
+```bash
+docker-compose down
+```
+
+---
+
+## ☸️ Como Rodar com Kubernetes (Escalabilidade)
+
+Para ambientes de produção ou simulação de escalabilidade, o projeto inclui manifestos Kubernetes completos.
+
+### 📋 Pré-requisitos
+- Um cluster Kubernetes rodando (Minikube, Kind, ou Docker Desktop com Kubernetes habilitado).
+- Ferramenta de linha de comando `kubectl` instalada e configurada.
+
+### 🚀 Passo a Passo
+
+1. **Aplicar os Manifestos:**
+   Na raiz do projeto, execute o comando abaixo para criar todos os recursos (Secrets, ConfigMaps, Deployment, Service e HPA):
+   ```bash
+   kubectl apply -f k8s-secret.yaml -f k8s-configmap.yaml -f k8s-deployment.yaml -f k8s-service.yaml -f k8s-hpa.yaml
+   ```
+   *Ou simplesmente:*
+   ```bash
+   kubectl apply -f .
+   ```
+   *(Ignore os erros de validação sobre arquivos que não são YAML do K8s, como o README ou docker-compose)*
+
+2. **Verificar os Pods:**
+   Aguarde alguns instantes e verifique se os pods estão rodando:
+   ```bash
+   kubectl get pods
+   ```
+
+3. **Acessar a Aplicação:**
+   Verifique o serviço criado para obter o IP/Porta de acesso:
+   ```bash
+   kubectl get svc oficina-service
+   ```
+   *Se estiver usando Minikube, pode ser necessário rodar `minikube service oficina-service` para acessar.*
+
+4. **Escalabilidade Automática (HPA):**
+   O projeto inclui um **Horizontal Pod Autoscaler** configurado para escalar a aplicação automaticamente com base no uso de CPU.
+   - **Mínimo de Réplicas:** 2
+   - **Máximo de Réplicas:** 10
+   - **Gatilho:** 70% de uso de CPU
+
+   Para monitorar o HPA:
+   ```bash
+   kubectl get hpa
+   ```
+
+### 🛑 Como Parar (Kubernetes)
+
+Para remover todos os recursos criados no cluster (Pods, Services, Secrets, etc.):
+```bash
+kubectl delete -f .
+```
+*(Isso deletará todos os recursos definidos nos arquivos YAML da pasta atual)*
 
 ---
 
@@ -91,4 +146,28 @@ Para facilitar os testes, incluímos o arquivo `Oficina_Mecanica.postman_collect
 4. Uma nova coleção chamada **"Oficina Mecânica API - Tech Challenge"** aparecerá na sua aba lateral.
 5. As requisições já estão configuradas com os corpos (JSON) e URLs padrão (`http://localhost:8080`).
 
-> **Nota:** Nas requisições de **Incluir Peça**, **Mudar Status** e **Consultar Detalhes**, lembre-se de substituir o `ID` na URL ou no corpo pelo UUID gerado nas etapas anteriores.
+> **Nota Importante:** A primeira requisição da coleção, **"0. Login (Obter JWT)"**, deve ser executada primeiro para obter o token de autenticação. As demais requisições usarão este token automaticamente.
+
+---
+
+## 📋 Guia de Testes (Sequence Flow)
+
+Siga a ordem abaixo no Postman para testar o fluxo completo:
+
+### 0. Autenticação
+- **POST** `/login`: Execute a requisição "0. Login (Obter JWT)" para obter o token de autenticação.
+
+### 1. Contexto de Cadastro
+- **POST** `/api/v1/clientes`: Cadastre um cliente (use CPF válido).
+- **POST** `/api/v1/veiculos`: Vincule um veículo ao CPF do dono.
+
+### 2. Contexto de Estoque
+- **POST** `/api/v1/pecas`: Cadastre peças (ex: Pastilha de freio, Óleo).
+
+### 3. Contexto de Atendimento (Fluxo Principal)
+- **POST** `/api/v1/atendimento/os`: Abra uma O.S. informando apenas a placa e o problema.
+- **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
+- **PATCH** `/api/v1/atendimento/os/{osId}/status?novoStatus={Status de evolução}`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
+- **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
+
+---

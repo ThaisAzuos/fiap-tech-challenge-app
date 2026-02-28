@@ -1,32 +1,38 @@
 version: '3.8'
 
 services:
+  app:
+    container_name: oficina-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://oficina-db:5432/oficina_db
+      SPRING_DATASOURCE_USERNAME: oficina_admin
+      SPRING_DATASOURCE_PASSWORD: oficina_password
+      API_SECURITY_TOKEN_SECRET: dev_secret_key_for_jwt_development
+    depends_on:
+      - db
+    networks:
+      - app-network
+
   db:
-    image: postgres:15-alpine
     container_name: oficina-db
-    restart: always
+    image: postgres:13
     environment:
       POSTGRES_DB: oficina_db
       POSTGRES_USER: oficina_admin
       POSTGRES_PASSWORD: oficina_password
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U oficina_admin -d oficina_db" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
-  app:
-    build: .
-    container_name: oficina-app
-    ports:
-      - "8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/oficina_db
-      SPRING_DATASOURCE_USERNAME: oficina_admin
-      SPRING_DATASOURCE_PASSWORD: oficina_password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge

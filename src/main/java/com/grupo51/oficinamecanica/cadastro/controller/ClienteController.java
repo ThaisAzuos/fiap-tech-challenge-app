@@ -3,9 +3,10 @@ package com.grupo51.oficinamecanica.cadastro.controller;
 import com.grupo51.oficinamecanica.cadastro.model.Cliente;
 import com.grupo51.oficinamecanica.cadastro.model.dto.ClienteDTO;
 import com.grupo51.oficinamecanica.cadastro.service.CadastroService;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -20,11 +21,10 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<Cliente> criarCliente(@RequestBody ClienteDTO dto) {
-
+    public ResponseEntity<Cliente> criarCliente(@RequestBody @Valid ClienteDTO dto, UriComponentsBuilder uriBuilder) {
         Cliente novoCliente = cadastroService.salvarCliente(dto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoCliente);
+        var uri = uriBuilder.path("/api/v1/clientes/{cpf}").buildAndExpand(novoCliente.getCpf()).toUri();
+        return ResponseEntity.created(uri).body(novoCliente);
     }
 
     @GetMapping
