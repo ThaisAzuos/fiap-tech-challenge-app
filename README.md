@@ -176,4 +176,6 @@ Siga a ordem abaixo no Postman para testar o fluxo completo:
 - **POST** `/api/v1/atendimento/os`: Abra uma O.S. informando apenas a placa e o problema.
 - **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
 - **PATCH** `/api/v1/atendimento/os/{osId}/status?novoStatus={Status de evolução}`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
+- **PATCH** `/api/v1/atendimento/os/{osId}/aprovacao`: Aprove orçamento (muda status para `EM_EXECUCAO`).
 - **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
+- **GET** `/api/v1/atendimento/os?page=0&size=10&sort=status`: Liste O.S. ativas (excluindo finalizadas/entregues) com paginação.
