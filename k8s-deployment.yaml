@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: oficina-app
-        image: oficina-mecanica:latest # Substitua pela sua imagem no Docker Hub/ECR
+        image: fiap-tech-challenge-oficina_app:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
