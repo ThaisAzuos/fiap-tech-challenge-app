@@ -44,6 +44,14 @@ Diferente de arquiteturas anêmicas, a lógica de negócio está protegida nas e
 - **Transactional Read-Only:** Consultas otimizadas com `@Transactional(readOnly = true)` para evitar processamento desnecessário do Hibernate.
 - **Records:** Uso de Java Records para DTOs de entrada e saída, garantindo imutabilidade e clareza no contrato da API.
 
+### 🏛️ Clean Architecture/Hexagonal (Fase 2)
+A aplicação foi refatorada seguindo os princípios de **Clean Architecture** para melhorar a manutenibilidade e testabilidade:
+- **Domain Layer:** Contém as entidades de negócio, regras de domínio e lógica pura (ex: `OrdemServico`, `StatusOS`).
+- **Application Layer:** Casos de uso e DTOs de entrada/saída (ex: `AtendimentoService`, `AberturaOSDTO`).
+- **Infrastructure Layer:** Implementações técnicas como controllers REST, repositories JPA e configurações externas.
+- **Separação de Responsabilidades:** Camadas independentes permitem mudanças na infraestrutura sem afetar o domínio.
+- **Injeção de Dependências:** Facilita testes unitários e mocking de dependências externas.
+
 ---
 
 ## 🐳 Como Rodar com Docker (Desenvolvimento Local)
@@ -169,5 +177,3 @@ Siga a ordem abaixo no Postman para testar o fluxo completo:
 - **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
 - **PATCH** `/api/v1/atendimento/os/{osId}/status?novoStatus={Status de evolução}`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
 - **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
-
----
