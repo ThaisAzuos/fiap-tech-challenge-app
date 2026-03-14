@@ -99,7 +99,7 @@ Este documento descreve o plano de trabalho para evolução da aplicação da Fa
 - [x] Dia 1 – Organização
 - [x] Dia 2 – Refatoração
 - [x] Dia 3 – APIs
-- [ ] Dia 4 – Testes
+- [x] Dia 4 – Testes
 - [ ] Dia 5 – Docker
 - [ ] Dia 6 – Kubernetes
 - [ ] Dia 7 – Terraform
