@@ -24,7 +24,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +33,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class AtendimentoServiceTest {
@@ -59,12 +60,22 @@ class AtendimentoServiceTest {
 
     @BeforeEach
     void setUp() {
-        cliente = new Cliente("João Silva", "12345678901", "joao@email.com");
-        veiculo = new Veiculo("ABC1234", "Fiat Uno", "Prata", 2010, cliente);
-        peca = new Peca("Pastilha de Freio", BigDecimal.valueOf(150.00), 10);
+        // Create mocks for dependencies
+        cliente = mock(Cliente.class);
+        lenient().when(cliente.getNome()).thenReturn("João Silva");
+
+        veiculo = mock(Veiculo.class);
+        lenient().when(veiculo.getPlaca()).thenReturn("ABC1234");
+        lenient().when(veiculo.getModelo()).thenReturn("Fiat Uno");
+        lenient().when(veiculo.getDono()).thenReturn(cliente);
+
+        peca = mock(Peca.class);
+        lenient().when(peca.getId()).thenReturn(UUID.randomUUID());
+        lenient().when(peca.getNome()).thenReturn("Pastilha de Freio");
+        lenient().when(peca.getPreco()).thenReturn(BigDecimal.valueOf(150.00));
 
         osId = UUID.randomUUID();
-        pecaId = UUID.randomUUID();
+        pecaId = peca.getId();
 
         ordemServico = new OrdemServico(veiculo, "Problema no freio");
         ordemServico.atualizarStatus(StatusOS.EM_DIAGNOSTICO);

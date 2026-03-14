@@ -13,6 +13,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class OrdemServicoTest {
 
@@ -23,10 +25,24 @@ class OrdemServicoTest {
 
     @BeforeEach
     void setUp() {
-        cliente = new Cliente("João Silva", "12345678901", "joao@email.com");
-        veiculo = new Veiculo("ABC1234", "Fiat Uno", "Prata", 2010, cliente);
-        peca1 = new Peca("Pastilha de Freio", BigDecimal.valueOf(150.00), 10);
-        peca2 = new Peca("Óleo de Motor", BigDecimal.valueOf(80.00), 5);
+        // Create mocks for dependencies
+        cliente = mock(Cliente.class);
+        when(cliente.getNome()).thenReturn("João Silva");
+
+        veiculo = mock(Veiculo.class);
+        when(veiculo.getPlaca()).thenReturn("ABC1234");
+        when(veiculo.getModelo()).thenReturn("Fiat Uno");
+        when(veiculo.getDono()).thenReturn(cliente);
+
+        peca1 = mock(Peca.class);
+        when(peca1.getId()).thenReturn(UUID.randomUUID());
+        when(peca1.getNome()).thenReturn("Pastilha de Freio");
+        when(peca1.getPreco()).thenReturn(BigDecimal.valueOf(150.00));
+
+        peca2 = mock(Peca.class);
+        when(peca2.getId()).thenReturn(UUID.randomUUID());
+        when(peca2.getNome()).thenReturn("Óleo de Motor");
+        when(peca2.getPreco()).thenReturn(BigDecimal.valueOf(80.00));
     }
 
     @Test
@@ -83,6 +99,10 @@ class OrdemServicoTest {
     void naoDevePermitirAdicionarPecaEmOrdemServicoFinalizada() {
         // Given
         OrdemServico os = new OrdemServico(veiculo, "Problema");
+        // Go through proper flow to reach FINALIZADA
+        os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
+        os.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
+        os.atualizarStatus(StatusOS.EM_EXECUCAO);
         os.atualizarStatus(StatusOS.FINALIZADA);
 
         // When/Then
@@ -95,6 +115,11 @@ class OrdemServicoTest {
     void naoDevePermitirAdicionarPecaEmOrdemServicoEntregue() {
         // Given
         OrdemServico os = new OrdemServico(veiculo, "Problema");
+        // Go through proper flow to reach ENTREGUE
+        os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
+        os.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
+        os.atualizarStatus(StatusOS.EM_EXECUCAO);
+        os.atualizarStatus(StatusOS.FINALIZADA);
         os.atualizarStatus(StatusOS.ENTREGUE);
 
         // When/Then
@@ -142,6 +167,11 @@ class OrdemServicoTest {
     void naoDevePermitirAlterarStatusDeOrdemServicoEntregue() {
         // Given
         OrdemServico os = new OrdemServico(veiculo, "Problema");
+        // Go through proper flow to reach ENTREGUE
+        os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
+        os.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
+        os.atualizarStatus(StatusOS.EM_EXECUCAO);
+        os.atualizarStatus(StatusOS.FINALIZADA);
         os.atualizarStatus(StatusOS.ENTREGUE);
 
         // When/Then

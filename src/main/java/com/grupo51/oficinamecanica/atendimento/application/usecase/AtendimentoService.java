@@ -2,6 +2,7 @@ package com.grupo51.oficinamecanica.atendimento.application.usecase;
 
 import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoDetalhesDTO;
+import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoListDTO;
 import com.grupo51.oficinamecanica.atendimento.domain.model.OrdemServico;
 import com.grupo51.oficinamecanica.atendimento.domain.model.StatusOS;
 import com.grupo51.oficinamecanica.atendimento.infrastructure.repository.OrdemServicoRepository;

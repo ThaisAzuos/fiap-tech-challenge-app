@@ -46,6 +46,15 @@ public class OrdemServico {
     @Column(precision = 10, scale = 2)
     private BigDecimal valorTotal = BigDecimal.ZERO;
 
+    // Getters explícitos para garantir compatibilidade
+    public UUID getId() { return id; }
+    public Veiculo getVeiculo() { return veiculo; }
+    public String getDescricaoProblema() { return descricaoProblema; }
+    public LocalDateTime getDataAbertura() { return dataAbertura; }
+    public StatusOS getStatus() { return status; }
+    public List<ItemOS> getItens() { return itens; }
+    public BigDecimal getValorTotal() { return valorTotal; }
+
     public OrdemServico(Veiculo veiculo, String descricaoProblema) {
         this.veiculo = veiculo;
         this.descricaoProblema = descricaoProblema;

@@ -29,4 +29,26 @@ public class ItemOS {
         this.quantidade = quantidade;
         this.precoNoMomento = peca.getPreco();
     }
+
+    // Getters explícitos
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getPecaId() {
+        return pecaId;
+    }
+
+    public String getNomePecaSnapshot() {
+        return nomePecaSnapshot;
+    }
+
+    public Integer getQuantidade() {
+        return quantidade;
+    }
+
+    public BigDecimal getPrecoNoMomento() {
+        return precoNoMomento;
+    }
+
 }
