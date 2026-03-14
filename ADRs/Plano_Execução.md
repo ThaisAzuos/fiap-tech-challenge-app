@@ -96,7 +96,7 @@ Este documento descreve o plano de trabalho para evolução da aplicação da Fa
 ---
 
 ## ✅ Status de Acompanhamento
-- [ ] Dia 1 – Organização
+- [x] Dia 1 – Organização
 - [ ] Dia 2 – Refatoração
 - [ ] Dia 3 – APIs
 - [ ] Dia 4 – Testes
