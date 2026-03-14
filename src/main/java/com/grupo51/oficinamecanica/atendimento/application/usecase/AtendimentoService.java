@@ -1,10 +1,10 @@
-package com.grupo51.oficinamecanica.atendimento.service;
+package com.grupo51.oficinamecanica.atendimento.application.usecase;
 
-import com.grupo51.oficinamecanica.atendimento.controller.dto.AberturaOSDTO;
-import com.grupo51.oficinamecanica.atendimento.controller.dto.OrdemServicoDetalhesDTO;
-import com.grupo51.oficinamecanica.atendimento.model.OrdemServico;
-import com.grupo51.oficinamecanica.atendimento.model.StatusOS;
-import com.grupo51.oficinamecanica.atendimento.repository.OrdemServicoRepository;
+import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSDTO;
+import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoDetalhesDTO;
+import com.grupo51.oficinamecanica.atendimento.domain.model.OrdemServico;
+import com.grupo51.oficinamecanica.atendimento.domain.model.StatusOS;
+import com.grupo51.oficinamecanica.atendimento.infrastructure.repository.OrdemServicoRepository;
 import com.grupo51.oficinamecanica.cadastro.model.Veiculo;
 import com.grupo51.oficinamecanica.cadastro.repository.VeiculoRepository;
 import com.grupo51.oficinamecanica.estoque.repository.PecaRepository;

@@ -1,11 +1,11 @@
-package com.grupo51.oficinamecanica.atendimento.controller;
+package com.grupo51.oficinamecanica.atendimento.infrastructure.controller;
 
-import com.grupo51.oficinamecanica.atendimento.controller.dto.AberturaOSDTO;
-import com.grupo51.oficinamecanica.atendimento.controller.dto.IncluirPecaDTO;
-import com.grupo51.oficinamecanica.atendimento.controller.dto.OrdemServicoDetalhesDTO;
-import com.grupo51.oficinamecanica.atendimento.model.OrdemServico;
-import com.grupo51.oficinamecanica.atendimento.model.StatusOS;
-import com.grupo51.oficinamecanica.atendimento.service.AtendimentoService;
+import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSDTO;
+import com.grupo51.oficinamecanica.atendimento.application.dto.IncluirPecaDTO;
+import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoDetalhesDTO;
+import com.grupo51.oficinamecanica.atendimento.domain.model.OrdemServico;
+import com.grupo51.oficinamecanica.atendimento.domain.model.StatusOS;
+import com.grupo51.oficinamecanica.atendimento.application.usecase.AtendimentoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,4 +1,4 @@
-package com.grupo51.oficinamecanica.atendimento.model;
+package com.grupo51.oficinamecanica.atendimento.domain.model;
 
 import com.grupo51.oficinamecanica.cadastro.model.Veiculo;
 import com.grupo51.oficinamecanica.comum.exception.BusinessException;

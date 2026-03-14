@@ -1,4 +1,4 @@
-package com.grupo51.oficinamecanica.atendimento.controller.dto;
+package com.grupo51.oficinamecanica.atendimento.application.dto;
 
 import java.math.BigDecimal;
 import java.util.List;

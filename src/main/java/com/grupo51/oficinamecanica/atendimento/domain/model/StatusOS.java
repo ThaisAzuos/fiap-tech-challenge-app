@@ -1,4 +1,4 @@
-package com.grupo51.oficinamecanica.atendimento.model;
+package com.grupo51.oficinamecanica.atendimento.domain.model;
 
 public enum StatusOS {
     RECEBIDA,
