@@ -12,6 +12,8 @@ import com.grupo51.oficinamecanica.comum.exception.BusinessException;
 import com.grupo51.oficinamecanica.estoque.model.Peca;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -82,6 +84,33 @@ public class AtendimentoService {
                 itensDTO,
                 os.getValorTotal()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrdemServicoListDTO> listarOrdensServico(Pageable pageable) {
+        Page<OrdemServico> ordens = osRepository.findAllAtivas(pageable);
+        return ordens.map(os -> new OrdemServicoListDTO(
+                os.getId(),
+                os.getStatus().name(),
+                os.getDataAbertura(),
+                os.getValorTotal(),
+                os.getVeiculo().getPlaca(),
+                os.getVeiculo().getModelo(),
+                os.getVeiculo().getDono().getNome()
+        ));
+    }
+
+    @Transactional
+    public void aprovarOrcamento(UUID osId) {
+        OrdemServico os = osRepository.findById(osId)
+                .orElseThrow(() -> new BusinessException("OS não encontrada."));
+
+        if (os.getStatus() != StatusOS.AGUARDANDO_APROVACAO) {
+            throw new BusinessException("A OS deve estar aguardando aprovação para ser aprovada.");
+        }
+
+        os.atualizarStatus(StatusOS.EM_EXECUCAO);
+        osRepository.save(os);
     }
 
     @Transactional
