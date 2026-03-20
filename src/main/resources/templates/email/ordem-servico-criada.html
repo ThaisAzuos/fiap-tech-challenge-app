@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem de Serviço Criada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .info-row {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .label {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 150px;
+        }
+        .value {
+            color: #555;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .footer {
+            background-color: #ecf0f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nova Ordem de Serviço</h1>
+            <p>Sistema de Oficina Mecânica</p>
+        </div>
+
+        <div class="content">
+            <p>Prezado cliente,</p>
+
+            <p>Uma nova ordem de serviço foi criada em nosso sistema. Segue abaixo os detalhes:</p>
+
+            <div class="section">
+                <div class="section-title">📋 Informações da Ordem de Serviço</div>
+
+                <div class="info-row">
+                    <span class="label">ID da OS:</span>
+                    <span class="value" th:text="${ordemServicoId}">OS-00001</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Status:</span>
+                    <span class="value">
+                        <span class="status-badge status-pending" th:text="${status}">Aguardando Aprovação</span>
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Data de Abertura:</span>
+                    <span class="value" th:text="${dataAbertura}">16/03/2026</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🚗 Dados do Veículo</div>
+
+                <div class="info-row">
+                    <span class="label">Veículo:</span>
+                    <span class="value" th:text="${veiculo}">Honda Civic 2020</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Placa:</span>
+                    <span class="value" th:text="${placa}">ABC1D23</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🔧 Problema Relatado</div>
+                <p th:text="${descricaoProblema}">Descrição do problema relatado</p>
+            </div>
+
+            <p>Em breve, nossa equipe analisará seu veículo e entrará em contato para confirmar os procedimentos e orçamento.</p>
+
+            <center>
+                <a href="#" class="button">Acompanhar Ordem de Serviço</a>
+            </center>
+
+            <p>Qualquer dúvida, entre em contato conosco pelo email <strong th:text="${supportEmail}">suporte@oficinamecanica.com</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <span th:text="${currentYear}">2026</span> <span th:text="${applicationName}">Oficina Mecânica</span> - Todos os direitos reservados</p>
+            <p>Este é um email automático, não responda</p>
+        </div>
+    </div>
+</body>
+</html>
+

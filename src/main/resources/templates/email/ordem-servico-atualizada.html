@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status da Ordem de Serviço Atualizado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #27ae60;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .status-update {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #d5f4e6;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
+            text-align: center;
+        }
+        .status-title {
+            font-size: 14px;
+            color: #27ae60;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .status-value {
+            font-size: 24px;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .info-row {
+            margin: 8px 0;
+        }
+        .label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .footer {
+            background-color: #ecf0f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Atualização de Status</h1>
+            <p>Ordem de Serviço Atualizada</p>
+        </div>
+
+        <div class="content">
+            <p>Prezado cliente,</p>
+
+            <p>O status da sua ordem de serviço foi atualizado. Confira os detalhes abaixo:</p>
+
+            <div class="status-update">
+                <div class="status-title">Novo Status:</div>
+                <div class="status-value" th:text="${novoStatus}">Em Execução</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Detalhes da OS</div>
+
+                <div class="info-row">
+                    <span class="label">ID da OS:</span>
+                    <span th:text="${ordemServicoId}">OS-00001</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Veículo:</span>
+                    <span th:text="${veiculo}">Honda Civic 2020</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Data da Atualização:</span>
+                    <span th:text="${dataAtualizacao}">16/03/2026 14:30</span>
+                </div>
+            </div>
+
+            <div th:if="${observacoes}" class="section">
+                <div class="section-title">📝 Observações</div>
+                <p th:text="${observacoes}">Observações sobre o serviço</p>
+            </div>
+
+            <p>Continue acompanhando o status de sua ordem de serviço através de nosso sistema.</p>
+            <p>Em caso de dúvidas, entre em contato conosco pelo email <strong th:text="${supportEmail}">suporte@oficinamecanica.com</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <span th:text="${currentYear}">2026</span> <span th:text="${applicationName}">Oficina Mecânica</span> - Todos os direitos reservados</p>
+            <p>Este é um email automático, não responda</p>
+        </div>
+    </div>
+</body>
+</html>
+

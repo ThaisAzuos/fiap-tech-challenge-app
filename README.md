@@ -1,181 +1,253 @@
-# 🛠️ Oficina Mecânica API - Tech Challenge
+# Oficina Mecanica API - Tech Challenge
 
-Esta é uma API REST robusta desenvolvida para a gestão completa de uma oficina mecânica. O sistema permite o controle de clientes, veículos (incluindo especificações como cor e ano), estoque de peças e o ciclo de vida completo de uma **Ordem de Serviço (O.S.)**.
+API REST para gestao de oficina mecanica, com fluxos de cadastro, estoque, atendimento (ordem de servico) e autenticacao JWT.
 
-O projeto foi construído focando em boas práticas de desenvolvimento, separação de responsabilidades e facilidade de deploy.
+Este README foi padronizado para uso operacional no dia a dia: subir ambiente, testar e-mail, validar endpoints e consultar documentacao tecnica.
 
-## 🚀 Tecnologias Utilizadas
+## Indice
 
-* **Java 21** & **Spring Boot 3**
-* **Spring Data JPA** (Persistência de dados)
-* **PostgreSQL 15** (Banco de dados relacional)
-* **Docker & Docker Compose** (Containerização e orquestração)
-* **Kubernetes (K8s)** (Orquestração de containers e escalabilidade)
-* **Maven** (Gerenciamento de dependências)
-* **Postman** (Documentação e testes das rotas)
-* **SonarQube** (Qualidade do Código e vulnerabilidades de segurança)
+- [Status do projeto](#status-do-projeto)
+- [Tecnologias](#tecnologias)
+- [Estrutura principal](#estrutura-principal)
+- [Como executar localmente com Docker](#como-executar-localmente-com-docker)
+- [MailHog (teste de envio de e-mail)](#mailhog-teste-de-envio-de-e-mail)
+- [Como executar com Maven (sem Docker da aplicacao)](#como-executar-com-maven-sem-docker-da-aplicacao)
+- [Testes](#testes)
+- [Kubernetes](#kubernetes)
+- [Teste rapido da API (sequencia sugerida)](#teste-rapido-da-api-sequencia-sugerida)
+- [Terraform (IaC)](#terraform-iac)
+- [SonarQube e qualidade](#sonarqube-e-qualidade)
+- [CI/CD](#cicd)
+- [Documentacao complementar](#documentacao-complementar)
+- [Troubleshooting rapido](#troubleshooting-rapido)
 
----
+## Status do projeto
 
-## 🏗️ Principais Funcionalidades
+- Base da Fase 1 implementada e funcional para os fluxos principais.
+- Itens de evolucao (seguranca, cobertura de testes e padronizacao arquitetural completa) estao em andamento.
+- Avaliacao detalhada: `AVALIACAO_FASE_1_DETALHADA.md`.
 
-* **Gestão de Cadastros:** Registro completo de clientes e seus respectivos veículos.
-* **Controle de Estoque:** Cadastro e atualização de peças com controle de quantidade.
-* **Fluxo de Atendimento:** * Abertura de O.S. vinculada a um veículo.
-    * Adição dinâmica de peças e serviços na O.S.
-    * Atualização de status (ABERTA, EM_DIAGNOSTICO, AGUARDANDO_PECA, CONCLUIDA, etc.).
-* **Cálculos Automáticos:** Cálculo total do valor da O.S. com base nas peças utilizadas.
----
+## Tecnologias
 
-## 🛠️ Diferenciais Técnicos e Arquitetura
+- Java 21
+- Spring Boot 3
+- Spring Data JPA
+- PostgreSQL
+- Spring Security + JWT
+- Maven
+- Docker e Docker Compose
+- Kubernetes
+- Terraform (IaC)
+- Postman e Swagger UI
+- SonarQube
 
-### 🆔 Uso de UUID
-Todas as entidades utilizam `UUID` como chave primária (`PK`). Esta escolha garante:
-- **Segurança:** Impede a descoberta de volume de dados por ID sequencial.
-- **Escalabilidade:** Facilita a migração e sincronização de dados entre diferentes bancos.
+## Estrutura principal
 
-### 🧠 Domínio Rico (DDD)
-Diferente de arquiteturas anêmicas, a lógica de negócio está protegida nas entidades:
-- **Máquina de Status:** A `OrdemServico` valida suas próprias transições de status (ex: não permite retrocesso de etapas ou alteração de O.S. finalizada).
-- **Snapshot de Preços:** Ao adicionar uma peça, o sistema grava o preço e nome no momento da venda, protegendo o histórico financeiro contra alterações futuras no cadastro de estoque.
+- `src/main/java`: codigo principal da aplicacao
+- `src/test/java`: testes automatizados
+- `k8s-*.yaml`: manifestos Kubernetes
+- `modules/oficina-clean-mvp/`: modulo MVP para Fase 2 (Clean Architecture)
+- `terraform/`: infraestrutura AWS com Terraform
+- `MAILHOG_SETUP.md`: guia completo de e-mail em ambiente local
+- `ADRs/`: decisoes arquiteturais
 
-### ⚡ Performance e DTOs
-- **Lazy Loading:** Implementado para carregar coleções apenas sob demanda.
-- **Transactional Read-Only:** Consultas otimizadas com `@Transactional(readOnly = true)` para evitar processamento desnecessário do Hibernate.
-- **Records:** Uso de Java Records para DTOs de entrada e saída, garantindo imutabilidade e clareza no contrato da API.
+## Como executar localmente com Docker
 
-### 🏛️ Clean Architecture/Hexagonal (Fase 2)
-A aplicação foi refatorada seguindo os princípios de **Clean Architecture** para melhorar a manutenibilidade e testabilidade:
-- **Domain Layer:** Contém as entidades de negócio, regras de domínio e lógica pura (ex: `OrdemServico`, `StatusOS`).
-- **Application Layer:** Casos de uso e DTOs de entrada/saída (ex: `AtendimentoService`, `AberturaOSDTO`).
-- **Infrastructure Layer:** Implementações técnicas como controllers REST, repositories JPA e configurações externas.
-- **Separação de Responsabilidades:** Camadas independentes permitem mudanças na infraestrutura sem afetar o domínio.
-- **Injeção de Dependências:** Facilita testes unitários e mocking de dependências externas.
+Suba API, banco e servicos de apoio via Compose:
 
----
+```bash
+docker-compose down --remove-orphans
+docker-compose up --build -d
+```
 
-## 🐳 Como Rodar com Docker (Desenvolvimento Local)
+Endpoints locais:
 
-O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Compose** para orquestrar a API e o banco de dados PostgreSQL. O processo utiliza **Multi-stage Build**, garantindo uma imagem final leve e segura.
+- API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- MailHog Web UI: `http://localhost:8025`
 
-### 🛠️ Diferenciais da Configuração:
-- **Multi-stage Build:** A compilação é feita dentro do container (imagem Maven), e a execução usa apenas o JRE (imagem Temurin), reduzindo o tamanho da imagem final.
-- **Healthcheck:** A aplicação só inicia após o PostgreSQL confirmar que está pronto para receber conexões.
-- **Persistência e Credenciais:** Variáveis de ambiente configuradas para integração imediata.
+Para parar:
 
-### 🚀 Passo a Passo
-
-1. **Certifique-se de ter o Docker instalado em sua máquina.**
-2. No terminal, navegue até a raiz do projeto e execute:
-
-   a. Limpar containers antigos e órfãos (importante para evitar conflitos):
-   ```bash
-   docker-compose down --remove-orphans
-   ```
-   
-   b. Subir a aplicação e o banco de dados:
-   ```bash
-   docker-compose up --build
-   ``` 
-
-A API estará disponível em `http://localhost:8080`.
-
-### 🛑 Como Parar (Docker)
-
-Para parar a aplicação e remover os containers criados:
 ```bash
 docker-compose down
 ```
 
----
+## MailHog (teste de envio de e-mail)
 
-## ☸️ Como Rodar com Kubernetes (Escalabilidade)
+Use o script oficial do projeto para iniciar/parar e inspecionar o MailHog:
 
-Para ambientes de produção ou simulação de escalabilidade, o projeto inclui manifestos Kubernetes completos.
-
-### 📋 Pré-requisitos
-- Um cluster Kubernetes rodando (Minikube, Kind, ou Docker Desktop com Kubernetes habilitado).
-- Ferramenta de linha de comando `kubectl` instalada e configurada.
-
-### 🚀 Passo a Passo
-
-1. **Aplicar os Manifestos:**
-   Na raiz do projeto, execute o comando abaixo para criar todos os recursos (Secrets, ConfigMaps, Deployment, Service e HPA):
-   ```bash
-   kubectl apply -f k8s-secret.yaml -f k8s-configmap.yaml -f k8s-deployment.yaml -f k8s-service.yaml -f k8s-hpa.yaml
-   ```
-   *Ou simplesmente:*
-   ```bash
-   kubectl apply -f .
-   ```
-   *(Ignore os erros de validação sobre arquivos que não são YAML do K8s, como o README ou docker-compose)*
-
-2. **Verificar os Pods:**
-   Aguarde alguns instantes e verifique se os pods estão rodando:
-   ```bash
-   kubectl get pods
-   ```
-
-3. **Acessar a Aplicação:**
-   Verifique o serviço criado para obter o IP/Porta de acesso:
-   ```bash
-   kubectl get svc oficina-service
-   ```
-   *Se estiver usando Minikube, pode ser necessário rodar `minikube service oficina-service` para acessar.*
-
-4. **Escalabilidade Automática (HPA):**
-   O projeto inclui um **Horizontal Pod Autoscaler** configurado para escalar a aplicação automaticamente com base no uso de CPU.
-   - **Mínimo de Réplicas:** 2
-   - **Máximo de Réplicas:** 10
-   - **Gatilho:** 70% de uso de CPU
-
-   Para monitorar o HPA:
-   ```bash
-   kubectl get hpa
-   ```
-
-### 🛑 Como Parar (Kubernetes)
-
-Para remover todos os recursos criados no cluster (Pods, Services, Secrets, etc.):
 ```bash
-kubectl delete -f .
+chmod +x mailhog-setup.sh
+./mailhog-setup.sh start
+./mailhog-setup.sh status
 ```
-*(Isso deletará todos os recursos definidos nos arquivos YAML da pasta atual)*
 
----
+### Regra de reuso de container existente
 
-## 📥 Como usar a Collection do Postman
+O comando `./mailhog-setup.sh start` aplica reuso automatico para evitar conflito de portas:
 
-Para facilitar os testes, incluímos o arquivo `Oficina_Mecanica.postman_collection.json` na raiz do projeto. Siga os passos abaixo para importar:
+1. Reutiliza `mailhog-dev` se ja estiver rodando.
+2. Reutiliza outro container da imagem `mailhog/mailhog:latest` se existir.
+3. Reutiliza o container que ja estiver expondo a porta `1025`.
+4. So cria novo container quando nao houver candidato.
 
-1. Abra o **Postman**.
-2. No canto superior esquerdo, clique no botão **Import**.
-3. Arraste e solte o arquivo `Oficina_Mecanica.postman_collection.json` na janela que abrir.
-4. Uma nova coleção chamada **"Oficina Mecânica API - Tech Challenge"** aparecerá na sua aba lateral.
-5. As requisições já estão configuradas com os corpos (JSON) e URLs padrão (`http://localhost:8080`).
+Comandos uteis:
 
-> **Nota Importante:** A primeira requisição da coleção, **"0. Login (Obter JWT)"**, deve ser executada primeiro para obter o token de autenticação. As demais requisições usarão este token automaticamente.
+```bash
+./mailhog-setup.sh start
+./mailhog-setup.sh stop
+./mailhog-setup.sh reset
+./mailhog-setup.sh logs
+./mailhog-setup.sh ui
+./mailhog-setup.sh status
+```
 
----
+Guia completo: `MAILHOG_SETUP.md`.
 
-## 📋 Guia de Testes (Sequence Flow)
+## Como executar com Maven (sem Docker da aplicacao)
 
-Siga a ordem abaixo no Postman para testar o fluxo completo:
+Se quiser rodar a API localmente pelo Maven, mantendo dependencias externas em containers:
 
-### 0. Autenticação
-- **POST** `/login`: Execute a requisição "0. Login (Obter JWT)" para obter o token de autenticação.
+```bash
+./mailhog-setup.sh start
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
+```
 
-### 1. Contexto de Cadastro
-- **POST** `/api/v1/clientes`: Cadastre um cliente (use CPF válido).
-- **POST** `/api/v1/veiculos`: Vincule um veículo ao CPF do dono.
+## Testes
 
-### 2. Contexto de Estoque
-- **POST** `/api/v1/pecas`: Cadastre peças (ex: Pastilha de freio, Óleo).
+Executar todos os testes:
 
-### 3. Contexto de Atendimento (Fluxo Principal)
-- **POST** `/api/v1/atendimento/os`: Abra uma O.S. informando apenas a placa e o problema.
-- **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
-- **PATCH** `/api/v1/atendimento/os/{osId}/status?novoStatus={Status de evolução}`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
-- **PATCH** `/api/v1/atendimento/os/{osId}/aprovacao`: Aprove orçamento (muda status para `EM_EXECUCAO`).
-- **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
-- **GET** `/api/v1/atendimento/os?page=0&size=10&sort=status`: Liste O.S. ativas (excluindo finalizadas/entregues) com paginação.
+```bash
+mvn clean test
+```
+
+Executar testes de e-mail no perfil `dev`:
+
+```bash
+./mailhog-setup.sh start
+mvn clean test -Dspring.profiles.active=dev -Dtest=EmailServiceIntegrationTest
+```
+
+## Kubernetes
+
+Aplicar os manifestos principais (incluindo MailHog):
+
+```bash
+kubectl apply -f k8s-secret.yaml
+kubectl apply -f k8s-configmap.yaml
+kubectl apply -f k8s-postgres.yaml
+kubectl apply -f k8s-mailhog.yaml
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-service.yaml
+kubectl apply -f k8s-hpa.yaml
+```
+
+Validar recursos:
+
+```bash
+kubectl get pods
+kubectl get svc
+kubectl get hpa
+```
+
+Acessar MailHog no cluster:
+
+```bash
+kubectl port-forward svc/oficina-mailhog 8025:8025
+```
+
+## Teste rapido da API (sequencia sugerida)
+
+1. `POST /login`
+2. `POST /api/v1/clientes`
+3. `POST /api/v1/veiculos`
+4. `POST /api/v1/pecas`
+5. `POST /api/v1/atendimento/os`
+6. `PATCH /api/v1/atendimento/os/{osId}/status`
+7. Verificar e-mail em `http://localhost:8025`
+
+Collection pronta: `Oficina_Mecanica.postman_collection.json`.
+
+## Terraform (IaC)
+
+Comandos basicos:
+
+```bash
+cd terraform
+terraform init
+terraform apply -var="db_password=SUA_SENHA_SEGURA"
+```
+
+Para destruir:
+
+```bash
+terraform destroy -var="db_password=SUA_SENHA_SEGURA"
+```
+
+Detalhes: `terraform/README.md`.
+
+## SonarQube e qualidade
+
+- Compose dedicado do SonarQube: `docker-compose.sonar.yml`
+- Guia de ambiente produtivo: `docs/SONARQUBE_PRODUCAO.md`
+
+Analise local rapida (com SonarQube rodando via `docker-compose.sonar.yml`):
+
+```bash
+./mvnw clean verify sonar:sonar \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.token=<SEU_TOKEN>
+```
+
+## CI/CD
+
+Workflows ativos em `.github/workflows/`:
+
+| Arquivo | Funcao | Gatilhos |
+|---------|--------|----------|
+| `sonar.yml` | Build, testes e analise SonarQube | push/PR `main`/`develop`, `workflow_dispatch` |
+| `ci-cd.yml` | Build Docker e deploy Kubernetes | push `main` |
+| `qodana_code_quality.yml` | Analise estatica Qodana (JetBrains) | push/PR `main` |
+
+Secrets necessarios no repositorio GitHub:
+
+| Secret           | Usado em         | Descricao                                       |
+|------------------|------------------|-------------------------------------------------|
+| `SONAR_HOST_URL` | `sonar.yml`      | URL do servidor SonarQube                       |
+| `SONAR_TOKEN`    | `sonar.yml`      | Token de analise (My Account > Security)        |
+| `DOCKER_USERNAME`| `ci-cd.yml`      | Usuario Docker Hub                              |
+| `DOCKER_PASSWORD`| `ci-cd.yml`      | Token de acesso Docker Hub                      |
+| `KUBE_CONFIG`    | `ci-cd.yml`      | kubeconfig para acesso ao cluster Kubernetes    |
+
+Template de referencia: `.github/workflow-templates/sonar-maven-template.yml`
+
+## Documentacao complementar
+
+- `INDICE_DOCUMENTOS.md`
+- `PLANO_ACAO_FASE_1.md`
+- `FINDINGS_AVALIACAO_FASE_1.md`
+- `AVALIACAO_FASE_1_DETALHADA.md`
+- `ADRs/`
+
+## Troubleshooting rapido
+
+Porta `1025` ocupada:
+
+```bash
+./mailhog-setup.sh start
+./mailhog-setup.sh status
+```
+
+Se a porta estiver em uso por processo fora do Docker, libere a porta e execute novamente.
+
+Aplicacao nao sobe no Docker Compose:
+
+```bash
+docker-compose logs -f
+```
+
+Build Maven com erro de testes:
+
+```bash
+mvn -e -DskipTests=false test
+```

@@ -15,14 +15,32 @@
 
     <properties>
         <java.version>21</java.version>
+
+        <!-- SonarQube Configuration -->
+        <sonar.projectKey>com.grupo51:oficinamecanica</sonar.projectKey>
+        <sonar.projectName>Oficina Mecânica API</sonar.projectName>
+        <sonar.sources>src/main/java</sonar.sources>
+        <sonar.tests>src/test/java</sonar.tests>
+        <sonar.language>java</sonar.language>
+        <sonar.java.binaries>target/classes</sonar.java.binaries>
+
+        <!-- Coverage Settings (JaCoCo) -->
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.junit.reportsPath>${project.basedir}/target/surefire-reports</sonar.junit.reportsPath>
         <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
-        <sonar.tests>${project.basedir}/src/test/java</sonar.tests>
-        <sonar.language>java</sonar.language>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+        <!-- Exclusions -->
         <sonar.exclusions>**/schemas/**,**/config/**,**/dto/**/*.java,**/entity/**/*.java</sonar.exclusions>
         <sonar.coverage.exclusions>**/schemas/**,**/config/**</sonar.coverage.exclusions>
+
+        <!-- Quality Gates -->
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+        <sonar.qualitygate.timeout>300</sonar.qualitygate.timeout>
+
+        <!-- Security Rules -->
+        <sonar.security.hotspots.reviewed.percentage>80</sonar.security.hotspots.reviewed.percentage>
     </properties>
 
     <dependencies>
@@ -87,6 +105,22 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.5.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
     </dependencies>

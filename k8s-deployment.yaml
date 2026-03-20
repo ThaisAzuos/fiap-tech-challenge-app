@@ -15,7 +15,7 @@ spec:
       containers:
       - name: oficina-app
         image: fiap-tech-challenge-oficina_app:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
@@ -39,6 +39,14 @@ spec:
             secretKeyRef:
               name: oficina-secrets
               key: jwt-secret
+        - name: SPRING_MAIL_HOST
+          value: "oficina-mailhog"
+        - name: SPRING_MAIL_PORT
+          value: "1025"
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+          value: "false"
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+          value: "false"
         resources:
           requests:
             cpu: "200m"

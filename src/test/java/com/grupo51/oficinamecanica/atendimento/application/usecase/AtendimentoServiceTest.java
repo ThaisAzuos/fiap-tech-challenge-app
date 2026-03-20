@@ -15,9 +15,10 @@ import com.grupo51.oficinamecanica.estoque.repository.PecaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -48,7 +49,7 @@ class AtendimentoServiceTest {
     @Mock
     private VeiculoRepository veiculoRepository;
 
-    @InjectMocks
+
     private AtendimentoService atendimentoService;
 
     private Veiculo veiculo;
@@ -60,6 +61,8 @@ class AtendimentoServiceTest {
 
     @BeforeEach
     void setUp() {
+        atendimentoService = new AtendimentoService(osRepository, pecaRepository, veiculoRepository, Optional.empty());
+
         // Create mocks for dependencies
         cliente = mock(Cliente.class);
         lenient().when(cliente.getNome()).thenReturn("João Silva");

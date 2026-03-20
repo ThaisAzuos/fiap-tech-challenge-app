@@ -102,7 +102,7 @@ Este documento descreve o plano de trabalho para evolução da aplicação da Fa
 - [x] Dia 4 – Testes
 - [x] Dia 5 – Docker
 - [x] Dia 6 – Kubernetes
-- [ ] Dia 7 – Terraform
-- [ ] Dia 8 – CI/CD
-- [ ] Dia 9 – Documentação
+- [x] Dia 7 – Terraform
+- [x] Dia 8 – CI/CD
+- [x] Dia 9 – Documentação
 - [ ] Dia 10 – Demonstração

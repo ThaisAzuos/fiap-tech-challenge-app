@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem de Serviço Cancelada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #e74c3c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #c0392b;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .info-row {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .label {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 150px;
+        }
+        .value {
+            color: #555;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-cancelled {
+            background-color: #fadbd8;
+            color: #c0392b;
+        }
+        .alert-box {
+            background-color: #fadbd8;
+            border: 1px solid #e74c3c;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #c0392b;
+        }
+        .footer {
+            background-color: #ecf0f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .reason-box {
+            background-color: #fff9e6;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .reason-title {
+            font-weight: bold;
+            color: #d68910;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ordem de Serviço Cancelada</h1>
+            <p>Sistema de Oficina Mecânica</p>
+        </div>
+
+        <div class="content">
+            <p>Prezado cliente,</p>
+
+            <p>Informamos que sua ordem de serviço foi cancelada conforme solicitado.</p>
+
+            <div class="alert-box">
+                <strong>⚠️ Status Atual:</strong> CANCELADA
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Informações da Ordem de Serviço</div>
+
+                <div class="info-row">
+                    <span class="label">ID da OS:</span>
+                    <span class="value" th:text="${ordemServicoId}">OS-00001</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Status:</span>
+                    <span class="value">
+                        <span class="status-badge status-cancelled">CANCELADA</span>
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Data de Cancelamento:</span>
+                    <span class="value" th:text="${dataCancelamento}">16/03/2026 14:30</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🚗 Dados do Veículo</div>
+
+                <div class="info-row">
+                    <span class="label">Veículo:</span>
+                    <span class="value" th:text="${veiculo}">Honda Civic 2020</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Placa:</span>
+                    <span class="value" th:text="${placa}">ABC1D23</span>
+                </div>
+            </div>
+
+            <div class="reason-box" th:if="${motivoCancelamento}">
+                <div class="reason-title">📌 Motivo do Cancelamento</div>
+                <p th:text="${motivoCancelamento}">Motivo do cancelamento explicado aqui</p>
+            </div>
+
+            <div class="section">
+                <div class="section-title">❓ Próximos Passos</div>
+                <ul>
+                    <li>Se deseja abrir uma nova ordem de serviço, entre em contato conosco</li>
+                    <li>Qualquer dúvida sobre o cancelamento, responda este email</li>
+                    <li>Caso tenha outras necessidades, confira nossos serviços</li>
+                </ul>
+            </div>
+
+            <p>Agradecemos o contato e esperamos poder ajudá-lo em breve.</p>
+
+            <center>
+                <a href="#" class="button">Iniciar Nova Ordem de Serviço</a>
+            </center>
+
+            <p>Qualquer dúvida, entre em contato conosco pelo email <strong th:text="${supportEmail}">suporte@oficinamecanica.com</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <span th:text="${currentYear}">2026</span> <span th:text="${applicationName}">Oficina Mecânica</span> - Todos os direitos reservados</p>
+            <p>Este é um email automático, não responda</p>
+        </div>
+    </div>
+</body>
+</html>
+

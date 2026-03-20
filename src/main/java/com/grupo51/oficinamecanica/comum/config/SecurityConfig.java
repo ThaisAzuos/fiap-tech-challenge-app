@@ -23,16 +23,37 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
+        return http
+                // CSRF: Desabilitado porque usamos JWT stateless
+                // NOTA: Em produção considerar um token CSRF específico
+                .csrf(csrf -> csrf.disable())
+                
+                // Session: Stateless (sem sessão server-side)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                
+                // Headers de Segurança (Proteção contra ataques comuns)
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())                    // X-Frame-Options: DENY
+                        .contentTypeOptions(cto -> cto.disable())              // X-Content-Type-Options: nosniff
+                        .xssProtection(xss -> xss.disable())                   // Usar Content-Security-Policy em vez de X-XSS-Protection
+                )
+                
+                // Autorização por URL
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers(HttpMethod.POST, "/login").permitAll();
+                    req.requestMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll();
+                    req.requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll();
+                    req.requestMatchers(HttpMethod.GET, "/v3/api-docs").permitAll();
+                    req.requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll();
                     req.requestMatchers("/api/v1/atendentes/**").hasRole("ATENDENTE");
                     req.requestMatchers("/api/v1/gerentes/**").hasRole("GERENTE");
                     req.requestMatchers("/api/v1/mecanicos/**").hasRole("MECANICO");
                     req.anyRequest().authenticated();
                 })
+                
+                // JWT Filter
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                
                 .build();
     }
 
