@@ -48,8 +48,14 @@ Este README foi padronizado para uso operacional no dia a dia: subir ambiente, t
 - `k8s-*.yaml`: manifestos Kubernetes
 - `modules/oficina-clean-mvp/`: modulo MVP para Fase 2 (Clean Architecture)
 - `terraform/`: infraestrutura AWS com Terraform
-- `MAILHOG_SETUP.md`: guia completo de e-mail em ambiente local
-- `ADRs/`: decisoes arquiteturais
+- `docs/`: toda a documentacao do projeto (ADRs, arquitetura, avaliacao, operacional)
+  - `docs/ADRs/`: decisoes arquiteturais formais (ADR-001 a ADR-004)
+  - `docs/arquitetura/`: diagramas e comparativos
+  - `docs/avaliacao-fase-1/`: analise de conformidade da Fase 1
+  - `docs/operacional/`: guias do MailHog, SonarQube e entregaveis
+  - `docs/historico/`: registros historicos de implementacao
+  - `docs/indice.md`: indice navegavel de todos os documentos
+  - `docs/leia-primeiro.md`: ponto de entrada por perfil de leitor
 
 ## Como executar localmente com Docker
 
@@ -102,7 +108,7 @@ Comandos uteis:
 ./mailhog-setup.sh status
 ```
 
-Guia completo: `MAILHOG_SETUP.md`.
+Guia completo: `docs/operacional/mailhog-setup.md`.
 
 ## Como executar com Maven (sem Docker da aplicacao)
 
@@ -189,7 +195,7 @@ Detalhes: `terraform/README.md`.
 ## SonarQube e qualidade
 
 - Compose dedicado do SonarQube: `docker-compose.sonar.yml`
-- Guia de ambiente produtivo: `docs/SONARQUBE_PRODUCAO.md`
+- Guia de ambiente produtivo: `docs/operacional/sonarqube-producao.md`
 
 Analise local rapida (com SonarQube rodando via `docker-compose.sonar.yml`):
 
@@ -223,11 +229,12 @@ Template de referencia: `.github/workflow-templates/sonar-maven-template.yml`
 
 ## Documentacao complementar
 
-- `INDICE_DOCUMENTOS.md`
-- `PLANO_ACAO_FASE_1.md`
-- `FINDINGS_AVALIACAO_FASE_1.md`
-- `AVALIACAO_FASE_1_DETALHADA.md`
-- `ADRs/`
+- `docs/indice.md` — índice navegável de todos os documentos
+- `docs/leia-primeiro.md` — ponto de entrada por perfil (executivo, dev, arquiteto)
+- `docs/ADRs/` — decisões arquiteturais formais (ADR-001 a ADR-004)
+- `docs/arquitetura/` — diagramas e comparativos de arquitetura
+- `docs/avaliacao-fase-1/` — análise de conformidade da Fase 1
+- `docs/historico/plano-execucao.md` — plano de execução de 10 dias
 
 ## Troubleshooting rapido
 
