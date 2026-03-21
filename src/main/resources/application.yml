@@ -58,3 +58,14 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     com.oficina: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
