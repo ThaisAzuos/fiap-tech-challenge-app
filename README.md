@@ -19,7 +19,9 @@ Este README foi padronizado para uso operacional no dia a dia: subir ambiente, t
 - [SonarQube e qualidade](#sonarqube-e-qualidade)
 - [CI/CD](#cicd)
 - [Documentacao complementar](#documentacao-complementar)
+- [Encerrar servicos](#encerrar-servicos)
 - [Troubleshooting rapido](#troubleshooting-rapido)
+
 
 ## Status do projeto
 
@@ -234,6 +236,66 @@ Template de referencia: `.github/workflow-templates/sonar-maven-template.yml`
 - `docs/arquitetura/` — diagramas e comparativos de arquitetura
 - `docs/operacional/` — guias de operação (MailHog e SonarQube)
 - `docs/historico/plano-execucao.md` — plano de execução de 10 dias
+
+## Encerrar servicos
+
+### MailHog
+
+```bash
+# Para o container (mantendo-o disponivel para reuso)
+./mailhog-setup.sh stop
+
+# Para e remove o container completamente
+./mailhog-setup.sh reset
+```
+
+### Docker Compose (aplicacao + banco)
+
+```bash
+# Para e remove os containers sem apagar volumes de dados
+docker-compose down
+
+# Para, remove containers e apaga volumes (banco sera resetado)
+docker-compose down -v
+
+# Para e remove incluindo imagens construidas localmente
+docker-compose down --rmi local -v
+```
+
+### SonarQube (Compose dedicado)
+
+```bash
+# Para os containers do SonarQube e seu banco
+docker-compose -f docker-compose.sonar.yml down
+
+# Para e apaga volumes (historico de analises sera perdido)
+docker-compose -f docker-compose.sonar.yml down -v
+```
+
+### Kubernetes
+
+```bash
+# Remove apenas os recursos da aplicacao
+kubectl delete -f k8s-hpa.yaml
+kubectl delete -f k8s-service.yaml
+kubectl delete -f k8s-deployment.yaml
+kubectl delete -f k8s-mailhog.yaml
+
+# Remove todos os recursos incluindo banco e configuracoes
+kubectl delete -f k8s-postgres.yaml
+kubectl delete -f k8s-configmap.yaml
+kubectl delete -f k8s-secret.yaml
+```
+
+### Verificar se nao ha processos residuais
+
+```bash
+# Containers Docker ativos
+docker ps
+
+# Status dos pods no cluster
+kubectl get pods
+```
 
 ## Troubleshooting rapido
 
