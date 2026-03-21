@@ -1,0 +1,27 @@
+spring:
+  mail:
+    host: mailhog
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
+# Configuração de Email personalizada
+app:
+  email:
+    from: noreply@oficinamecanica.com
+    fromName: Oficina Mecânica
+    replyTo: suporte@oficinamecanica.com

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem de Serviço Concluída</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #27ae60;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #1e8449;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .info-row {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .label {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 150px;
+        }
+        .value {
+            color: #555;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-completed {
+            background-color: #d5f4e6;
+            color: #1e8449;
+        }
+        .success-box {
+            background-color: #d5f4e6;
+            border: 1px solid #27ae60;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #1e8449;
+            text-align: center;
+        }
+        .footer {
+            background-color: #ecf0f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .parts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .parts-table th {
+            background-color: #d5f4e6;
+            color: #1e8449;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #27ae60;
+        }
+        .parts-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #bdc3c7;
+        }
+        .total-row {
+            background-color: #d5f4e6;
+            font-weight: bold;
+            color: #1e8449;
+        }
+        .total-row td {
+            border-top: 2px solid #27ae60;
+            border-bottom: 2px solid #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Sua Ordem de Serviço foi Concluída!</h1>
+            <p>Sistema de Oficina Mecânica</p>
+        </div>
+
+        <div class="content">
+            <p>Prezado cliente,</p>
+
+            <p>Temos o prazer de informar que sua ordem de serviço foi <strong>concluída com sucesso!</strong></p>
+
+            <div class="success-box">
+                <strong>🎉 Serviço Finalizado</strong><br>
+                Seu veículo está pronto para ser retirado
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Informações da Ordem de Serviço</div>
+
+                <div class="info-row">
+                    <span class="label">ID da OS:</span>
+                    <span class="value" th:text="${ordemServicoId}">OS-00001</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Status:</span>
+                    <span class="value">
+                        <span class="status-badge status-completed">CONCLUÍDA</span>
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Data de Conclusão:</span>
+                    <span class="value" th:text="${dataConclusao}">16/03/2026 16:45</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Tempo Total de Serviço:</span>
+                    <span class="value" th:text="${tempoServico}">2 horas 15 minutos</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🚗 Dados do Veículo</div>
+
+                <div class="info-row">
+                    <span class="label">Veículo:</span>
+                    <span class="value" th:text="${veiculo}">Honda Civic 2020</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Placa:</span>
+                    <span class="value" th:text="${placa}">ABC1D23</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Quilometragem:</span>
+                    <span class="value" th:text="${quilometragem}">45.230 km</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🔧 Peças Utilizadas</div>
+                <table class="parts-table" th:if="${pecasUtilizadas != null and pecasUtilizadas.size() > 0}">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Qtd</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="peca : ${pecasUtilizadas}">
+                            <td th:text="${peca.descricao}">Pneu traseiro</td>
+                            <td th:text="${peca.quantidade}" style="text-align: center;">2</td>
+                            <td th:text="${peca.valor}">R$ 450,00</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">TOTAL DE PEÇAS:</td>
+                            <td th:text="${valorTotalPecas}">R$ 1.200,00</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p th:if="${pecasUtilizadas == null or pecasUtilizadas.size() == 0}">
+                    Nenhuma peça foi utilizada neste serviço (trabalho técnico apenas).
+                </p>
+            </div>
+
+            <div class="section">
+                <div class="section-title">💰 Resumo Financeiro</div>
+
+                <div class="info-row">
+                    <span class="label">Mão de Obra:</span>
+                    <span class="value" th:text="${valorMaoObra}">R$ 150,00</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Peças e Materiais:</span>
+                    <span class="value" th:text="${valorTotalPecas}">R$ 1.200,00</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Desconto (se houver):</span>
+                    <span class="value" th:text="${desconto}">R$ 0,00</span>
+                </div>
+
+                <div class="info-row" style="font-weight: bold; font-size: 16px; padding: 10px 0; border-top: 2px solid #27ae60; border-bottom: 2px solid #27ae60;">
+                    <span class="label">VALOR TOTAL:</span>
+                    <span class="value" th:text="${valorTotal}">R$ 1.350,00</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📝 Observações do Mecânico</div>
+                <p th:text="${observacoesMecanico}">Observações sobre o serviço realizado</p>
+            </div>
+
+            <div class="section">
+                <div class="section-title">⏰ Próximos Passos</div>
+                <ul>
+                    <li><strong>Retire seu veículo:</strong> Horário de funcionamento 8h às 18h</li>
+                    <li><strong>Apresente este email:</strong> Como comprovante de conclusão</li>
+                    <li><strong>Efetue o pagamento:</strong> Você pode pagar no local ou online</li>
+                    <li><strong>Avalie nosso serviço:</strong> Sua opinião é muito importante!</li>
+                </ul>
+            </div>
+
+            <center>
+                <a href="#" class="button">Avaliar Serviço</a>
+            </center>
+
+            <p>Qualquer dúvida, entre em contato conosco pelo email <strong th:text="${supportEmail}">suporte@oficinamecanica.com</strong> ou ligue <strong>+55 11 3456-7890</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <span th:text="${currentYear}">2026</span> <span th:text="${applicationName}">Oficina Mecânica</span> - Todos os direitos reservados</p>
+            <p>Este é um email automático, não responda</p>
+        </div>
+    </div>
+</body>
+</html>
+

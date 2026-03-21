@@ -1,0 +1,41 @@
+#-------------------------------------------------------------------------------#
+#       Consulte a documentação oficial do Qodana para mais informações:        #
+#        https://www.jetbrains.com/help/qodana/about-qodana.html                #
+#-------------------------------------------------------------------------------#
+
+name: Qodana
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - tech-challenge-evolution
+
+jobs:
+  qodana:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: 'Varredura Qodana'
+        uses: JetBrains/qodana-action@v2025.3
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+        with:
+          # Quando pr-mode=true, o Qodana analisa apenas os arquivos alterados
+          pr-mode: false
+          use-caches: true
+          post-pr-comment: true
+          use-annotations: true
+          # Faz upload dos resultados Qodana (SARIF, artefatos, logs) como artefato do job
+          upload-result: false
+          # correções rápidas disponíveis nos planos Ultimate e Ultimate Plus
+          push-fixes: 'none'

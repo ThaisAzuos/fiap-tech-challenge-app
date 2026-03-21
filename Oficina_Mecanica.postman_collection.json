@@ -306,7 +306,7 @@
 			"response": []
 		},
 		{
-			"name": "3. Cadastrar Mecânico",
+			"name": "3. Cadastrar Mecânico (via /funcionarios)",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -409,7 +409,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"nome\": \"{{nome_mecanico}}\",\n  \"cpf\": \"{{cpf_mecanico}}\",\n  \"especialidade\": \"{{especialidade}}\",\n  \"registroFuncional\": \"{{registroFuncional}}\"\n}\n",
+					"raw": "{\n  \"nome\": \"{{nome_mecanico}}\",\n  \"cpf\": \"{{cpf_mecanico}}\",\n  \"cargo\": \"MECANICO\",\n  \"senha\": \"Senh@316497\",\n  \"especialidade\": \"{{especialidade}}\",\n  \"registroFuncional\": \"{{registroFuncional}}\"\n}\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -417,14 +417,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseURL}}/api/v1/mecanicos",
+					"raw": "{{baseURL}}/api/v1/funcionarios",
 					"host": [
 						"{{baseURL}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"mecanicos"
+						"funcionarios"
 					]
 				}
 			},
@@ -671,6 +671,22 @@
 			"name": "6. Cadastrar Peça",
 			"event": [
 				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Captura o id da peça criada para uso em 'Incluir Peça na OS'",
+							"const responseJson = pm.response.json();",
+							"if (responseJson && responseJson.id) {",
+							"    pm.collectionVariables.set(\"peca_id\", responseJson.id);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
 					"listen": "prerequest",
 					"script": {
 						"exec": [
@@ -849,6 +865,13 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
+							"// Define o próximo status da OS (altere conforme o fluxo desejado):",
+							"// RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO → EM_EXECUCAO → FINALIZADA → ENTREGUE",
+							"// Para cancelar: CANCELADA",
+							"if (!pm.collectionVariables.get('novoStatus')) {",
+							"    pm.collectionVariables.set('novoStatus', 'EM_DIAGNOSTICO');",
+							"}",
+							"",
 							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
 							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
 							"if (jwtToken) {",
@@ -880,7 +903,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=EM_DIAGNOSTICO",
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus={{novoStatus}}",
 					"host": [
 						"{{baseURL}}"
 					],
@@ -895,7 +918,7 @@
 					"query": [
 						{
 							"key": "novoStatus",
-							"value": "EM_DIAGNOSTICO"
+							"value": "{{novoStatus}}"
 						}
 					]
 				}
@@ -955,6 +978,225 @@
 						"atendimento",
 						"os",
 						"{{osId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. Incluir Peça na OS",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pecaId\": \"{{peca_id}}\",\n  \"quantidade\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/pecas",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"pecas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. Aprovar Orçamento da OS",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Requer que a OS esteja com status AGUARDANDO_APROVACAO",
+							"// Certifique-se de ter avançado o status para AGUARDANDO_APROVACAO antes",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/aprovacao",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"aprovacao"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12. Listar Ordens de Serviço (Paginado)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os?page=0&size=10&sort=dataAbertura,desc",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						},
+						{
+							"key": "sort",
+							"value": "dataAbertura,desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "13. Listar Clientes",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/api/v1/clientes",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clientes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "14. Listar Veículos por Dono",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Adiciona o cabeçalho de autorização para todas as requisições, exceto o login",
+							"const jwtToken = pm.collectionVariables.get(\"jwt_token\");",
+							"if (jwtToken) {",
+							"    pm.request.headers.add({ key: 'Authorization', value: `Bearer ${jwtToken}` });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/api/v1/veiculos/dono/{{cpf_cliente}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"veiculos",
+						"dono",
+						"{{cpf_cliente}}"
 					]
 				}
 			},
@@ -1069,6 +1311,14 @@
 		{
 			"key": "tipo",
 			"value": ""
+		},
+		{
+			"key": "peca_id",
+			"value": ""
+		},
+		{
+			"key": "novoStatus",
+			"value": "EM_DIAGNOSTICO"
 		},
 		{
 			"key": "osId",
