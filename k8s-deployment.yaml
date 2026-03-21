@@ -46,9 +46,15 @@ spec:
               name: oficina-secrets
               key: jwt-secret
         - name: SPRING_MAIL_HOST
-          value: "oficina-mailhog"
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: mail-host
         - name: SPRING_MAIL_PORT
-          value: "1025"
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: mail-port
         - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
           value: "false"
         - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
