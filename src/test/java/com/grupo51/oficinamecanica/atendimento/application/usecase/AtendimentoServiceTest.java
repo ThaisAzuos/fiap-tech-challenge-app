@@ -63,7 +63,7 @@ class AtendimentoServiceTest {
     void setUp() {
         atendimentoService = new AtendimentoService(osRepository, pecaRepository, veiculoRepository, Optional.empty());
 
-        // Create mocks for dependencies
+        // Criação de mocks das dependências
         cliente = mock(Cliente.class);
         lenient().when(cliente.getNome()).thenReturn("João Silva");
 
@@ -86,15 +86,15 @@ class AtendimentoServiceTest {
 
     @Test
     void deveAbrirOrdemServicoComSucesso() {
-        // Given
+        // Dado
         AberturaOSDTO dto = new AberturaOSDTO("ABC1234", "Problema no freio");
         when(veiculoRepository.findById("ABC1234")).thenReturn(Optional.of(veiculo));
         when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
+        // Quando
         OrdemServico result = atendimentoService.abrirOrdem(dto);
 
-        // Then
+        // Então
         assertThat(result).isNotNull();
         assertThat(result.getVeiculo()).isEqualTo(veiculo);
         assertThat(result.getDescricaoProblema()).isEqualTo("Problema no freio");
@@ -104,11 +104,11 @@ class AtendimentoServiceTest {
 
     @Test
     void deveLancarExcecaoQuandoVeiculoNaoEncontrado() {
-        // Given
+        // Dado
         AberturaOSDTO dto = new AberturaOSDTO("PLACA_INVALIDA", "Problema");
         when(veiculoRepository.findById("PLACA_INVALIDA")).thenReturn(Optional.empty());
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> atendimentoService.abrirOrdem(dto))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Veículo não encontrado para abertura de OS.");
@@ -116,25 +116,25 @@ class AtendimentoServiceTest {
 
     @Test
     void deveIncluirPecaNaOrdemServicoComSucesso() {
-        // Given
+        // Dado
         when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
         when(pecaRepository.findById(pecaId)).thenReturn(Optional.of(peca));
         when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
+        // Quando
         atendimentoService.incluirPecaNaOS(osId, pecaId, 2);
 
-        // Then
+        // Então
         verify(osRepository).save(ordemServico);
         assertThat(ordemServico.getValorTotal()).isEqualTo(BigDecimal.valueOf(300.00)); // 150 * 2
     }
 
     @Test
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontradaParaIncluirPeca() {
-        // Given
+        // Dado
         when(osRepository.findById(osId)).thenReturn(Optional.empty());
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> atendimentoService.incluirPecaNaOS(osId, pecaId, 1))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("OS não encontrada com o ID: " + osId);
@@ -142,11 +142,11 @@ class AtendimentoServiceTest {
 
     @Test
     void deveLancarExcecaoQuandoPecaNaoEncontrada() {
-        // Given
+        // Dado
         when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
         when(pecaRepository.findById(pecaId)).thenReturn(Optional.empty());
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> atendimentoService.incluirPecaNaOS(osId, pecaId, 1))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Peça não encontrada no estoque com o ID: " + pecaId);
@@ -154,14 +154,14 @@ class AtendimentoServiceTest {
 
     @Test
     void deveConsultarDetalhesDaOrdemServico() {
-        // Given
+        // Dado
         ordemServico.adicionarPeca(peca, 1);
         when(osRepository.findByIdWithDetails(osId)).thenReturn(Optional.of(ordemServico));
 
-        // When
+        // Quando
         OrdemServicoDetalhesDTO result = atendimentoService.consultarDetalhes(osId);
 
-        // Then
+        // Então
         assertThat(result).isNotNull();
         assertThat(result.id()).isEqualTo(ordemServico.getId());
         assertThat(result.status()).isEqualTo("EM_DIAGNOSTICO");
@@ -175,10 +175,10 @@ class AtendimentoServiceTest {
 
     @Test
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontradaParaConsulta() {
-        // Given
+        // Dado
         when(osRepository.findByIdWithDetails(osId)).thenReturn(Optional.empty());
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> atendimentoService.consultarDetalhes(osId))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Ordem de Serviço não encontrada.");
@@ -186,17 +186,17 @@ class AtendimentoServiceTest {
 
     @Test
     void deveListarOrdensServicoAtivasComPaginacao() {
-        // Given
+        // Dado
         Pageable pageable = PageRequest.of(0, 10);
         List<OrdemServico> ordens = List.of(ordemServico);
         Page<OrdemServico> pageOrdens = new PageImpl<>(ordens, pageable, 1);
 
         when(osRepository.findAllAtivas(pageable)).thenReturn(pageOrdens);
 
-        // When
+        // Quando
         Page<OrdemServicoListDTO> result = atendimentoService.listarOrdensServico(pageable);
 
-        // Then
+        // Então
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
 
@@ -210,25 +210,25 @@ class AtendimentoServiceTest {
 
     @Test
     void deveAprovarOrcamentoComSucesso() {
-        // Given
+        // Dado
         ordemServico.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
         when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
         when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
+        // Quando
         atendimentoService.aprovarOrcamento(osId);
 
-        // Then
+        // Então
         assertThat(ordemServico.getStatus()).isEqualTo(StatusOS.EM_EXECUCAO);
         verify(osRepository).save(ordemServico);
     }
 
     @Test
     void deveLancarExcecaoQuandoTentarAprovarOrcamentoForaDoStatusCorreto() {
-        // Given - OS ainda em EM_DIAGNOSTICO
+        // Dado - OS ainda em EM_DIAGNOSTICO
         when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> atendimentoService.aprovarOrcamento(osId))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("A OS deve estar aguardando aprovação para ser aprovada.");
@@ -236,14 +236,14 @@ class AtendimentoServiceTest {
 
     @Test
     void deveAtualizarStatusDaOrdemServico() {
-        // Given
+        // Dado
         when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
         when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
+        // Quando
         atendimentoService.atualizarStatus(osId, StatusOS.AGUARDANDO_APROVACAO);
 
-        // Then
+        // Então
         assertThat(ordemServico.getStatus()).isEqualTo(StatusOS.AGUARDANDO_APROVACAO);
         verify(osRepository).save(ordemServico);
     }

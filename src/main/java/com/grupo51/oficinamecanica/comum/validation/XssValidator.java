@@ -14,13 +14,13 @@ public class XssValidator implements ConstraintValidator<NoXss, String> {
     private static final Pattern XSS_PATTERN = Pattern.compile(
         "(<script[^>]*>.*?</script>)|" +                    // <script>...</script>
         "(<iframe[^>]*>.*?</iframe>)|" +                    // <iframe>...</iframe>
-        "(javascript:)|" +                                   // javascript: protocol
-        "(<img[^>]*onerror[^>]*>)|" +                        // img with onerror
-        "(<body[^>]*onload[^>]*>)|" +                        // body with onload
-        "(<input[^>]*onfocus[^>]*>)|" +                      // input with onfocus
-        "(<svg[^>]*onload[^>]*>)|" +                         // svg with onload
-        "(on\\w+\\s*=)|" +                                   // event handlers (onclick, etc)
-        "(<[^>]*on\\w+)|" +                                  // Any tag with on* event
+        "(javascript:)|" +                                   // protocolo javascript:
+        "(<img[^>]*onerror[^>]*>)|" +                        // img com onerror
+        "(<body[^>]*onload[^>]*>)|" +                        // body com onload
+        "(<input[^>]*onfocus[^>]*>)|" +                      // input com onfocus
+        "(<svg[^>]*onload[^>]*>)|" +                         // svg com onload
+        "(on\\w+\\s*=)|" +                                   // atributos de evento (onclick, etc)
+        "(<[^>]*on\\w+)|" +                                  // qualquer tag com evento on*
         "(<embed[^>]*>)|" +                                  // <embed>
         "(<object[^>]*>)",                                   // <object>
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
@@ -54,7 +54,7 @@ public class XssValidator implements ConstraintValidator<NoXss, String> {
 
     private boolean containsSuspiciousControlCharacters(String value) {
         for (char c : value.toCharArray()) {
-            // Unicode characters that might be used in XSS attacks
+            // Caracteres Unicode que podem ser usados em ataques XSS
             if (c < 32 && c != '\n' && c != '\r' && c != '\t') {
                 return true;
             }

@@ -25,7 +25,7 @@ class OrdemServicoTest {
 
     @BeforeEach
     void setUp() {
-        // Create mocks for dependencies
+        // Criação de mocks das dependências
         cliente = mock(Cliente.class);
         when(cliente.getNome()).thenReturn("João Silva");
 
@@ -47,13 +47,13 @@ class OrdemServicoTest {
 
     @Test
     void deveCriarOrdemServicoComStatusRecebida() {
-        // Given
+        // Dado
         String descricaoProblema = "Problema no freio";
 
-        // When
+        // Quando
         OrdemServico os = new OrdemServico(veiculo, descricaoProblema);
 
-        // Then
+        // Então
         assertThat(os.getVeiculo()).isEqualTo(veiculo);
         assertThat(os.getDescricaoProblema()).isEqualTo(descricaoProblema);
         assertThat(os.getStatus()).isEqualTo(StatusOS.RECEBIDA);
@@ -64,14 +64,14 @@ class OrdemServicoTest {
 
     @Test
     void deveAdicionarPecaNaOrdemServico() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema no freio");
         int quantidade = 2;
 
-        // When
+        // Quando
         os.adicionarPeca(peca1, quantidade);
 
-        // Then
+        // Então
         assertThat(os.getItens()).hasSize(1);
         var item = os.getItens().get(0);
         assertThat(item.getPecaId()).isEqualTo(peca1.getId());
@@ -83,29 +83,29 @@ class OrdemServicoTest {
 
     @Test
     void deveAtualizarValorTotalAoAdicionarMultiplasPecas() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema geral");
 
-        // When
+        // Quando
         os.adicionarPeca(peca1, 1); // 150.00
         os.adicionarPeca(peca2, 2); // 160.00
 
-        // Then
+        // Então
         assertThat(os.getValorTotal()).isEqualTo(BigDecimal.valueOf(310.00));
         assertThat(os.getItens()).hasSize(2);
     }
 
     @Test
     void naoDevePermitirAdicionarPecaEmOrdemServicoFinalizada() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema");
-        // Go through proper flow to reach FINALIZADA
+        // Percorre o fluxo correto até atingir FINALIZADA
         os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
         os.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
         os.atualizarStatus(StatusOS.EM_EXECUCAO);
         os.atualizarStatus(StatusOS.FINALIZADA);
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> os.adicionarPeca(peca1, 1))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Não é possível alterar uma OS já encerrada.");
@@ -113,16 +113,16 @@ class OrdemServicoTest {
 
     @Test
     void naoDevePermitirAdicionarPecaEmOrdemServicoEntregue() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema");
-        // Go through proper flow to reach ENTREGUE
+        // Percorre o fluxo correto até atingir ENTREGUE
         os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
         os.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
         os.atualizarStatus(StatusOS.EM_EXECUCAO);
         os.atualizarStatus(StatusOS.FINALIZADA);
         os.atualizarStatus(StatusOS.ENTREGUE);
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> os.adicionarPeca(peca1, 1))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Não é possível alterar uma OS já encerrada.");
@@ -130,22 +130,22 @@ class OrdemServicoTest {
 
     @Test
     void devePermitirTransicaoDeStatusValida() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema");
 
-        // When
+        // Quando
         os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
 
-        // Then
+        // Então
         assertThat(os.getStatus()).isEqualTo(StatusOS.EM_DIAGNOSTICO);
     }
 
     @Test
     void naoDevePermitirTransicaoDiretaDeRecebidaParaFinalizada() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema");
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> os.atualizarStatus(StatusOS.FINALIZADA))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("A OS precisa passar por diagnóstico antes de ser finalizada ou entregue.");
@@ -153,11 +153,11 @@ class OrdemServicoTest {
 
     @Test
     void naoDevePermitirRetrocessoDeStatus() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema");
         os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> os.atualizarStatus(StatusOS.RECEBIDA))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Não é permitido retornar a Ordem de Serviço para um status anterior");
@@ -165,16 +165,16 @@ class OrdemServicoTest {
 
     @Test
     void naoDevePermitirAlterarStatusDeOrdemServicoEntregue() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema");
-        // Go through proper flow to reach ENTREGUE
+        // Percorre o fluxo correto até atingir ENTREGUE
         os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
         os.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
         os.atualizarStatus(StatusOS.EM_EXECUCAO);
         os.atualizarStatus(StatusOS.FINALIZADA);
         os.atualizarStatus(StatusOS.ENTREGUE);
 
-        // When/Then
+        // Quando/Então
         assertThatThrownBy(() -> os.atualizarStatus(StatusOS.FINALIZADA))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Esta ordem de serviço já foi entregue e não pode mais ser alterada.");
@@ -182,10 +182,10 @@ class OrdemServicoTest {
 
     @Test
     void devePermitirFluxoCompletoDeStatus() {
-        // Given
+        // Dado
         OrdemServico os = new OrdemServico(veiculo, "Problema");
 
-        // When - Fluxo completo
+        // Quando - Fluxo completo
         assertThat(os.getStatus()).isEqualTo(StatusOS.RECEBIDA);
 
         os.atualizarStatus(StatusOS.EM_DIAGNOSTICO);

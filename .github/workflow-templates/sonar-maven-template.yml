@@ -1,11 +1,11 @@
-name: SonarQube Analysis (Template)
+name: Análise SonarQube (Template)
 
 # TEMPLATE – copie para .github/workflows/sonar.yml para ativar.
-# Consulte docs/SONARQUBE_PRODUCAO.md para instrucoes completas.
+# Consulte docs/operacional/sonarqube-producao.md para instruções completas.
 #
-# Secrets necessarios no repositorio GitHub:
+# Secrets necessários no repositório GitHub:
 #   SONAR_HOST_URL  – URL do servidor SonarQube (ex: http://seu-servidor:9000)
-#   SONAR_TOKEN     – Token de analise gerado em My Account > Security
+#   SONAR_TOKEN     – Token de análise gerado em Minha Conta > Segurança
 
 on:
   push:
@@ -20,35 +20,35 @@ on:
 
 jobs:
   sonar:
-    name: Build, Test & Analyze
+    name: Build, Testes e Análise
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout do código
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Java 21
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Cache SonarQube packages
+      - name: Cache de pacotes SonarQube
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Build, run tests and generate coverage report
+      - name: Build, testes e geração de cobertura
         run: ./mvnw clean verify -DskipTests=false
         env:
           SPRING_PROFILES_ACTIVE: test
 
-      - name: Run SonarQube analysis
+      - name: Executar análise SonarQube
         run: |
           ./mvnw sonar:sonar \
             -Dsonar.projectKey=com.grupo51:oficinamecanica \
@@ -64,7 +64,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Upload coverage report (artifact)
+      - name: Upload do relatório de cobertura (artefato)
         uses: actions/upload-artifact@v4
         if: always()
         with:

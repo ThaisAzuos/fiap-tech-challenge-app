@@ -19,26 +19,26 @@ class OrdemServicoRepositoryTest {
 
     @Test
     void deveRetornarPaginaVaziaQuandoNaoHaOrdensAtivas() {
-        // Given
+        // Dado
         Pageable pageable = PageRequest.of(0, 10);
 
-        // When
+        // Quando
         Page<OrdemServico> result = ordemServicoRepository.findAllAtivas(pageable);
 
-        // Then
+        // Então
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isEqualTo(0);
     }
 
     @Test
     void deveSuportarPaginacaoNaListagemAtiva() {
-        // Given
+        // Dado
         Pageable pageable = PageRequest.of(0, 5);
 
-        // When
+        // Quando
         Page<OrdemServico> result = ordemServicoRepository.findAllAtivas(pageable);
 
-        // Then
+        // Então
         assertThat(result.getPageable().getPageSize()).isEqualTo(5);
         assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
     }

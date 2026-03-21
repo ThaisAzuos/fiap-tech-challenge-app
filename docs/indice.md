@@ -37,7 +37,7 @@ docs/
 | Arquivo | Descrição |
 |---------|-----------|
 | [`operacional/mailhog-setup.md`](operacional/mailhog-setup.md) | Guia de setup e testes de e-mail com MailHog |
-| [`operacional/sonarqube-producao.md`](operacional/sonarqube-producao.md) | SonarQube em ambiente production-like |
+| [`operacional/sonarqube-producao.md`](operacional/sonarqube-producao.md) | SonarQube em ambiente similar ao de produção |
 
 ## Histórico
 

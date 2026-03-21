@@ -91,6 +91,6 @@ docker compose --env-file .env.sonar -f docker-compose.sonar.yml down -v
 
 ## Notas
 
-- Este setup e "production-like" para validacao local/servidor dedicado.
+- Este setup simula um ambiente de produção para validação local/servidor dedicado.
 - Para producao real, use TLS reverso (Nginx/Traefik), backup de volumes e monitoramento.
 
