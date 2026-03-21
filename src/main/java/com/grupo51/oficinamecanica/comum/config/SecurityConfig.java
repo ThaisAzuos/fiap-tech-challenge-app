@@ -3,6 +3,7 @@ package com.grupo51.oficinamecanica.comum.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -22,41 +23,47 @@ public class SecurityConfig {
     private JwtTokenFilter jwtTokenFilter;
 
     @Bean
+    @Order(1)
+    public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher(
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/webjars/**"
+                )
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(req -> req.anyRequest().permitAll())
+                .build();
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // CSRF: Desabilitado porque usamos JWT stateless
-                // NOTA: Em produção considerar um token CSRF específico
                 .csrf(csrf -> csrf.disable())
-                
-                // Session: Stateless (sem sessão server-side)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                
-                // Headers de Segurança (Proteção contra ataques comuns)
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.deny())                    // X-Frame-Options: DENY
-                        .contentTypeOptions(cto -> cto.disable())              // X-Content-Type-Options: nosniff
-                        .xssProtection(xss -> xss.disable())                   // Usar Content-Security-Policy em vez de X-XSS-Protection
+                        .frameOptions(frame -> frame.deny())
+                        .contentTypeOptions(cto -> cto.disable())
+                        .xssProtection(xss -> xss.disable())
                 )
-                
-                // Autorização por URL
                 .authorizeHttpRequests(req -> {
+                    req.requestMatchers("/actuator/**").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/login").permitAll();
-                    req.requestMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll();
-                    req.requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll();
-                    req.requestMatchers(HttpMethod.GET, "/v3/api-docs").permitAll();
-                    req.requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll();
-                    req.requestMatchers(HttpMethod.GET, "/actuator/health").permitAll();
-                    req.requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll();
-                    req.requestMatchers(HttpMethod.GET, "/actuator/info").permitAll();
+
                     req.requestMatchers("/api/v1/atendentes/**").hasRole("ATENDENTE");
                     req.requestMatchers("/api/v1/gerentes/**").hasRole("GERENTE");
                     req.requestMatchers("/api/v1/mecanicos/**").hasRole("MECANICO");
+
                     req.anyRequest().authenticated();
                 })
-                
-                // JWT Filter
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                
                 .build();
     }
 

@@ -51,6 +51,11 @@ app:
     fromName: ${APP_EMAIL_FROM_NAME:Oficina Mecânica}
     replyTo: ${APP_EMAIL_REPLY_TO:suporte@oficinamecanica.com}
 
+api:
+  security:
+    token:
+      secret: ${API_SECURITY_TOKEN_SECRET:dev-secret-change-me}
+
 server:
   port: 8080
 
