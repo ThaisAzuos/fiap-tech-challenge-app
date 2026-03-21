@@ -29,6 +29,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oficina_password}
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oficina_admin} -d ${POSTGRES_DB:-oficina_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - app-network
 
