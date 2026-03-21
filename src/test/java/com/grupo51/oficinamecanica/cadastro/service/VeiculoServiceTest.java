@@ -82,8 +82,7 @@ class VeiculoServiceTest {
 
         List<Veiculo> resultado = veiculoService.listarPorCpfDono(cpf);
 
-        assertThat(resultado).hasSize(1);
-        assertThat(resultado).isEqualTo(veiculos);
+        assertThat(resultado).hasSize(1).isEqualTo(veiculos);
         verify(veiculoRepository).findByDonoCpf(cpf);
     }
 }

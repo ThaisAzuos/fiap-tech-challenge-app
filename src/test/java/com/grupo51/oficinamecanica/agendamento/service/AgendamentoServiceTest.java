@@ -63,8 +63,7 @@ class AgendamentoServiceTest {
 
         Optional<Agendamento> resultado = agendamentoService.buscarPorId(id);
 
-        assertThat(resultado).isPresent();
-        assertThat(resultado.get()).isEqualTo(agendamento);
+        assertThat(resultado).contains(agendamento);
         verify(repository).findById(id);
     }
 
