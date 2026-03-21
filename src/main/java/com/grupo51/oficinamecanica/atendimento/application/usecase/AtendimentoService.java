@@ -3,14 +3,14 @@ package com.grupo51.oficinamecanica.atendimento.application.usecase;
 import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoDetalhesDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoListDTO;
+import com.grupo51.oficinamecanica.atendimento.application.port.out.OrdemServicoPort;
+import com.grupo51.oficinamecanica.atendimento.application.port.out.PecaPort;
+import com.grupo51.oficinamecanica.atendimento.application.port.out.VeiculoPort;
 import com.grupo51.oficinamecanica.atendimento.domain.model.OrdemServico;
 import com.grupo51.oficinamecanica.atendimento.domain.model.StatusOS;
-import com.grupo51.oficinamecanica.atendimento.infrastructure.repository.OrdemServicoRepository;
 import com.grupo51.oficinamecanica.cadastro.model.Veiculo;
-import com.grupo51.oficinamecanica.cadastro.repository.VeiculoRepository;
 import com.grupo51.oficinamecanica.comum.email.model.EmailRequest;
 import com.grupo51.oficinamecanica.comum.email.service.EmailService;
-import com.grupo51.oficinamecanica.estoque.repository.PecaRepository;
 import com.grupo51.oficinamecanica.comum.exception.BusinessException;
 import com.grupo51.oficinamecanica.estoque.model.Peca;
 import lombok.extern.slf4j.Slf4j;
@@ -29,33 +29,33 @@ import java.util.Optional;
 @Service
 public class AtendimentoService {
 
-    private final OrdemServicoRepository osRepository;
-    private final PecaRepository pecaRepository;
-    private final VeiculoRepository veiculoRepository;
+    private final OrdemServicoPort ordemServicoPort;
+    private final PecaPort pecaPort;
+    private final VeiculoPort veiculoPort;
     private final EmailService emailService;
 
     // Construtor com injeção de dependências
-    public AtendimentoService(OrdemServicoRepository osRepository, 
-                            PecaRepository pecaRepository, 
-                            VeiculoRepository veiculoRepository,
+    public AtendimentoService(OrdemServicoPort ordemServicoPort,
+                            PecaPort pecaPort,
+                            VeiculoPort veiculoPort,
                             Optional<EmailService> emailService) {
-        this.osRepository = osRepository;
-        this.pecaRepository = pecaRepository;
-        this.veiculoRepository = veiculoRepository;
+        this.ordemServicoPort = ordemServicoPort;
+        this.pecaPort = pecaPort;
+        this.veiculoPort = veiculoPort;
         this.emailService = emailService.orElse(null);
     }
 
     @Transactional
     public OrdemServico abrirOrdem(AberturaOSDTO dto) {
         // 1. Busca o veículo pela placa
-        Veiculo veiculo = veiculoRepository.findById(dto.placa())
+        Veiculo veiculo = veiculoPort.findById(dto.placa())
                 .orElseThrow(() -> new BusinessException("Veículo não encontrado para abertura de OS."));
 
         // 2. Cria a nova OS usando construtor
         OrdemServico novaOs = new OrdemServico(veiculo, dto.descricaoProblema());
 
         // 3. Salva a OS
-        OrdemServico osSalva = osRepository.save(novaOs);
+        OrdemServico osSalva = ordemServicoPort.save(novaOs);
 
         // 4. Enviar email de criação
         enviarEmailCriacaoOS(osSalva);
@@ -68,23 +68,23 @@ public class AtendimentoService {
     @Transactional
     public void incluirPecaNaOS(UUID osId, UUID pecaId, int quantidade) {
         // 1. Busca a OS
-        OrdemServico os = osRepository.findById(osId)
+        OrdemServico os = ordemServicoPort.findById(osId)
                 .orElseThrow(() -> new BusinessException("OS não encontrada com o ID: " + osId));
 
         // 2. Busca a peça no estoque
-        Peca peca = pecaRepository.findById(pecaId)
+        Peca peca = pecaPort.findById(pecaId)
                 .orElseThrow(() -> new BusinessException("Peça não encontrada no estoque com o ID: " + pecaId));
 
         // 3. Adiciona na OS (a lógica de negócio está na entidade OS)
         os.adicionarPeca(peca, quantidade);
 
         // 4. Salva a alteração
-        osRepository.save(os);
+        ordemServicoPort.save(os);
     }
 
     @Transactional(readOnly = true)
     public OrdemServicoDetalhesDTO consultarDetalhes(UUID osId) {
-        OrdemServico os = osRepository.findByIdWithDetails(osId)
+        OrdemServico os = ordemServicoPort.findByIdWithDetails(osId)
                 .orElseThrow(() -> new BusinessException("Ordem de Serviço não encontrada."));
 
         List<OrdemServicoDetalhesDTO.ItemOSDTO> itensDTO = os.getItens().stream()
@@ -109,7 +109,7 @@ public class AtendimentoService {
 
     @Transactional(readOnly = true)
     public Page<OrdemServicoListDTO> listarOrdensServico(Pageable pageable) {
-        Page<OrdemServico> ordens = osRepository.findAllAtivas(pageable);
+        Page<OrdemServico> ordens = ordemServicoPort.findAllAtivas(pageable);
         return ordens.map(os -> new OrdemServicoListDTO(
                 os.getId(),
                 os.getStatus().name(),
@@ -123,7 +123,7 @@ public class AtendimentoService {
 
     @Transactional
     public void aprovarOrcamento(UUID osId) {
-        OrdemServico os = osRepository.findById(osId)
+        OrdemServico os = ordemServicoPort.findById(osId)
                 .orElseThrow(() -> new BusinessException("OS não encontrada."));
 
         if (os.getStatus() != StatusOS.AGUARDANDO_APROVACAO) {
@@ -131,7 +131,7 @@ public class AtendimentoService {
         }
 
         os.atualizarStatus(StatusOS.EM_EXECUCAO);
-        osRepository.save(os);
+        ordemServicoPort.save(os);
 
         // Enviar e-mail de notificação
         enviarEmailAtualizacaoStatus(os, "Seu orçamento foi aprovado! Iniciando execução do serviço.");
@@ -139,11 +139,11 @@ public class AtendimentoService {
 
     @Transactional
     public void atualizarStatus(UUID osId, StatusOS novoStatus) {
-        OrdemServico os = osRepository.findById(osId)
+        OrdemServico os = ordemServicoPort.findById(osId)
                 .orElseThrow(() -> new BusinessException("OS não encontrada."));
 
         os.atualizarStatus(novoStatus);
-        osRepository.save(os);
+        ordemServicoPort.save(os);
 
         // Enviar e-mail de notificação
         enviarEmailAtualizacaoStatus(os, "");
@@ -156,11 +156,11 @@ public class AtendimentoService {
      */
     @Transactional
     public void cancelarOrdemServico(UUID osId, String motivo) {
-        OrdemServico os = osRepository.findById(osId)
+        OrdemServico os = ordemServicoPort.findById(osId)
                 .orElseThrow(() -> new BusinessException("OS não encontrada."));
 
         os.cancelar(motivo);
-        osRepository.save(os);
+        ordemServicoPort.save(os);
 
         // Enviar email de cancelamento
         enviarEmailCancelamento(os);
@@ -174,7 +174,7 @@ public class AtendimentoService {
      */
     @Transactional
     public void concluirOrdemServico(UUID osId) {
-        OrdemServico os = osRepository.findById(osId)
+        OrdemServico os = ordemServicoPort.findById(osId)
                 .orElseThrow(() -> new BusinessException("OS não encontrada."));
 
         if (os.getStatus() != StatusOS.EM_EXECUCAO) {
@@ -182,7 +182,7 @@ public class AtendimentoService {
         }
 
         os.atualizarStatus(StatusOS.FINALIZADA);
-        osRepository.save(os);
+        ordemServicoPort.save(os);
 
         // Enviar email de conclusão
         enviarEmailConclusao(os);

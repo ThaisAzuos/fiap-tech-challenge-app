@@ -3,15 +3,15 @@ package com.grupo51.oficinamecanica.atendimento.application.usecase;
 import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoDetalhesDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoListDTO;
+import com.grupo51.oficinamecanica.atendimento.application.port.out.OrdemServicoPort;
+import com.grupo51.oficinamecanica.atendimento.application.port.out.PecaPort;
+import com.grupo51.oficinamecanica.atendimento.application.port.out.VeiculoPort;
 import com.grupo51.oficinamecanica.atendimento.domain.model.OrdemServico;
 import com.grupo51.oficinamecanica.atendimento.domain.model.StatusOS;
-import com.grupo51.oficinamecanica.atendimento.infrastructure.repository.OrdemServicoRepository;
 import com.grupo51.oficinamecanica.cadastro.model.Cliente;
 import com.grupo51.oficinamecanica.cadastro.model.Veiculo;
-import com.grupo51.oficinamecanica.cadastro.repository.VeiculoRepository;
 import com.grupo51.oficinamecanica.comum.exception.BusinessException;
 import com.grupo51.oficinamecanica.estoque.model.Peca;
-import com.grupo51.oficinamecanica.estoque.repository.PecaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,13 +41,13 @@ import static org.mockito.Mockito.lenient;
 class AtendimentoServiceTest {
 
     @Mock
-    private OrdemServicoRepository osRepository;
+    private OrdemServicoPort ordemServicoPort;
 
     @Mock
-    private PecaRepository pecaRepository;
+    private PecaPort pecaPort;
 
     @Mock
-    private VeiculoRepository veiculoRepository;
+    private VeiculoPort veiculoPort;
 
 
     private AtendimentoService atendimentoService;
@@ -61,7 +61,7 @@ class AtendimentoServiceTest {
 
     @BeforeEach
     void setUp() {
-        atendimentoService = new AtendimentoService(osRepository, pecaRepository, veiculoRepository, Optional.empty());
+        atendimentoService = new AtendimentoService(ordemServicoPort, pecaPort, veiculoPort, Optional.empty());
 
         // Criação de mocks das dependências
         cliente = mock(Cliente.class);
@@ -88,8 +88,8 @@ class AtendimentoServiceTest {
     void deveAbrirOrdemServicoComSucesso() {
         // Dado
         AberturaOSDTO dto = new AberturaOSDTO("ABC1234", "Problema no freio");
-        when(veiculoRepository.findById("ABC1234")).thenReturn(Optional.of(veiculo));
-        when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(veiculoPort.findById("ABC1234")).thenReturn(Optional.of(veiculo));
+        when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Quando
         OrdemServico result = atendimentoService.abrirOrdem(dto);
@@ -99,14 +99,14 @@ class AtendimentoServiceTest {
         assertThat(result.getVeiculo()).isEqualTo(veiculo);
         assertThat(result.getDescricaoProblema()).isEqualTo("Problema no freio");
         assertThat(result.getStatus()).isEqualTo(StatusOS.RECEBIDA);
-        verify(osRepository).save(any(OrdemServico.class));
+        verify(ordemServicoPort).save(any(OrdemServico.class));
     }
 
     @Test
     void deveLancarExcecaoQuandoVeiculoNaoEncontrado() {
         // Dado
         AberturaOSDTO dto = new AberturaOSDTO("PLACA_INVALIDA", "Problema");
-        when(veiculoRepository.findById("PLACA_INVALIDA")).thenReturn(Optional.empty());
+        when(veiculoPort.findById("PLACA_INVALIDA")).thenReturn(Optional.empty());
 
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.abrirOrdem(dto))
@@ -117,22 +117,22 @@ class AtendimentoServiceTest {
     @Test
     void deveIncluirPecaNaOrdemServicoComSucesso() {
         // Dado
-        when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
-        when(pecaRepository.findById(pecaId)).thenReturn(Optional.of(peca));
-        when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(pecaPort.findById(pecaId)).thenReturn(Optional.of(peca));
+        when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Quando
         atendimentoService.incluirPecaNaOS(osId, pecaId, 2);
 
         // Então
-        verify(osRepository).save(ordemServico);
+        verify(ordemServicoPort).save(ordemServico);
         assertThat(ordemServico.getValorTotal()).isEqualTo(BigDecimal.valueOf(300.00)); // 150 * 2
     }
 
     @Test
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontradaParaIncluirPeca() {
         // Dado
-        when(osRepository.findById(osId)).thenReturn(Optional.empty());
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.empty());
 
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.incluirPecaNaOS(osId, pecaId, 1))
@@ -143,8 +143,8 @@ class AtendimentoServiceTest {
     @Test
     void deveLancarExcecaoQuandoPecaNaoEncontrada() {
         // Dado
-        when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
-        when(pecaRepository.findById(pecaId)).thenReturn(Optional.empty());
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(pecaPort.findById(pecaId)).thenReturn(Optional.empty());
 
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.incluirPecaNaOS(osId, pecaId, 1))
@@ -156,7 +156,7 @@ class AtendimentoServiceTest {
     void deveConsultarDetalhesDaOrdemServico() {
         // Dado
         ordemServico.adicionarPeca(peca, 1);
-        when(osRepository.findByIdWithDetails(osId)).thenReturn(Optional.of(ordemServico));
+        when(ordemServicoPort.findByIdWithDetails(osId)).thenReturn(Optional.of(ordemServico));
 
         // Quando
         OrdemServicoDetalhesDTO result = atendimentoService.consultarDetalhes(osId);
@@ -176,7 +176,7 @@ class AtendimentoServiceTest {
     @Test
     void deveLancarExcecaoQuandoOrdemServicoNaoEncontradaParaConsulta() {
         // Dado
-        when(osRepository.findByIdWithDetails(osId)).thenReturn(Optional.empty());
+        when(ordemServicoPort.findByIdWithDetails(osId)).thenReturn(Optional.empty());
 
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.consultarDetalhes(osId))
@@ -191,7 +191,7 @@ class AtendimentoServiceTest {
         List<OrdemServico> ordens = List.of(ordemServico);
         Page<OrdemServico> pageOrdens = new PageImpl<>(ordens, pageable, 1);
 
-        when(osRepository.findAllAtivas(pageable)).thenReturn(pageOrdens);
+        when(ordemServicoPort.findAllAtivas(pageable)).thenReturn(pageOrdens);
 
         // Quando
         Page<OrdemServicoListDTO> result = atendimentoService.listarOrdensServico(pageable);
@@ -212,21 +212,21 @@ class AtendimentoServiceTest {
     void deveAprovarOrcamentoComSucesso() {
         // Dado
         ordemServico.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
-        when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
-        when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Quando
         atendimentoService.aprovarOrcamento(osId);
 
         // Então
         assertThat(ordemServico.getStatus()).isEqualTo(StatusOS.EM_EXECUCAO);
-        verify(osRepository).save(ordemServico);
+        verify(ordemServicoPort).save(ordemServico);
     }
 
     @Test
     void deveLancarExcecaoQuandoTentarAprovarOrcamentoForaDoStatusCorreto() {
         // Dado - OS ainda em EM_DIAGNOSTICO
-        when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
 
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.aprovarOrcamento(osId))
@@ -237,14 +237,14 @@ class AtendimentoServiceTest {
     @Test
     void deveAtualizarStatusDaOrdemServico() {
         // Dado
-        when(osRepository.findById(osId)).thenReturn(Optional.of(ordemServico));
-        when(osRepository.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Quando
         atendimentoService.atualizarStatus(osId, StatusOS.AGUARDANDO_APROVACAO);
 
         // Então
         assertThat(ordemServico.getStatus()).isEqualTo(StatusOS.AGUARDANDO_APROVACAO);
-        verify(osRepository).save(ordemServico);
+        verify(ordemServicoPort).save(ordemServico);
     }
 }
