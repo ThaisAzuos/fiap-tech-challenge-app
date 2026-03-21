@@ -3,7 +3,6 @@ name: Análise SonarQube
 on:
   push:
     branches:
-      - main
       - develop
   pull_request:
     branches:

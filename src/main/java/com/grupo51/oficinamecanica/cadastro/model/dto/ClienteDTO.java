@@ -2,30 +2,37 @@ package com.grupo51.oficinamecanica.cadastro.model.dto;
 
 import com.grupo51.oficinamecanica.comum.validation.NoSqlInjection;
 import com.grupo51.oficinamecanica.comum.validation.NoXss;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
+@Schema(description = "Payload para cadastro de cliente")
 public record ClienteDTO(
-        @NotBlank(message = "Nome é obrigatório")
+        @Schema(description = "Nome completo", example = "Marina Oliveira")
+        @NotBlank(message = "Nome e obrigatorio")
         @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
         @NoSqlInjection
         @NoXss
         String nome,
 
-        @NotBlank(message = "CPF é obrigatório")
-        @Pattern(regexp = "^\\d{11}$", message = "CPF deve conter 11 dígitos")
+        @Schema(description = "CPF sem pontuacao", example = "52998224725")
+        @NotBlank(message = "CPF e obrigatorio")
+        @Pattern(regexp = "^\\d{11}$", message = "CPF deve conter 11 digitos")
         @NoSqlInjection
         String cpf,
 
-        @NotBlank(message = "Email é obrigatório")
-        @Email(message = "Email deve ser válido")
+        @Schema(description = "Email do cliente", example = "marina.oliveira@email.com.br")
+        @NotBlank(message = "Email e obrigatorio")
+        @Email(message = "Email deve ser valido")
         @NoXss
         String email,
 
-        @NotBlank(message = "Telefone é obrigatório")
-        @Pattern(regexp = "^\\d{10,11}$", message = "Telefone deve ter 10 ou 11 dígitos")
+        @Schema(description = "Telefone com DDD", example = "11987654321")
+        @NotBlank(message = "Telefone e obrigatorio")
+        @Pattern(regexp = "^\\d{10,11}$", message = "Telefone deve ter 10 ou 11 digitos")
         @NoSqlInjection
         String telefone,
 
-        @NotNull(message = "Endereço é obrigatório")
+        @Schema(description = "Endereco do cliente")
+        @NotNull(message = "Endereco e obrigatorio")
         EnderecoDTO endereco
 ) {}
