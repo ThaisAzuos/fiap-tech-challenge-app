@@ -51,7 +51,6 @@ docs/
 | Arquivo | Descrição |
 |---------|-----------|
 | [`../README.md`](../README.md) | Guia operacional principal do projeto |
-| [`../modules/oficina-clean-mvp/README.md`](../modules/oficina-clean-mvp/README.md) | README do módulo Clean Architecture MVP |
 | [`../terraform/README.md`](../terraform/README.md) | README da infraestrutura Terraform |
 
 ## Nota de higienização

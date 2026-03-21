@@ -461,9 +461,6 @@ Testes:
 |------|-----------|--------|
 | **A** | MailHog configurado (Docker, K8s, script de reuso) | ✅ Concluido |
 | **B** | Templates cancelamento e conclusao + testes de integracao | ✅ Concluido |
-| **C** | Modulo Fase 2 Clean Architecture (`modules/oficina-clean-mvp`) | ✅ Concluido |
 | **D** | SonarQube em producao + workflow CI/CD ativo | ✅ Concluido |
 
 Workflow CI/CD ativo: `.github/workflows/sonar.yml`
-
-

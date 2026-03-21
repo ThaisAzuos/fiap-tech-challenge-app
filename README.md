@@ -48,7 +48,6 @@ Este README foi padronizado para uso operacional no dia a dia: subir ambiente, t
 - `src/main/java`: codigo principal da aplicacao
 - `src/test/java`: testes automatizados
 - `k8s-*.yaml`: manifestos Kubernetes
-- `modules/oficina-clean-mvp/`: modulo MVP para Fase 2 (Clean Architecture)
 - `terraform/`: infraestrutura AWS com Terraform
 - `docs/`: toda a documentacao do projeto (ADRs, arquitetura, operacional e historico)
   - `docs/ADRs/`: decisoes arquiteturais formais (ADR-001 a ADR-004)
