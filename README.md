@@ -25,7 +25,7 @@ Este README foi padronizado para uso operacional no dia a dia: subir ambiente, t
 
 - Base da Fase 1 implementada e funcional para os fluxos principais.
 - Itens de evolucao (seguranca, cobertura de testes e padronizacao arquitetural completa) estao em andamento.
-- Avaliacao detalhada: `AVALIACAO_FASE_1_DETALHADA.md`.
+- Navegacao da documentacao: `docs/indice.md`.
 
 ## Tecnologias
 
@@ -48,14 +48,13 @@ Este README foi padronizado para uso operacional no dia a dia: subir ambiente, t
 - `k8s-*.yaml`: manifestos Kubernetes
 - `modules/oficina-clean-mvp/`: modulo MVP para Fase 2 (Clean Architecture)
 - `terraform/`: infraestrutura AWS com Terraform
-- `docs/`: toda a documentacao do projeto (ADRs, arquitetura, avaliacao, operacional)
+- `docs/`: toda a documentacao do projeto (ADRs, arquitetura, operacional e historico)
   - `docs/ADRs/`: decisoes arquiteturais formais (ADR-001 a ADR-004)
   - `docs/arquitetura/`: diagramas e comparativos
-  - `docs/avaliacao-fase-1/`: analise de conformidade da Fase 1
-  - `docs/operacional/`: guias do MailHog, SonarQube e entregaveis
+  - `docs/operacional/`: guias do MailHog e SonarQube
   - `docs/historico/`: registros historicos de implementacao
   - `docs/indice.md`: indice navegavel de todos os documentos
-  - `docs/leia-primeiro.md`: ponto de entrada por perfil de leitor
+  - `docs/leia-primeiro.md`: ponto de entrada rapido
 
 ## Como executar localmente com Docker
 
@@ -233,7 +232,7 @@ Template de referencia: `.github/workflow-templates/sonar-maven-template.yml`
 - `docs/leia-primeiro.md` — ponto de entrada por perfil (executivo, dev, arquiteto)
 - `docs/ADRs/` — decisões arquiteturais formais (ADR-001 a ADR-004)
 - `docs/arquitetura/` — diagramas e comparativos de arquitetura
-- `docs/avaliacao-fase-1/` — análise de conformidade da Fase 1
+- `docs/operacional/` — guias de operação (MailHog e SonarQube)
 - `docs/historico/plano-execucao.md` — plano de execução de 10 dias
 
 ## Troubleshooting rapido
