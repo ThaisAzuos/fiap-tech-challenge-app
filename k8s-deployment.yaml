@@ -4,6 +4,12 @@ metadata:
   name: oficina-app
 spec:
   replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: oficina-app
@@ -14,7 +20,7 @@ spec:
     spec:
       containers:
       - name: oficina-app
-        image: oficina-mecanica:latest # Substitua pela sua imagem no Docker Hub/ECR
+        image: thaisazuos/oficina-mecanica-api:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -39,6 +45,20 @@ spec:
             secretKeyRef:
               name: oficina-secrets
               key: jwt-secret
+        - name: SPRING_MAIL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: mail-host
+        - name: SPRING_MAIL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: mail-port
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+          value: "false"
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+          value: "false"
         resources:
           requests:
             cpu: "200m"
@@ -48,13 +68,13 @@ spec:
             memory: "512Mi"
         livenessProbe:
           httpGet:
-            path: /actuator/health
+            path: /actuator/health/liveness
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /actuator/health
+            path: /actuator/health/readiness
             port: 8080
           initialDelaySeconds: 15
           periodSeconds: 5

@@ -1,0 +1,119 @@
+name: CI/CD Pipeline - Oficina Mecânica
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/oficina-mecanica-api
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Cache de dependências Maven
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build com Maven
+      run: mvn clean compile
+
+    - name: Executar testes
+      run: mvn test
+
+    - name: Gerar relatório de testes
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Testes JUnit
+        path: 'target/surefire-reports/*.xml'
+        reporter: java-junit
+
+  build-docker:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar Docker Buildx
+      uses: docker/setup-buildx-action@v5
+
+    - name: Login no Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Extrair metadados
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build e push da imagem Docker
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-docker
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar kubectl
+      uses: azure/k8s-set-context@v3
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+    - name: Deploy no Kubernetes
+      run: |
+        # Atualizar imagem no deployment
+        sed -i 's|image:.*|image: ${{ env.IMAGE_NAME }}:latest|g' k8s-deployment.yaml
+        # Aplicar manifestos
+        kubectl apply -f k8s-configmap.yaml
+        kubectl apply -f k8s-secret.yaml
+        kubectl apply -f k8s-deployment.yaml
+        kubectl apply -f k8s-service.yaml
+        kubectl apply -f k8s-hpa.yaml
+        # Aguardar rollout
+        kubectl rollout status deployment/oficina-deployment
+
+    - name: Verificar deploy
+      run: |
+        kubectl get pods
+        kubectl get svc

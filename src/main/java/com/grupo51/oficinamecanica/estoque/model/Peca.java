@@ -27,4 +27,10 @@ public class Peca {
         this.quantidadeEstoque = quantidadeEstoque;
     }
 
+    // Getters explícitos
+    public UUID getId() { return id; }
+    public String getNome() { return nome; }
+    public BigDecimal getPreco() { return preco; }
+    public Integer getQuantidadeEstoque() { return quantidadeEstoque; }
+
 }
