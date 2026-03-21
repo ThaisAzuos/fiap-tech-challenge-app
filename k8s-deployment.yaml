@@ -4,6 +4,12 @@ metadata:
   name: oficina-app
 spec:
   replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: oficina-app
@@ -14,8 +20,8 @@ spec:
     spec:
       containers:
       - name: oficina-app
-        image: fiap-tech-challenge-oficina_app:latest
-        imagePullPolicy: Always
+        image: thaisazuos/oficina-mecanica-api:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
         env:
