@@ -1,8 +1,7 @@
 # ✅ Passo B Completo - Adicionar Templates de Email
 
 **Status:** ✅ CONCLUÍDO  
-**Data:** 16 de Março de 2026  
-**Responsável:** GitHub Copilot
+**Data:** 16 de Março de 2026
 
 ---
 
@@ -349,9 +348,4 @@ osService.concluirOrdemServico(osId);
 
 Próximo: Iniciar **Passo C - Clean Architecture Modular**
 
----
-
-**Autor:** GitHub Copilot  
-**Data:** 16 de Março de 2026  
-**Versão:** 1.0
 

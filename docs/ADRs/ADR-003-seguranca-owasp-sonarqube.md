@@ -2,8 +2,6 @@
 
 **Status:** Aceita  
 **Data:** 16 de Março de 2026  
-**Autores:** Equipe de Desenvolvimento + Arquitetura  
-**Versão:** 1.0  
 
 ---
 
@@ -242,14 +240,6 @@ mvn sonar:sonar \
 
 ---
 
-## Revisão e Aprovação
-
-- [x] Tech Lead: Aprovado 16/03/2026
-- [x] Arquiteto: Aprovado 16/03/2026
-- [ ] Product Owner: Pendente
-- [ ] Security Team: Não aplicável (primeiro vez)
-
----
 
 ## Referências
 
@@ -268,9 +258,4 @@ mvn sonar:sonar \
 4. 🔨 Integrar com DTOs (DIA 3)
 5. 🔨 Testes de validação (DIA 4-5)
 
----
-
-**Status:** 🟢 ACEITA - Implementação iniciando  
-**Versão:** 1.0  
-**Próxima Revisão:** Após Sprint 1
 

@@ -1,8 +1,7 @@
 # ADR 002 — Arquitetura Alvo: Clean Architecture/Hexagonal
 
 **Status:** Aceita  
-**Data:** 2026-03-14  
-**Autores:** Equipe de desenvolvimento
+**Data:** 2026-03-14
 
 ---
 

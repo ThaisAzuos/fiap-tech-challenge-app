@@ -1,8 +1,7 @@
 # ADR 001 — Autenticação e Autorização com JWT
 
 **Status:** Aceita  
-**Data:** 2026-02-19  
-**Autores:** Equipe de desenvolvimento
+**Data:** 2026-02-19
 
 ---
 

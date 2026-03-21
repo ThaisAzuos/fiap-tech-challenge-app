@@ -20,6 +20,4 @@ Este arquivo é o ponto de entrada rápido para navegar na documentação que es
 
 Registros de execução e trilha de implementação permanecem em [`historico/`](./historico/).
 
-**Última revisão:** 21 de Março de 2026  
-**Índice completo:** [`indice.md`](./indice.md)
 

@@ -1,9 +1,5 @@
 # 📧 MailHog - Guia de Configuração e Testes
 
-**Versão:** 1.1  
-**Data:** 16 de Março de 2026  
-**Status:** ✅ Completo
-
 ---
 
 ## 📌 O que é MailHog?
@@ -470,9 +466,4 @@ Testes:
 
 Workflow CI/CD ativo: `.github/workflows/sonar.yml`
 
----
-
-**Autor:** GitHub Copilot  
-**Último Update:** 20 de Março de 2026  
-**Próxima Revisão:** Após Fase 1B concluída
 
