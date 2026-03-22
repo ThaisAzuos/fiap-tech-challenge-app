@@ -74,3 +74,14 @@ management:
       probes:
         enabled: true
       show-details: never
+
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha          # ordena as tags alfabeticamente → os prefixos numéricos definem a ordem
+    operations-sorter: alpha    # ordena operações dentro da tag
+    display-request-duration: true
+    doc-expansion: none         # começa fechado, expande ao clicar
+    filter: true                # habilita campo de busca
+    default-models-expand-depth: 0
+  show-actuator: false
+

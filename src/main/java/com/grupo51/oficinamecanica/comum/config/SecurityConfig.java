@@ -57,6 +57,12 @@ public class SecurityConfig {
                     req.requestMatchers("/actuator/**").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/login").permitAll();
 
+                    // Endpoints de cadastro: qualquer usuário autenticado
+                    req.requestMatchers("/api/v1/clientes/**").authenticated();
+                    req.requestMatchers("/api/v1/veiculos/**").authenticated();
+                    req.requestMatchers("/api/v1/funcionarios/**").authenticated();
+
+                    // Endpoints específicos por role
                     req.requestMatchers("/api/v1/atendentes/**").hasRole("ATENDENTE");
                     req.requestMatchers("/api/v1/gerentes/**").hasRole("GERENTE");
                     req.requestMatchers("/api/v1/mecanicos/**").hasRole("MECANICO");
