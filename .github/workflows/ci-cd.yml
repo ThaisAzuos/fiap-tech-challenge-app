@@ -34,10 +34,29 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
 
     - name: Build com Maven
-      run: mvn clean compile
+      run: ./mvnw -q clean compile
+
+    - name: Subir MailHog (ambiente de teste)
+      run: docker compose -f docker-compose.test.yml up -d mailhog
+
+    - name: Aguardar MailHog responder SMTP
+      run: |
+        for i in {1..20}; do
+          if (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1; then
+            echo "MailHog pronto na porta 1025"
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "MailHog nao respondeu em tempo" >&2
+        exit 1
 
     - name: Executar testes
-      run: mvn test
+      run: ./mvnw -q test
+
+    - name: Encerrar MailHog
+      if: always()
+      run: docker compose -f docker-compose.test.yml down
 
     - name: Gerar relatório de testes
       uses: dorny/test-reporter@v1

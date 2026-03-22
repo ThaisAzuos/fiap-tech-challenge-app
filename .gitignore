@@ -34,3 +34,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Dados locais gerados em runtime
+postgres/data/

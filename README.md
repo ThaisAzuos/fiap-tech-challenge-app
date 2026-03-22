@@ -51,6 +51,27 @@ kubectl delete -f .
 mvn clean test
 ```
 
+**Automatizado (sobe MailHog + roda testes):**
+```bash
+./scripts/test-local.sh
+```
+
+**Compose dedicado para testes (somente MailHog):**
+```bash
+docker compose -f docker-compose.test.yml up -d mailhog
+./mvnw clean test
+docker compose -f docker-compose.test.yml down
+```
+
+**Exemplos úteis do script:**
+```bash
+# Roda somente um teste especifico
+./scripts/test-local.sh -- -Dtest=OpenApiDocumentationTest
+
+# Mantem cache Maven (sem clean) e para MailHog no final
+./scripts/test-local.sh --no-clean --down
+```
+
 **SonarQube (Local):**
 ```bash
 # Subir Sonar
