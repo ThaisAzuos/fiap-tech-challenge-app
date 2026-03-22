@@ -5,7 +5,7 @@
 
 ---
 
-## Resumo Curto
+## Resumo curto
 
 Decidimos implementar conformidade com **OWASP Top 10** e ativar **análise estática com SonarQube** para proteger a aplicação contra vulnerabilidades comuns e garantir qualidade de código.
 
@@ -116,7 +116,7 @@ pom.xml                                      (SonarQube ativo)
 
 ## Mitigações de Vulnerabilidade
 
-### OWASP Top 10 - Mapping
+### OWASP Top 10 - Mapeamento
 
 | # | Vulnerabilidade | Mitigação |
 |---|---|---|
@@ -202,7 +202,7 @@ mvn sonar:sonar \
 - [ ] SonarQube em CI/CD
 
 ### Fase 3 (Dia 4-5)
-- [ ] Audit de todos os endpoints
+- [ ] Auditoria de todos os endpoints
 - [ ] Remediar vulnerabilidades encontradas
 - [ ] SonarQube quality gates bloqueando
 

@@ -48,11 +48,13 @@ Pipeline --> DB
 
 @enduml
 
+```
+
 
 ---
 
 ### Explicação rápida
-- **Cliente** acessa a aplicação via controllers (APIs REST).  
+- **Cliente** acessa a aplicação via controllers (APIs REST).
 - **Aplicação** organizada em camadas: controllers → serviços → repositórios → banco de dados.  
 - **Infraestrutura**: aplicação containerizada (Docker), orquestrada em Kubernetes com Deployments, Services, ConfigMaps/Secrets e HPA.  
 - **IaC**: Terraform provisiona cluster e banco de dados.  

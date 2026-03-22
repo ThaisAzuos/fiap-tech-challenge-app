@@ -62,7 +62,7 @@ public class OpenApiConfig {
                                 """)
                         .contact(new Contact()
                                 .name("Tech Challenge FIAP - Grupo 51")
-                                .url("https://github.com/celio-vetrano/fiap-tech-challenge-oficina"))
+                                .url("https://github.com/ThaisAzuos/fiap-tech-challenge-oficina"))
                         .license(new License().name("MIT")))
                 .tags(List.of(
                         new Tag().name(TAG_01_LOGIN).description("Passo 0 - Obter JWT"),

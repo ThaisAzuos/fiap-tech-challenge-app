@@ -1,6 +1,7 @@
 package com.grupo51.oficinamecanica.atendimento.infrastructure.controller;
 
 import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSDTO;
+import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSResponseDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.IncluirPecaDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoDetalhesDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoListDTO;
@@ -49,7 +50,7 @@ public class AtendimentoController {
             @ApiResponse(responseCode = "400", description = "Placa invalida ou nao encontrada"),
             @ApiResponse(responseCode = "401", description = "Nao autenticado")
     })
-    public ResponseEntity<OrdemServico> abrirOS(
+    public ResponseEntity<AberturaOSResponseDTO> abrirOS(
             @org.springframework.web.bind.annotation.RequestBody
             @RequestBody(required = true,
                     content = @Content(mediaType = "application/json",
@@ -62,7 +63,17 @@ public class AtendimentoController {
                                             value = "{\"placa\":\"DEF4G56\",\"descricaoProblema\":\"Pedal de freio esponjoso. Possivel ar no sistema hidraulico.\"}")
                             }))
             @Valid AberturaOSDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(atendimentoService.abrirOrdem(dto));
+        OrdemServico os = atendimentoService.abrirOrdem(dto);
+        // Mapeamos para DTO aqui (na camada de controller) para evitar LazyInitializationException:
+        // OrdemServico.itens é @OneToMany LAZY e open-in-view=false fecha a sessão antes da
+        // serialização Jackson. Acessamos apenas campos escalares já carregados na transação.
+        AberturaOSResponseDTO response = new AberturaOSResponseDTO(
+                os.getId(),
+                dto.placa(),           // usa o dto — evita acesso lazy ao proxy de veiculo
+                os.getStatus().name(),
+                os.getDataAbertura()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/os/{osId}/status")

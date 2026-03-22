@@ -1,7 +1,13 @@
 # Índice de Documentos — Oficina Mecânica API
 
+**Acesso rápido:** [`README`](../README.md) | [`Índice`](./indice.md) | [`Stack resumida`](#stack-resumida) | [`Mini-guia JWT/Postman`](./operacional/jwt-postman-mini-guia.md) | [`Estilo de testes Postman`](./operacional/postman-estilo-testes.md)
+
 **Projeto:** Oficina Mecânica API — Tech Challenge  
 **Atualizado em:** 21 de Março de 2026
+
+## Stack resumida
+
+Java 21, Spring Boot 3, JWT, PostgreSQL, Docker/Compose, Kubernetes, Terraform, MailHog, SonarQube, Postman.
 
 ## Estrutura da documentação
 
@@ -9,7 +15,7 @@
 docs/
   ADRs/                     ← Decisões arquiteturais formais
   arquitetura/              ← Diagramas e comparativos
-  operacional/              ← Guias de operação (MailHog e SonarQube)
+  operacional/              ← Guias de operação (MailHog, SonarQube e Postman/JWT)
   historico/                ← Registros históricos de execução
   indice.md                 ← Este arquivo
   leia-primeiro.md          ← Ponto de entrada objetivo
@@ -38,6 +44,8 @@ docs/
 |---------|-----------|
 | [`operacional/mailhog-setup.md`](operacional/mailhog-setup.md) | Guia de setup e testes de e-mail com MailHog |
 | [`operacional/sonarqube-producao.md`](operacional/sonarqube-producao.md) | SonarQube em ambiente similar ao de produção |
+| [`operacional/jwt-postman-mini-guia.md`](operacional/jwt-postman-mini-guia.md) | Mini-guia de autenticação JWT e execução da collection no Postman |
+| [`operacional/postman-estilo-testes.md`](operacional/postman-estilo-testes.md) | Mini-guia de estilo para nomenclatura de `pm.test` no Runner |
 
 ## Histórico
 

@@ -17,7 +17,7 @@ MailHog é um servidor SMTP local que captura todos os emails enviados durante o
 
 ### 1. Pré-requisitos
 - Docker e Docker Compose instalados
-- Projeto officina-mecanica configurado
+- Projeto oficina-mecanica configurado
 - Git Bash ou Terminal Linux/Mac
 
 ### 2. Iniciar MailHog
@@ -47,9 +47,9 @@ Abra o navegador: **http://localhost:8025**
 
 ---
 
-## 📋 Estrutura de Ports
+## 📋 Estrutura de Portas
 
-| Serviço | Port | Protocolo | Descrição |
+| Serviço | Porta | Protocolo | Descrição |
 |---------|------|-----------|-----------|
 | **SMTP** | 1025 | SMTP | Servidor SMTP (sem autenticação) |
 | **Web UI** | 8025 | HTTP | Interface web para visualizar emails |
@@ -149,7 +149,7 @@ mvn test -Dtest=EmailServiceIntegrationTest#shouldNotSendEmailWithoutRecipient
 ### 4. Admin
 - Limpar todos os emails
 - Configurações de retenção
-- API documentation
+- Documentação da API
 
 ---
 
@@ -381,7 +381,7 @@ mvn clean test -Dspring.profiles.active=dev
 
 **Nunca use em produção porque:**
 - ❌ Sem autenticação
-- ❌ Sem encriptação
+- ❌ Sem criptografia
 - ❌ Todos os emails acessíveis publicamente
 - ❌ Não é persistente
 
@@ -457,10 +457,10 @@ Testes:
 
 ## ✅ Status do escopo A–D
 
-| Item | Descricao | Status |
+| Item | Descrição | Status |
 |------|-----------|--------|
-| **A** | MailHog configurado (Docker, K8s, script de reuso) | ✅ Concluido |
-| **B** | Templates cancelamento e conclusao + testes de integracao | ✅ Concluido |
-| **D** | SonarQube em producao + workflow CI/CD ativo | ✅ Concluido |
+| **A** | MailHog configurado (Docker, K8s, script de reuso) | ✅ Concluído |
+| **B** | Templates cancelamento e conclusão + testes de integração | ✅ Concluído |
+| **D** | SonarQube em produção + workflow CI/CD ativo | ✅ Concluído |
 
 Workflow CI/CD ativo: `.github/workflows/sonar.yml`

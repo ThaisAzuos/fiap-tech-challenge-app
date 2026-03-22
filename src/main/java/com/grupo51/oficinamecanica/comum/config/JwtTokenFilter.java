@@ -41,13 +41,31 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var tokenJWT = recuperarToken(request);
 
-        if (tokenJWT != null && tokenService.validarToken(tokenJWT)) {
-            var subject = tokenService.getSubject(tokenJWT);
-            var usuario = repository.findByLogin(subject)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + subject));
+        // Quando o cliente enviou Bearer token, mas ele está inválido/expirado,
+        // devolvemos 401 explícito para facilitar troubleshooting (em vez de 403 genérico).
+        if (tokenJWT != null && !tokenService.validarToken(tokenJWT)) {
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Token JWT invalido ou expirado\"}");
+            return;
+        }
 
-            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (tokenJWT != null) {
+            try {
+                var subject = tokenService.getSubject(tokenJWT);
+                var usuario = repository.findByLogin(subject)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado: " + subject));
+
+                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (RuntimeException ex) {
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Token JWT invalido ou expirado\"}");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
@@ -56,7 +74,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private String recuperarToken(HttpServletRequest request) {
         var authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
+            String token = authorizationHeader.substring(7).trim();
+            if (token.startsWith("\"") && token.endsWith("\"") && token.length() > 1) {
+                token = token.substring(1, token.length() - 1).trim();
+            }
+            return token.isBlank() ? null : token;
         }
 
         return null;

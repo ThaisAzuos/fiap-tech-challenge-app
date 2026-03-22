@@ -11,7 +11,7 @@ Decidimos evoluir a arquitetura atual (organizada por features com camadas MVC) 
 ---
 
 ## Contexto
-A aplicação atual está organizada em pacotes por domínio funcional (cadastro, atendimento, estoque, seguranca), cada um contendo controller, service, repository e model. Esta organização facilita o desenvolvimento mas mistura responsabilidades de diferentes camadas arquiteturais.
+A aplicação atual está organizada em pacotes por domínio funcional (`cadastro`, `atendimento`, `estoque`, `seguranca`), cada um contendo `controller`, `service`, `repository` e `model`. Essa organização facilita o desenvolvimento, mas mistura responsabilidades de diferentes camadas arquiteturais.
 
 Para a Fase 2, precisamos implementar Clean Code e Clean Architecture para:
 - Melhorar a testabilidade
@@ -85,7 +85,7 @@ Como a aplicação já está funcional, faremos migração gradual:
 ### A Implementar:
 - `GET /api/v1/atendimento/os` - Listagem de OS
   - Parâmetros: page, size, sort (por status), filter (excluir finalizadas)
-  - Retorno: Lista paginada com dados essenciais (id, status, dataAbertura, valorTotal, cliente, veiculo)
+  - Retorno: Lista paginada com dados essenciais (id, status, dataAbertura, valorTotal, cliente, veículo)
 - `PATCH /api/v1/atendimento/os/{id}/aprovacao` - Aprovação de orçamento
   - Muda status de AGUARDANDO_APROVACAO para EM_EXECUCAO
 
@@ -94,5 +94,4 @@ Como a aplicação já está funcional, faremos migração gradual:
 2. **Diagnóstico:** RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO
 3. **Aprovação:** AGUARDANDO_APROVACAO → EM_EXECUCAO
 4. **Execução:** EM_EXECUCAO → FINALIZADA → ENTREGUE
-5. **Consulta:** Listagem filtrada + detalhes completos</content>
-<parameter name="filePath">/home/celio-vetrano/FIAP - Software Architecture/fiap-tech-challenge-oficina/ADRs/ADR 002 — Arquitetura Alvo Clean Architecture.md
+5. **Consulta:** Listagem filtrada + detalhes completos

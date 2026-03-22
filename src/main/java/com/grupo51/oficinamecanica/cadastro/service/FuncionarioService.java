@@ -30,11 +30,12 @@ public class FuncionarioService {
     @Transactional
     public Funcionario salvar(FuncionarioCadastroDTO dados) {
         var senhaCriptografada = passwordEncoder.encode(dados.senha());
+        var emailUnico = new Email("funcionario." + dados.cpf() + "@oficina.com");
         
         var funcionario = new Funcionario(
             dados.nome(), 
             new Cpf(dados.cpf()), 
-            new Email("email@example.com"), 
+            emailUnico,
             dados.cargo(), 
             senhaCriptografada,
             dados.especialidade(),

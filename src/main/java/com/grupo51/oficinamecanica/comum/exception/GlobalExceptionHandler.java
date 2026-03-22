@@ -1,5 +1,6 @@
 package com.grupo51.oficinamecanica.comum.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,5 +23,23 @@ public class GlobalExceptionHandler {
                 : HttpStatus.UNPROCESSABLE_ENTITY;
 
         return ResponseEntity.status(status).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "Conflito de dados: registro duplicado.";
+        String root = ex.getMostSpecificCause() != null
+                ? ex.getMostSpecificCause().getMessage().toLowerCase()
+                : "";
+
+        if (root.contains("(email)=")) {
+            message = "Já existe funcionário com este e-mail.";
+        } else if (root.contains("(cpf)=")) {
+            message = "Já existe funcionário com este CPF.";
+        } else if (root.contains("(registro_funcional)=")) {
+            message = "Já existe funcionário com este registro funcional.";
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(message);
     }
 }

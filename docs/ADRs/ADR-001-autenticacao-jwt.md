@@ -105,3 +105,6 @@ public class JwtTokenService {
     return JWT.require(Algorithm.HMAC256(secret)).build().verify(token).getSubject();
   }
 }
+
+```
+

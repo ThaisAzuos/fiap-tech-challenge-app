@@ -92,12 +92,16 @@ docker-compose -f docker-compose.sonar.yml up -d
 
 ## 📨 Teste de Fluxo (Postman)
 
-Importe `Oficina_Mecanica.postman_collection.json` e siga a ordem:
+Importe `Oficina_Mecanica_API_Tech_Challenge.postman_collection.json` e siga a ordem:
 
 1. **Autenticação:** `POST /login` (Gera token JWT automático para as próximas chamadas).
 2. **Cadastro:** Clientes, Veículos, Peças.
 3. **Atendimento:** Abrir O.S., Adicionar Peças, Mudar Status.
 4. **Verificação:** Checar e-mails no MailHog (`http://localhost:8025`).
+
+Guia operacional detalhado de autenticação JWT no Postman:
+- [`docs/operacional/jwt-postman-mini-guia.md`](docs/operacional/jwt-postman-mini-guia.md)
+
 
 ---
 
@@ -106,11 +110,11 @@ Importe `Oficina_Mecanica.postman_collection.json` e siga a ordem:
 - **`src/`**: Código fonte Java 21 + Spring Boot 3.
 - **`docs/`**: Documentação detalhada ([Índice Completo](docs/indice.md)).
   - **ADRs**: Decisões arquiteturais.
-  - **Operacional**: Guias do MailHog e SonarQube.
+  - **Operacional**: Guias do MailHog, SonarQube e Postman/JWT.
 - **`terraform/`**: Infraestrutura as Code (AWS).
 - **`k8s-*.yaml`**: Manifestos Kubernetes.
 
 ---
 
 ## 🛠️ Tecnologias Principais
-Java 21, Spring Boot 3, PostgreSQL, Docker/Compose, Kubernetes, Terraform, MailHog, SonarQube.
+Java 21, Spring Boot 3, JWT, PostgreSQL, Docker/Compose, Kubernetes, Terraform, MailHog, SonarQube, Postman.

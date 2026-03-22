@@ -23,7 +23,7 @@ Este documento organiza as decisões arquiteturais (ADRs) em etapas de evoluçã
 
 ---
 
-## ADR 002 — Conteinerização e Orquestração
+## ADR 002 — Containerização e Orquestração
 
 **Status:** Aceita  
 **Contexto:** Preparar aplicação para execução em ambientes escaláveis.  

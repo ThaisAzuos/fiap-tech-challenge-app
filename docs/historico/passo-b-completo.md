@@ -17,7 +17,7 @@ Foram adicionados **2 novos templates de email** (cancelamento e conclusão) ao 
 
 #### Template: `ordem-servico-cancelada.html`
 - **Localização:** `src/main/resources/templates/email/ordem-servico-cancelada.html`
-- **Trigger:** Quando uma OS é cancelada
+- **Disparo:** Quando uma OS é cancelada
 - **Variáveis esperadas:**
   - `ordemServicoId`: UUID da OS
   - `dataCancelamento`: Data/hora do cancelamento
@@ -32,11 +32,11 @@ Foram adicionados **2 novos templates de email** (cancelamento e conclusão) ao 
 - ✅ Design com alerta vermelho (status cancelada)
 - ✅ Seção destacada com motivo do cancelamento
 - ✅ Opção para iniciar nova OS
-- ✅ Responsive e profissional
+- ✅ Responsivo e profissional
 
 #### Template: `ordem-servico-concluida.html`
 - **Localização:** `src/main/resources/templates/email/ordem-servico-concluida.html`
-- **Trigger:** Quando uma OS é finalizada
+- **Disparo:** Quando uma OS é finalizada
 - **Variáveis esperadas:**
   - `ordemServicoId`: UUID da OS
   - `dataConclusao`: Data/hora da conclusão
@@ -44,7 +44,7 @@ Foram adicionados **2 novos templates de email** (cancelamento e conclusão) ao 
   - `placa`: Placa do veículo
   - `quilometragem`: Quilometragem do veículo
   - `tempoServico`: Tempo total de serviço
-  - `pecasUtilizadas`: Lista de peças (com descricao, quantidade, valor)
+  - `pecasUtilizadas`: Lista de peças (com descrição, quantidade, valor)
   - `valorTotalPecas`: Total em peças
   - `valorMaoObra`: Mão de obra
   - `desconto`: Desconto aplicado
@@ -60,7 +60,7 @@ Foram adicionados **2 novos templates de email** (cancelamento e conclusão) ao 
 - ✅ Resumo financeiro detalhado
 - ✅ Botão para avaliação
 - ✅ Instruções de retirada
-- ✅ Responsive e profissional
+- ✅ Responsivo e profissional
 
 ---
 

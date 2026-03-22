@@ -55,6 +55,7 @@ api:
   security:
     token:
       secret: ${API_SECURITY_TOKEN_SECRET:dev-secret-change-me}
+      expiration-minutes: ${API_SECURITY_TOKEN_EXPIRATION_MINUTES:30}
 
 server:
   port: 8080
