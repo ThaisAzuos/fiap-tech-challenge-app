@@ -6,10 +6,15 @@ import com.grupo51.oficinamecanica.comum.email.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assumptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -28,21 +33,41 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Testes de Integração - EmailService com MailHog")
 class EmailServiceIntegrationTest {
 
+    private static final int SMTP_CHECK_TIMEOUT_MS = 800;
+
     @Autowired
     private EmailService emailService;
 
     @Autowired
     private EmailProperties emailProperties;
 
+    @Value("${spring.mail.host:localhost}")
+    private String smtpHost;
+
+    @Value("${spring.mail.port:1025}")
+    private int smtpPort;
+
     private EmailRequest emailRequest;
 
     @BeforeEach
     void setUp() {
+        Assumptions.assumeTrue(isSmtpAvailable(),
+                () -> String.format("SMTP indisponivel em %s:%d. Inicie o MailHog para executar este teste.", smtpHost, smtpPort));
+
         emailRequest = new EmailRequest(
             "cliente@teste.com",
             "Teste de Email",
             "email/ordem-servico-criada"
         );
+    }
+
+    private boolean isSmtpAvailable() {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(smtpHost, smtpPort), SMTP_CHECK_TIMEOUT_MS);
+            return true;
+        } catch (IOException ex) {
+            return false;
+        }
     }
 
     @Test

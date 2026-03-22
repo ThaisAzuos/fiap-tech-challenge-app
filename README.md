@@ -74,13 +74,18 @@ docker compose -f docker-compose.test.yml down
 
 **SonarQube (Local):**
 ```bash
-# Subir Sonar
-docker-compose -f docker-compose.sonar.yml up -d
+# Fluxo automatizado (sobe Sonar, aguarda UP e executa análise)
+export SONAR_TOKEN="SEU_TOKEN"
+./scripts/sonar-local.sh
 
-# Executar análise
+# Opcional: derrubar stack ao final
+./scripts/sonar-local.sh --down
+
+# Fluxo manual equivalente
+docker-compose -f docker-compose.sonar.yml up -d
 ./mvnw clean verify sonar:sonar \
-  -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.token=<SEU_TOKEN>
+  -Dsonar.host.url="http://localhost:9000" \
+  -Dsonar.token="$SONAR_TOKEN"
 ```
 
 ---
