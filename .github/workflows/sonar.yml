@@ -3,11 +3,10 @@ name: Análise SonarQube
 on:
   push:
     branches:
-      - develop
+      - main
   pull_request:
     branches:
       - main
-      - develop
   workflow_dispatch:
 
 jobs:
@@ -34,6 +33,21 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+
+      - name: Subir MailHog (ambiente de teste)
+        run: docker compose -f docker-compose.test.yml up -d mailhog
+
+      - name: Aguardar MailHog responder SMTP
+        run: |
+          for i in {1..20}; do
+            if (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1; then
+              echo "MailHog pronto na porta 1025"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "MailHog nao respondeu em tempo" >&2
+          exit 1
 
       - name: Build, testes e geração de cobertura
         run: ./mvnw clean verify -DskipTests=false
@@ -63,3 +77,7 @@ jobs:
           name: jacoco-report
           path: target/site/jacoco/
           retention-days: 7
+
+      - name: Encerrar MailHog
+        if: always()
+        run: docker compose -f docker-compose.test.yml down
