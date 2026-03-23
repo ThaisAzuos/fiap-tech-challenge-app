@@ -13,6 +13,9 @@ jobs:
   sonar:
     name: Build, Testes e Análise
     runs-on: ubuntu-latest
+    env:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - name: Checkout do código
@@ -55,11 +58,11 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
 
       - name: Informar ausência de configuração SonarQube
-        if: ${{ secrets.SONAR_HOST_URL == '' || secrets.SONAR_TOKEN == '' }}
+        if: ${{ env.SONAR_HOST_URL == '' || env.SONAR_TOKEN == '' }}
         run: echo "Secrets SONAR_HOST_URL/SONAR_TOKEN não configurados. Etapa de análise Sonar será ignorada sem falhar o workflow."
 
       - name: Executar análise SonarQube
-        if: ${{ secrets.SONAR_HOST_URL != '' && secrets.SONAR_TOKEN != '' }}
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
         run: |
           ./mvnw sonar:sonar \
             -Dsonar.projectKey=com.grupo51:oficinamecanica \
@@ -71,9 +74,6 @@ jobs:
             -Dsonar.junit.reportsPath=target/surefire-reports \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
-        env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Upload do relatório de cobertura (artefato)
         uses: actions/upload-artifact@v4

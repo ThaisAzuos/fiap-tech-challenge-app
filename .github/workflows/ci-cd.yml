@@ -16,6 +16,9 @@ permissions:
 env:
   REGISTRY: docker.io
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/oficina-mecanica-api
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
 jobs:
   build-and-test:
@@ -75,22 +78,29 @@ jobs:
   build-docker:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
 
     steps:
+    - name: Informar ausência de credenciais Docker Hub
+      if: ${{ env.DOCKER_USERNAME == '' || env.DOCKER_PASSWORD == '' }}
+      run: echo "Secrets DOCKER_USERNAME/DOCKER_PASSWORD não configurados. Build e push da imagem serão ignorados sem falhar o workflow."
+
     - name: Checkout do código
+      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       uses: actions/checkout@v4
 
     - name: Configurar Docker Buildx
+      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       uses: docker/setup-buildx-action@v3
 
     - name: Login no Docker Hub
+      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Extrair metadados
+      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       id: meta
       uses: docker/metadata-action@v5
       with:
@@ -102,6 +112,7 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
 
     - name: Build e push da imagem Docker
+      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -114,19 +125,25 @@ jobs:
   deploy:
     needs: build-docker
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.KUBE_CONFIG != '' && secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != ''
 
     steps:
+    - name: Informar ausência de credenciais de deploy
+      if: ${{ github.ref != 'refs/heads/main' || github.event_name != 'push' || env.KUBE_CONFIG == '' || env.DOCKER_USERNAME == '' || env.DOCKER_PASSWORD == '' }}
+      run: echo "Pré-requisitos de deploy não atendidos. O deploy Kubernetes será ignorado sem falhar o workflow."
+
     - name: Checkout do código
+      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       uses: actions/checkout@v4
 
     - name: Configurar kubectl
+      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       uses: azure/k8s-set-context@v3
       with:
         method: kubeconfig
         kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
     - name: Deploy no Kubernetes
+      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       run: |
         # Atualizar imagem no deployment
         sed -i 's|image:.*|image: ${{ env.IMAGE_NAME }}:latest|g' k8s-deployment.yaml
@@ -140,6 +157,7 @@ jobs:
         kubectl rollout status deployment/oficina-deployment
 
     - name: Verificar deploy
+      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
       run: |
         kubectl get pods
         kubectl get svc
