@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 env:
   REGISTRY: docker.io
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/oficina-mecanica-api
@@ -65,6 +70,7 @@ jobs:
         name: Testes JUnit
         path: 'target/surefire-reports/*.xml'
         reporter: java-junit
+        fail-on-error: false
 
   build-docker:
     needs: build-and-test

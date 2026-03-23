@@ -111,7 +111,7 @@ class AtendimentoServiceTest {
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.abrirOrdem(dto))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Veículo não encontrado para abertura de OS.");
+                .hasMessage("Veículo não encontrado para abertura de OS: PLACA_INVALIDA");
     }
 
     @Test
@@ -181,7 +181,7 @@ class AtendimentoServiceTest {
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.consultarDetalhes(osId))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Ordem de Serviço não encontrada.");
+                .hasMessage("Ordem de Serviço não encontrada com o ID: " + osId);
     }
 
     @Test
@@ -231,7 +231,7 @@ class AtendimentoServiceTest {
         // Quando/Então
         assertThatThrownBy(() -> atendimentoService.aprovarOrcamento(osId))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("A OS deve estar aguardando aprovação para ser aprovada.");
+                .hasMessage("A OS " + osId + " deve estar aguardando aprovação para ser aprovada.");
     }
 
     @Test

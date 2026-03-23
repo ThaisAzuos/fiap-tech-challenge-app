@@ -108,7 +108,7 @@ class OrdemServicoTest {
         // Quando/Então
         assertThatThrownBy(() -> os.adicionarPeca(peca1, 1))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Não é possível alterar uma OS já encerrada.");
+                .hasMessage("Não é possível alterar uma OS já encerrada (FINALIZADA).");
     }
 
     @Test
@@ -125,7 +125,7 @@ class OrdemServicoTest {
         // Quando/Então
         assertThatThrownBy(() -> os.adicionarPeca(peca1, 1))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Não é possível alterar uma OS já encerrada.");
+                .hasMessage("Não é possível alterar uma OS já encerrada (ENTREGUE).");
     }
 
     @Test
@@ -160,7 +160,7 @@ class OrdemServicoTest {
         // Quando/Então
         assertThatThrownBy(() -> os.atualizarStatus(StatusOS.RECEBIDA))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Não é permitido retornar a Ordem de Serviço para um status anterior");
+                .hasMessage("Não é permitido retornar a Ordem de Serviço do status EM_DIAGNOSTICO para RECEBIDA.");
     }
 
     @Test
@@ -177,7 +177,7 @@ class OrdemServicoTest {
         // Quando/Então
         assertThatThrownBy(() -> os.atualizarStatus(StatusOS.FINALIZADA))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Esta ordem de serviço já foi entregue e não pode mais ser alterada.");
+                .hasMessage("Esta ordem de serviço já foi ENTREGUE e não pode mais ser alterada.");
     }
 
     @Test

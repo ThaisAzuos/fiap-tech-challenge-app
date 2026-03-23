@@ -78,11 +78,13 @@ class VeiculoServiceTest {
     void deveListarVeiculosPorCpfDoDono() {
         String cpf = "12345678901";
         List<Veiculo> veiculos = List.of(org.mockito.Mockito.mock(Veiculo.class));
+        when(clienteRepository.existsById(cpf)).thenReturn(true);
         when(veiculoRepository.findByDonoCpf(cpf)).thenReturn(veiculos);
 
         List<Veiculo> resultado = veiculoService.listarPorCpfDono(cpf);
 
         assertThat(resultado).hasSize(1).isEqualTo(veiculos);
+        verify(clienteRepository).existsById(cpf);
         verify(veiculoRepository).findByDonoCpf(cpf);
     }
 }
