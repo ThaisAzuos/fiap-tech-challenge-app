@@ -18,7 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -53,7 +52,6 @@ class AtendimentoServiceTest {
     private AtendimentoService atendimentoService;
 
     private Veiculo veiculo;
-    private Cliente cliente;
     private Peca peca;
     private OrdemServico ordemServico;
     private UUID osId;
@@ -64,7 +62,7 @@ class AtendimentoServiceTest {
         atendimentoService = new AtendimentoService(ordemServicoPort, pecaPort, veiculoPort, Optional.empty());
 
         // Criação de mocks das dependências
-        cliente = mock(Cliente.class);
+        Cliente cliente = mock(Cliente.class);
         lenient().when(cliente.getNome()).thenReturn("João Silva");
 
         veiculo = mock(Veiculo.class);
@@ -200,7 +198,7 @@ class AtendimentoServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
 
-        OrdemServicoListDTO dto = result.getContent().get(0);
+        OrdemServicoListDTO dto = result.getContent().getFirst();
         assertThat(dto.id()).isEqualTo(ordemServico.getId());
         assertThat(dto.status()).isEqualTo("EM_DIAGNOSTICO");
         assertThat(dto.placaVeiculo()).isEqualTo("ABC1234");
