@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oficina-app
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: oficina-app
+  template:
+    metadata:
+      labels:
+        app: oficina-app
+    spec:
+      containers:
+      - name: oficina-app
+        # Correção: Usar o nome da imagem local em vez de uma imagem remota inexistente/privada
+        image: oficina-mecanica:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: db-url
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: db-username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: oficina-secrets
+              key: db-password
+        - name: API_SECURITY_TOKEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oficina-secrets
+              key: jwt-secret
+        - name: SPRING_MAIL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: mail-host
+        - name: SPRING_MAIL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-config
+              key: mail-port
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+          value: "false"
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+          value: "false"
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        startupProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          # Ate ~180s para bootstrap completo (Spring + JPA + conexao DB)
+          failureThreshold: 36
+          periodSeconds: 5
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          # Liveness so passa a contar apos startupProbe concluir
+          initialDelaySeconds: 0
+          periodSeconds: 15
+          timeoutSeconds: 2
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          # Evita flap no endpoint durante aquecimento inicial
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 6

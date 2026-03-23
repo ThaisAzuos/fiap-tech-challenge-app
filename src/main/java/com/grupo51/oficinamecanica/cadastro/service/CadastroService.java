@@ -3,7 +3,6 @@ package com.grupo51.oficinamecanica.cadastro.service;
 import com.grupo51.oficinamecanica.cadastro.model.*;
 import com.grupo51.oficinamecanica.cadastro.model.dto.ClienteDTO;
 import com.grupo51.oficinamecanica.cadastro.repository.ClienteRepository;
-import com.grupo51.oficinamecanica.cadastro.repository.VeiculoRepository;
 import com.grupo51.oficinamecanica.comum.exception.BusinessException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,7 @@ public class CadastroService {
                 dto.endereco().complemento(),
                 dto.endereco().bairro(),
                 dto.endereco().cidade(),
+                dto.endereco().uf(),
                 dto.endereco().cep()
         );
 

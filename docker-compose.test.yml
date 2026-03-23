@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  mailhog:
+    container_name: oficina-mailhog-test
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+

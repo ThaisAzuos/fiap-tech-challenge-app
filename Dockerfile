@@ -1,26 +1,29 @@
-# Estágio 1: Build (Compilação)
-# Usamos uma imagem do Maven com Java 21 para gerar o JAR
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+# Estágio de Build: Usa uma imagem com Maven e JDK para compilar a aplicação
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copia apenas o pom.xml primeiro para baixar as dependências (otimiza o cache do Docker)
-COPY pom.xml .
-RUN mvn dependency:go-offline
+# Copia o pom.xml e baixa as dependências
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw && ./mvnw dependency:go-offline
 
-# Copia o código fonte e compila
+# Copia o restante do código-fonte e compila a aplicação
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
-# Estágio 2: Runtime (Execução)
-# Usamos uma imagem leve (JRE) para rodar a aplicação
+# Estágio de Produção: Usa uma imagem leve apenas com o JRE
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Copia o JAR gerado no estágio anterior
+# Copia o .jar compilado do estágio de build
 COPY --from=build /app/target/*.jar app.jar
 
-# Define a porta da aplicação
+# Executa sem privilégios de root
+RUN useradd --system --uid 1001 spring
+USER 1001
+
+# Expõe a porta que a aplicação usa
 EXPOSE 8080
 
-# Comando para iniciar
+# Comando para iniciar a aplicação
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Arquivo Environment
+.env
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +34,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Dados locais gerados em runtime
+postgres/data/
+
+# Instaladores binários (não devem entrar no repositório)
+awscliv2.zip
+*.zip
+
+# AWS CLI - binários extraídos (254MB, não devem entrar no repositório)
+aws/dist/
+
+# Terraform - cache de providers e estado da infraestrutura
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+

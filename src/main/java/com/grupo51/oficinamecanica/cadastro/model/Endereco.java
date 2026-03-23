@@ -1,13 +1,19 @@
 package com.grupo51.oficinamecanica.cadastro.model;
 
 import jakarta.persistence.Embeddable;
+import lombok.*;
 
 @Embeddable
-public record Endereco(
-        String logradouro,
-        String numero,
-        String complemento,
-        String bairro,
-        String cidade,
-        String cep
-) {}
+@Getter
+@Setter
+@AllArgsConstructor // <-- Isso gera o construtor com todos os campos
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Endereco {
+    private String logradouro;
+    private String numero;
+    private String complemento;
+    private String bairro;
+    private String cidade;
+    private String uf;
+    private String cep;
+}

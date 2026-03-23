@@ -8,10 +8,12 @@ import com.grupo51.oficinamecanica.cadastro.repository.ClienteRepository;
 import com.grupo51.oficinamecanica.cadastro.repository.VeiculoRepository;
 import com.grupo51.oficinamecanica.comum.exception.BusinessException;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @Transactional
 public class VeiculoService {
@@ -33,8 +35,9 @@ public class VeiculoService {
 
         // 2. Buscar o cliente (Dono) no banco. Se não existir, lança erro.
         // O CPF aqui é usado como ID do cliente conforme o seu repositório.
-        Cliente dono = clienteRepository.findById(dto.cpfDono())
-                .orElseThrow(() -> new BusinessException("Cliente (Dono) não encontrado com o CPF: " + dto.cpfDono()));
+        String cpfDonoLimpo = dto.cpfDono().replaceAll("\\D", "");
+        Cliente dono = clienteRepository.findById(cpfDonoLimpo)
+                .orElseThrow(() -> new BusinessException("Cliente (Dono) não encontrado com o CPF: " + cpfDonoLimpo));
 
         // 3. Validar a placa através do Value Object (Garante o formato correto)
         Placa placaValidada = new Placa(dto.placa());
@@ -53,7 +56,21 @@ public class VeiculoService {
     }
 
     public List<Veiculo> listarPorCpfDono(String cpf) {
-        // Útil para listar todos os carros de um cliente específico
-        return veiculoRepository.findByDonoCpf(cpf);
+        String cpfLimpo = cpf.replaceAll("\\D", "");
+        log.info("Buscando veículos para o dono com CPF: {}", cpfLimpo);
+        
+        // Valida se o cliente existe antes de buscar carros
+        if (!clienteRepository.existsById(cpfLimpo)) {
+            throw new BusinessException("Cliente não encontrado com o CPF informado: " + cpfLimpo);
+        }
+
+        List<Veiculo> veiculos = veiculoRepository.findByDonoCpf(cpfLimpo);
+        
+        if (veiculos.isEmpty()) {
+            throw new BusinessException("Nenhum veículo encontrado para o proprietário com CPF: " + cpfLimpo);
+        }
+
+        log.info("Encontrados {} veículos.", veiculos.size());
+        return veiculos;
     }
 }

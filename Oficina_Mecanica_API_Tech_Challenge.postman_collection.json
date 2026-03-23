@@ -1,0 +1,1952 @@
+{
+	"info": {
+		"_postman_id": "f81fc046-2138-423f-8555-ed327a207dd2",
+		"name": "Oficina Mecânica API - Tech Challenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41411638",
+		"_collection_link": "https://tech-challenge-6389.postman.co/workspace/FIAP~fa5c9794-0c07-4331-8dd5-19a6a4768162/collection/41411638-f81fc046-2138-423f-8555-ed327a207dd2?action=share&source=collection_link&creator=41411638"
+	},
+	"item": [
+		{
+			"name": "01. Login (Obter JWT)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Login: salvar JWT em pm.collectionVariables jwt_token",
+							"let data = {};",
+							"try { data = pm.response.json(); } catch (e) { data = {}; }",
+							"",
+							"pm.test('[PASSO 01] Login - token JWT retornado', function () {",
+							"  pm.expect(data).to.have.property('token');",
+							"  pm.expect(data.token).to.be.a('string').and.not.empty;",
+							"});",
+							"",
+							"if (data && data.token) {",
+							"  pm.collectionVariables.set('jwt_token', data.token);",
+							"}",
+							"",
+							"// Se veio de um fluxo de refresh no runner, retoma a requisição pendente.",
+							"const pending = pm.collectionVariables.get('pending_request_name');",
+							"if (pending) {",
+							"  if (pm.collectionVariables.get('runMode') === 'runner' && typeof postman !== 'undefined' && postman.setNextRequest) {",
+							"    postman.setNextRequest(pending);",
+							"  }",
+							"  // limpa pendência para evitar loops",
+							"  pm.collectionVariables.unset('pending_request_name');",
+							"}",
+							"",
+							"pm.test('[PASSO 01] Status HTTP 200 - login realizado', function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"login\": \"{{login_cpf}}\",\n  \"senha\": \"{{login_senha}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/login",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02. Cadastrar Cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Captura o corpo da resposta",
+							"let response = {};",
+							"try {",
+							"    response = pm.response.json();",
+							"} catch (e) {",
+							"    console.log(\"Resposta sem JSON (status):\", pm.response.code);",
+							"    response = {};",
+							"}",
+							"",
+							"// Se o campo for \"cpf\"",
+							"if (response.cpf) {",
+							"    pm.collectionVariables.set(\"cpf_cliente\", response.cpf);",
+							"    console.log(\"CPF salvo:\", response.cpf);",
+							"}",
+							"",
+							"// Se o campo for \"cpfDono\"",
+							"if (response.cpfDono) {",
+							"    pm.collectionVariables.set(\"cpf_cliente\", response.cpfDono);",
+							"    console.log(\"CPF do dono salvo:\", response.cpfDono);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"function gerarCpf() {",
+							"    let cpfArray;",
+							"    do {",
+							"        const nums = [];",
+							"        for (let i = 0; i < 9; i++) {",
+							"            nums.push(Math.floor(Math.random() * 10));",
+							"        }",
+							"        const dig1 = calcularDigito(nums);",
+							"        const dig2 = calcularDigito([...nums, dig1]);",
+							"        cpfArray = [...nums, dig1, dig2];",
+							"    } while (sequenciaInvalida(cpfArray));",
+							"    return { semPontuacao: cpfArray.join('') };",
+							"}",
+							"",
+							"function calcularDigito(digs) {",
+							"    let soma = 0;",
+							"    for (let i = 0; i < digs.length; i++) {",
+							"        soma += digs[i] * ((digs.length + 1) - i);",
+							"    }",
+							"    const resto = soma % 11;",
+							"    return resto < 2 ? 0 : 11 - resto;",
+							"}",
+							"",
+							"function sequenciaInvalida(cpfArray) {",
+							"    return cpfArray.every(d => d === cpfArray[0]);",
+							"}",
+							"",
+							"// Lista de nomes possíveis",
+							"const nomesClientes = [",
+							"    \"João da Silva\",",
+							"    \"Maria Oliveira\",",
+							"    \"Carlos Pereira\",",
+							"    \"Ana Souza\",",
+							"    \"Roberto Lima\",",
+							"    \"Fernanda Costa\",",
+							"    \"Paulo Henrique\",",
+							"    \"Mariana Torres\",",
+							"    \"Lucas Almeida\",",
+							"    \"Patrícia Gomes\"",
+							"];",
+							"",
+							"// Seleciona nome aleatório",
+							"const nomeCliente = nomesClientes[Math.floor(Math.random() * nomesClientes.length)];",
+							"",
+							"// Gera e-mail baseado no nome",
+							"function gerarEmail(nome) {",
+							"    return nome.toLowerCase()",
+							"               .replace(/\\s+/g, '')   // remove espaços",
+							"               .normalize(\"NFD\")      // remove acentos",
+							"               .replace(/[\\u0300-\\u036f]/g, '') ",
+							"               + \"@email.com.br\";",
+							"}",
+							"const emailCliente = gerarEmail(nomeCliente);",
+							"",
+							"// Gera telefone aleatório (DDD + número)",
+							"function gerarTelefone() {",
+							"    const ddd = Math.floor(Math.random() * 90) + 10; // DDD entre 10 e 99",
+							"    const prefixo = Math.floor(Math.random() * 9000) + 1000; // 4 dígitos",
+							"    const sufixo = Math.floor(Math.random() * 9000) + 1000;  // 4 dígitos",
+							"    return `${ddd}${String(prefixo).padStart(4, '0')}${String(sufixo).padStart(4, '0')}`;",
+							"}",
+							"const telefoneCliente = gerarTelefone();",
+							"",
+							"// Gerar CPF",
+							"const cpf = gerarCpf();",
+							"",
+							"// Armazenar nas variáveis da collection",
+							"pm.collectionVariables.set(\"cpf_valido\", cpf.semPontuacao);",
+							"pm.collectionVariables.set(\"nome_cliente\", nomeCliente);",
+							"pm.collectionVariables.set(\"email_cliente\", emailCliente);",
+							"pm.collectionVariables.set(\"telefone_cliente\", telefoneCliente);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_cliente}}\",\n  \"cpf\": \"{{cpf_valido}}\",\n  \"email\": \"{{email_cliente}}\",\n  \"telefone\": \"{{telefone_cliente}}\",\n  \"endereco\": {\n    \"logradouro\": \"Rua das Flores\",\n    \"numero\": \"123\",\n    \"complemento\": \"Apto 1\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"São Paulo\",\n    \"uf\": \"SP\",\n    \"cep\": \"01234567\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/clientes",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clientes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03. Cadastrar Veículo",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"function gerarPlaca() {",
+							"    const letras = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";",
+							"    const numeros = \"0123456789\";",
+							"    const parte1 = Array.from({length: 3}, () => letras[Math.floor(Math.random() * letras.length)]).join('');",
+							"    const parte2 = numeros[Math.floor(Math.random() * numeros.length)];",
+							"    const parte3 = letras[Math.floor(Math.random() * letras.length)];",
+							"    const parte4 = Array.from({length: 2}, () => numeros[Math.floor(Math.random() * numeros.length)]).join('');",
+							"    return parte1 + parte2 + parte3 + parte4;",
+							"}",
+							"",
+							"const modelos = [\"Civic\", \"Corolla\", \"Gol\", \"Onix\", \"Fiesta\", \"Uno\"];",
+							"const marcas = [\"Honda\", \"Toyota\", \"Volkswagen\", \"Chevrolet\", \"Ford\", \"Fiat\"];",
+							"const cores = [\"Prata\", \"Preto\", \"Branco\", \"Vermelho\", \"Azul\", \"Verde\"];",
+							"",
+							"pm.collectionVariables.set(\"placa\", gerarPlaca());",
+							"pm.collectionVariables.set(\"modelo\", modelos[Math.floor(Math.random() * modelos.length)]);",
+							"pm.collectionVariables.set(\"marca\", marcas[Math.floor(Math.random() * marcas.length)]);",
+							"pm.collectionVariables.set(\"ano\", Math.floor(Math.random() * (2025 - 2000 + 1)) + 2000);",
+							"pm.collectionVariables.set(\"cor\", cores[Math.floor(Math.random() * cores.length)]);",
+							"",
+							"// Recupera o valor já salvo",
+							"let cpfCliente = pm.collectionVariables.get(\"cpf_cliente\");",
+							"",
+							"// Se quiser conferir",
+							"console.log(\"CPF recuperado:\", cpfCliente);",
+							"",
+							"// Você pode setar novamente em variáveis locais se precisar",
+							"pm.variables.set(\"cpf_cliente\", cpfCliente);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// recupera a placa usada na requisição",
+							"const placa = pm.collectionVariables.get(\"placa\");",
+							"",
+							"// regrava para garantir persistência",
+							"pm.collectionVariables.set(\"placa\", placa);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"placa\": \"{{placa}}\",\n  \"modelo\": \"{{modelo}}\",\n  \"marca\": \"{{marca}}\",\n  \"ano\": {{ano}},\n  \"cor\": \"{{cor}}\",\n  \"cpfDono\": \"{{cpf_cliente}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/veiculos",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"veiculos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04. Cadastrar Mecânico (via /funcionarios)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Função para gerar CPF válido",
+							"function gerarCpf() {",
+							"    let cpfArray;",
+							"    do {",
+							"        const nums = [];",
+							"        for (let i = 0; i < 9; i++) {",
+							"            nums.push(Math.floor(Math.random() * 10));",
+							"        }",
+							"        const dig1 = calcularDigito(nums);",
+							"        const dig2 = calcularDigito([...nums, dig1]);",
+							"        cpfArray = [...nums, dig1, dig2];",
+							"    } while (cpfArray.every(d => d === cpfArray[0])); // evita sequências repetidas",
+							"    return cpfArray.join('');",
+							"}",
+							"",
+							"function calcularDigito(digs) {",
+							"    let soma = 0;",
+							"    for (let i = 0; i < digs.length; i++) {",
+							"        soma += digs[i] * ((digs.length + 1) - i);",
+							"    }",
+							"    const resto = soma % 11;",
+							"    return resto < 2 ? 0 : 11 - resto;",
+							"}",
+							"",
+							"// Lista de especialidades conforme enum",
+							"const especialidades = [\"MOTORES\", \"SUSPENSAO\", \"ELETRICA\", \"GERAL\"];",
+							"",
+							"// Lista de nomes possíveis para mecânicos",
+							"const nomes = [",
+							"    \"Mestre Ioda\",",
+							"    \"Carlos Mecânico\",",
+							"    \"Ana Torres\",",
+							"    \"Pedro Souza\",",
+							"    \"Mariana Lima\",",
+							"    \"Roberto Santos\",",
+							"    \"Fernanda Oliveira\",",
+							"    \"João Batista\"",
+							"];",
+							"",
+							"// Gera registro funcional simples (prefixo + número aleatório)",
+							"function gerarRegistro() {",
+							"    const numero = Math.floor(Math.random() * 900) + 100; // entre 100 e 999",
+							"    return \"MF-\" + numero;",
+							"}",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"nome_mecanico\", nomes[Math.floor(Math.random() * nomes.length)]);",
+							"pm.collectionVariables.set(\"cpf_mecanico\", gerarCpf());",
+							"pm.collectionVariables.set(\"especialidade\", especialidades[Math.floor(Math.random() * especialidades.length)]);",
+							"pm.collectionVariables.set(\"registroFuncional\", gerarRegistro());",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Recupera o CPF gerado no Pre-request Script",
+							"const cpfMecanico = pm.collectionVariables.get(\"cpf_mecanico\") || pm.environment.get(\"cpf_mecanico\");",
+							"",
+							"// Regrava para garantir persistência",
+							"pm.collectionVariables.set(\"cpf_mecanico\", cpfMecanico);",
+							"",
+							"// Opcional: logar no console para verificar",
+							"console.log(\"CPF do mecânico mantido:\", cpfMecanico);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_mecanico}}\",\n  \"cpf\": \"{{cpf_mecanico}}\",\n  \"cargo\": \"MECANICO\",\n  \"senha\": \"Senh@316497\",\n  \"especialidade\": \"{{especialidade}}\",\n  \"registroFuncional\": \"{{registroFuncional}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/funcionarios",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"funcionarios"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05. Cadastrar Funcionário",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Função para gerar CPF válido",
+							"function gerarCpf() {",
+							"    let cpfArray;",
+							"    do {",
+							"        const nums = [];",
+							"        for (let i = 0; i < 9; i++) {",
+							"            nums.push(Math.floor(Math.random() * 10));",
+							"        }",
+							"        const dig1 = calcularDigito(nums);",
+							"        const dig2 = calcularDigito([...nums, dig1]);",
+							"        cpfArray = [...nums, dig1, dig2];",
+							"    } while (cpfArray.every(d => d === cpfArray[0])); // evita sequências repetidas",
+							"    return cpfArray.join('');",
+							"}",
+							"",
+							"function calcularDigito(digs) {",
+							"    let soma = 0;",
+							"    for (let i = 0; i < digs.length; i++) {",
+							"        soma += digs[i] * ((digs.length + 1) - i);",
+							"    }",
+							"    const resto = soma % 11;",
+							"    return resto < 2 ? 0 : 11 - resto;",
+							"}",
+							"",
+							"// Lista de nomes possíveis",
+							"const nomes = [",
+							"    \"Jonas Severino\",",
+							"    \"Carla Mendes\",",
+							"    \"Paulo Henrique\",",
+							"    \"Mariana Costa\",",
+							"    \"Roberto Almeida\",",
+							"    \"Fernanda Souza\",",
+							"    \"Lucas Oliveira\",",
+							"    \"Ana Paula\"",
+							"];",
+							"",
+							"// Gera e-mail baseado no nome",
+							"function gerarEmail(nome) {",
+							"    return nome.toLowerCase().replace(/\\s+/g, '') + \"@oficina.com\";",
+							"}",
+							"",
+							"// Cargos permitidos",
+							"const cargos = [\"ATENDENTE\", \"GERENTE\"];",
+							"",
+							"// Seleciona aleatoriamente nome e cargo",
+							"const nome = nomes[Math.floor(Math.random() * nomes.length)];",
+							"const cargo = cargos[Math.floor(Math.random() * cargos.length)];",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"nome_funcionario\", nome);",
+							"pm.collectionVariables.set(\"cpf_funcionario\", gerarCpf());",
+							"pm.collectionVariables.set(\"email_funcionario\", gerarEmail(nome));",
+							"pm.collectionVariables.set(\"cargo_funcionario\", cargo);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Recupera o CPF gerado no Pre-request Script",
+							"const cpfFuncionario = pm.collectionVariables.get(\"cpf_funcionario\") || pm.environment.get(\"cpf_funcionario\");",
+							"",
+							"// Regrava para garantir persistência",
+							"pm.collectionVariables.set(\"cpf_funcionario\", cpfFuncionario);",
+							"",
+							"// Opcional: logar no console para verificar",
+							"console.log(\"CPF do funcionário mantido:\", cpfFuncionario);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_funcionario}}\",\n  \"cpf\": \"{{cpf_funcionario}}\",\n  \"email\": \"{{email_funcionario}}\",\n  \"cargo\": \"{{cargo_funcionario}}\",\n  \"senha\": \"Senh@316497\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/funcionarios",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"funcionarios"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "06. Realizar Agendamento",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Lê o corpo da resposta como JSON",
+							"const responseJson = pm.response.json();",
+							"",
+							"// Recupera o campo \"id\"",
+							"const atendimentoId = responseJson.id;",
+							"",
+							"// Salva em variável da collection (ou ambiente, se preferir)",
+							"pm.collectionVariables.set(\"atendimentoId\", atendimentoId);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Função para adicionar minutos a uma data",
+							"function addMinutes(date, minutes) {",
+							"    return new Date(date.getTime() + minutes * 60000);",
+							"}",
+							"",
+							"// Função para adicionar dias a uma data",
+							"function addDays(date, days) {",
+							"    return new Date(date.getTime() + days * 24 * 60 * 60000);",
+							"}",
+							"",
+							"// Hora atual",
+							"const agora = new Date();",
+							"",
+							"// Hora de início: 30 minutos após agora",
+							"const inicio = addMinutes(agora, 30);",
+							"",
+							"// Hora de fim: entre 1 hora e 5 dias após o início",
+							"const maxFim = addDays(inicio, 5);",
+							"const fim = new Date(inicio.getTime() + Math.floor(Math.random() * (maxFim.getTime() - inicio.getTime())));",
+							"",
+							"// Enum de tipos permitidos",
+							"const tipos = [\"ANALISE\", \"EXECUCAO\"];",
+							"const tipo = tipos[Math.floor(Math.random() * tipos.length)];",
+							"",
+							"// Formata em ISO 8601 (sem timezone)",
+							"function formatISO(date) {",
+							"    return date.toISOString().split('.')[0];",
+							"}",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"dataHoraInicio\", formatISO(inicio));",
+							"pm.collectionVariables.set(\"dataHoraFim\", formatISO(fim));",
+							"pm.collectionVariables.set(\"tipo\", tipo);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"clienteId\": \"{{cpf_cliente}}\",\n  \"veiculoId\": \"{{placa}}\",\n  \"recursoId\": \"{{cpf_mecanico}}\",\n  \"dataHoraInicio\": \"{{dataHoraInicio}}\",\n  \"dataHoraFim\": \"{{dataHoraFim}}\",\n  \"tipo\": \"{{tipo}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/agendamentos",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"agendamentos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "07. Cadastrar Peça",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Captura o id da peça criada para uso em 'Incluir Peça na OS'",
+							"const responseJson = pm.response.json();",
+							"if (responseJson && responseJson.id) {",
+							"    pm.collectionVariables.set(\"peca_id\", responseJson.id);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Lista de peças possíveis",
+							"const pecas = [",
+							"    \"Pastilha de Freio\",",
+							"    \"Disco de Freio\",",
+							"    \"Filtro de Óleo\",",
+							"    \"Filtro de Ar\",",
+							"    \"Amortecedor\",",
+							"    \"Correia Dentada\",",
+							"    \"Bateria\",",
+							"    \"Velas de Ignição\"",
+							"];",
+							"",
+							"// Seleciona uma peça aleatória",
+							"const nome = pecas[Math.floor(Math.random() * pecas.length)];",
+							"",
+							"// Gera preço entre 50 e 1000 reais (com duas casas decimais)",
+							"const preco = (Math.random() * (1000 - 50) + 50).toFixed(2);",
+							"",
+							"// Gera quantidade em estoque entre 1 e 50",
+							"const quantidadeEstoque = Math.floor(Math.random() * 50) + 1;",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"nome_peca\", nome);",
+							"pm.collectionVariables.set(\"preco_peca\", preco);",
+							"pm.collectionVariables.set(\"quantidadeEstoque\", quantidadeEstoque);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"{{nome_peca}}\",\n  \"preco\": {{preco_peca}},\n  \"quantidadeEstoque\": {{quantidadeEstoque}}\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/pecas",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"pecas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "08. Abrir Ordem de Serviço",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Fallback: usa placa seed se variavel nao foi definida pelo passo 2",
+							"const placaAtual = (pm.collectionVariables.get('placa') || '').trim();",
+							"if (!placaAtual) {",
+							"    pm.collectionVariables.set('placa', 'ABC1D23');",
+							"    console.log('Placa nao encontrada - usando seed ABC1D23');",
+							"}",
+							"",
+							"// Lista de problemas possíveis",
+							"const problemas = [",
+							"    \"Barulho na suspensão traseira\",",
+							"    \"Ruído no motor\",",
+							"    \"Freio com pouca eficiência\",",
+							"    \"Luz da injeção acesa\",",
+							"    \"Vazamento de óleo\",",
+							"    \"Direção puxando para o lado\",",
+							"    \"Bateria descarregando rápido\",",
+							"    \"Pneus desgastados irregularmente\"",
+							"];",
+							"",
+							"// Seleciona um problema aleatório",
+							"const descricaoProblema = problemas[Math.floor(Math.random() * problemas.length)];",
+							"",
+							"// Define variáveis na collection",
+							"pm.collectionVariables.set(\"descricaoProblema\", descricaoProblema);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const statusCode = pm.response.code;",
+							"const requestMethod = pm.request.method;",
+							"const requestUrl = pm.request.url.toString();",
+							"const rawBody = pm.response.text();",
+							"let responseJson = {};",
+							"let parseError = '';",
+							"try { responseJson = pm.response.json(); } catch (e) { responseJson = {}; parseError = String((e && e.message) || e); }",
+							"",
+							"pm.test('[PASSO 08] Status HTTP 201 - O.S. criada com sucesso', function() {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"const locationHeader = String(pm.response.headers.get('location') || '').trim();",
+							"const idFromBody = responseJson && responseJson.id ? String(responseJson.id).trim() : '';",
+							"const idFromNested = responseJson && responseJson.data && responseJson.data.id ? String(responseJson.data.id).trim() : '';",
+							"const uuidFromLocationMatch = locationHeader.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);",
+							"const idFromLocation = uuidFromLocationMatch ? uuidFromLocationMatch[0].trim() : '';",
+							"const osId = idFromBody || idFromNested || idFromLocation;",
+							"pm.test('[PASSO 08] Resposta contém campo id (UUID da O.S.) - somente em sucesso', function() {",
+							"    if (!osId) {",
+							"      // A falha detalhada e unica para ausencia de id e registrada abaixo (richFailureMsg).",
+							"      pm.expect(true).to.be.true;",
+							"      return;",
+							"    }",
+							"    pm.expect(osId).to.be.a('string').and.not.empty;",
+							"});",
+							"if (osId) {",
+							"  pm.collectionVariables.set('osId', osId);",
+							"  pm.collectionVariables.set('mailhogEmailCountOS', '0');",
+							"  const osIdPersistido = (pm.collectionVariables.get('osId') || '').trim();",
+							"  pm.test('[PASSO 08] osId persistido na collection', function () {",
+							"    pm.expect(osIdPersistido).to.equal(osId);",
+							"  });",
+							"  console.log('osId salvo:', osId);",
+							"  console.log('osId persistido na collection:', osIdPersistido);",
+							"  console.log('Passo 8 OK - prossiga com o passo 9 usando osId:', osId);",
+							"} else {",
+							"  const bodySnippet = String(rawBody || '').replace(/\\s+/g, ' ').slice(0, 300);",
+							"  const richFailureMsg = `[PASSO 08] Resposta sem id | statusHTTP=${statusCode} | metodo=${requestMethod} | url=${requestUrl} | trechoBody=${bodySnippet}`;",
+							"  pm.test(richFailureMsg, function () {",
+							"    pm.expect.fail(richFailureMsg);",
+							"  });",
+							"  const responseHeaders = {",
+							"    contentType: pm.response.headers.get('content-type') || '',",
+							"    location: pm.response.headers.get('location') || '',",
+							"    xCorrelationId: pm.response.headers.get('x-correlation-id') || '',",
+							"    wwwAuthenticate: pm.response.headers.get('www-authenticate') || ''",
+							"  };",
+							"  console.log('[PASSO 08][ERRO_ID] Nao foi possivel salvar osId.');",
+							"  console.log('[PASSO 08][ERRO_ID] Request:', requestMethod, requestUrl);",
+							"  console.log('[PASSO 08][ERRO_ID] Status HTTP:', statusCode);",
+							"  console.log('[PASSO 08][ERRO_ID] Headers relevantes:', JSON.stringify(responseHeaders));",
+							"  console.log('[PASSO 08][ERRO_ID] location header:', locationHeader);",
+							"  console.log('[PASSO 08][ERRO_ID] idFromBody/idFromNested/idFromLocation:', idFromBody, idFromNested, idFromLocation);",
+							"  if (parseError) {",
+							"    console.log('[PASSO 08][ERRO_ID] Falha ao parsear JSON:', parseError);",
+							"  }",
+							"  console.log('[PASSO 08][ERRO_ID] Body bruto:', rawBody);",
+							"  console.log('[PASSO 08][ERRO_ID] Body JSON parseado:', JSON.stringify(responseJson));",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"placa\": \"{{placa}}\",\n  \"descricaoProblema\": \"{{descricaoProblema}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "09. Avançar Status OS",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Evolução da OS (StatusOS.java) - fase 1 da oficina: RECEBIDA -> EM_DIAGNOSTICO",
+							"pm.collectionVariables.set('novoStatus', 'EM_DIAGNOSTICO');",
+							"",
+							"var osIdCollection = (pm.collectionVariables.get('osId') || '').trim();",
+							"var osIdAnyScope = (pm.variables.get('osId') || '').trim();",
+							"var osId = (osIdCollection || osIdAnyScope).trim();",
+							"if (osId && osId !== osIdCollection) { pm.collectionVariables.set('osId', osId); }",
+							"",
+							"// Corrige log do passo (era [PASSO 8])",
+							"console.log('[PASSO 09] Diagnostico osId -> collection:', osIdCollection, '| anyScope:', osIdAnyScope, '| usado:', osId);",
+							"",
+							"var uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
+							"if (!osId || !uuidRegex.test(osId)) {",
+							"    pm.collectionVariables.set('auth_reason', 'osId ausente/invalido para avancar status');",
+							"    console.log('Passo 09 bloqueado: osId ausente/invalido. Execute o passo 08 e confirme retorno com campo id.');",
+							"    if (pm.collectionVariables.get('runMode') === 'runner' && typeof postman !== 'undefined' && postman.setNextRequest) {",
+							"        postman.setNextRequest('08. Abrir Ordem de Serviço');",
+							"    }",
+							"    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+							"        pm.execution.skipRequest();",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('[PASSO 8] Status HTTP 204 - OS em EM_DIAGNOSTICO', function () {",
+							"  pm.expect([200, 204]).to.include(pm.response.code);",
+							"});",
+							"pm.collectionVariables.set('ultimoStatusOS', 'EM_DIAGNOSTICO');",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"if (validarEmail) {",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
+							"    pm.test('[PASSO 8] MailHog respondeu para validacao de email', function () {",
+							"      pm.expect(err).to.equal(null);",
+							"      pm.expect(res).to.have.property('code', 200);",
+							"    });",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
+							"    pm.test('[PASSO 8] Email da fase EM_DIAGNOSTICO enviado', function () {",
+							"      pm.expect(items.length).to.be.greaterThan(prev);",
+							"    });",
+							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
+							"  });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=EM_DIAGNOSTICO",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "novoStatus",
+							"value": "EM_DIAGNOSTICO"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. Incluir Peça na OS",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pecaId\": \"{{peca_id}}\",\n  \"quantidade\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/pecas",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"pecas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. Consultar Detalhes da OS",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {},
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12. Avançar OS para AGUARDANDO_APROVACAO",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set('novoStatus', 'AGUARDANDO_APROVACAO');",
+							"const osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
+							"if (!osId || !uuidRegex.test(osId)) {",
+							"  pm.collectionVariables.set('auth_reason', 'osId ausente/invalido para AGUARDANDO_APROVACAO');",
+							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('[PASSO 8] Status HTTP 204 - OS em AGUARDANDO_APROVACAO', function () {",
+							"  pm.expect([200, 204]).to.include(pm.response.code);",
+							"});",
+							"pm.collectionVariables.set('ultimoStatusOS', 'AGUARDANDO_APROVACAO');",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"if (validarEmail) {",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
+							"    pm.test('[PASSO 8] MailHog respondeu para validacao de email (aguardando aprovacao)', function () {",
+							"      pm.expect(err).to.equal(null);",
+							"      pm.expect(res).to.have.property('code', 200);",
+							"    });",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
+							"    pm.test('[PASSO 8] Email da fase AGUARDANDO_APROVACAO enviado', function () {",
+							"      pm.expect(items.length).to.be.greaterThan(prev);",
+							"    });",
+							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
+							"  });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=AGUARDANDO_APROVACAO",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "novoStatus",
+							"value": "AGUARDANDO_APROVACAO"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "13. Aprovar Orçamento da OS",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Requer que a OS esteja com status AGUARDANDO_APROVACAO",
+							"// Certifique-se de ter avançado o status para AGUARDANDO_APROVACAO antes",
+							"const statusAtual = (pm.collectionVariables.get('ultimoStatusOS') || '').trim();",
+							"if (statusAtual === 'CANCELADA') {",
+							"  console.log('Passo 13 ignorado: OS cancelada no passo opcional final.');",
+							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('[PASSO 11] Status HTTP 204 - orçamento aprovado e execução autorizada', function () {",
+							"  pm.expect([200, 204]).to.include(pm.response.code);",
+							"});",
+							"pm.collectionVariables.set('ultimoStatusOS', 'EM_EXECUCAO');",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"if (validarEmail) {",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
+							"    pm.test('[PASSO 11] MailHog respondeu para validacao de email (aprovacao)', function () {",
+							"      pm.expect(err).to.equal(null);",
+							"      pm.expect(res).to.have.property('code', 200);",
+							"    });",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
+							"    pm.test('[PASSO 11] Email da fase de aprovação/autorização enviado', function () {",
+							"      pm.expect(items.length).to.be.greaterThan(prev);",
+							"    });",
+							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
+							"  });",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/aprovacao",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"aprovacao"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "14. Avançar OS para FINALIZADA",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const statusAtual = (pm.collectionVariables.get('ultimoStatusOS') || '').trim();",
+							"if (statusAtual === 'CANCELADA') {",
+							"  console.log('Passo 15 ignorado: OS cancelada.');",
+							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('[PASSO 15] Status HTTP 204 - OS finalizada', function () {",
+							"  pm.expect([200, 204]).to.include(pm.response.code);",
+							"});",
+							"pm.collectionVariables.set('ultimoStatusOS', 'FINALIZADA');",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"if (validarEmail) {",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
+							"    pm.test('[PASSO 15] MailHog respondeu para validacao de email (finalizacao)', function () {",
+							"      pm.expect(err).to.equal(null);",
+							"      pm.expect(res).to.have.property('code', 200);",
+							"    });",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
+							"    pm.test('[PASSO 15] Email da fase FINALIZADA enviado', function () {",
+							"      pm.expect(items.length).to.be.greaterThan(prev);",
+							"    });",
+							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
+							"  });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=FINALIZADA",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "novoStatus",
+							"value": "FINALIZADA"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "15. Avançar OS para ENTREGUE",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const statusAtual = (pm.collectionVariables.get('ultimoStatusOS') || '').trim();",
+							"if (statusAtual === 'CANCELADA') {",
+							"  console.log('Passo 14 ignorado: OS cancelada.');",
+							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('[PASSO 14] Status HTTP 204 - OS entregue ao cliente (pagamento/devolucao)', function () {",
+							"  pm.expect([200, 204]).to.include(pm.response.code);",
+							"});",
+							"pm.collectionVariables.set('ultimoStatusOS', 'ENTREGUE');",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"if (validarEmail) {",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
+							"    pm.test('[PASSO 14] MailHog respondeu para validacao de email (entrega)', function () {",
+							"      pm.expect(err).to.equal(null);",
+							"      pm.expect(res).to.have.property('code', 200);",
+							"    });",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
+							"    pm.test('[PASSO 14] Email da fase ENTREGUE enviado', function () {",
+							"      pm.expect(items.length).to.be.greaterThan(prev);",
+							"    });",
+							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
+							"  });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=ENTREGUE",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "novoStatus",
+							"value": "ENTREGUE"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "16. Listar Ordens de Serviço (Paginado)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os?page=0&size=10&sort=dataAbertura,desc",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						},
+						{
+							"key": "sort",
+							"value": "dataAbertura,desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "17. Listar Clientes",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/api/v1/clientes",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clientes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "18. Listar Veículos por Dono",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/veiculos/dono/{{cpf_cliente}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"veiculos",
+						"dono",
+						"{{cpf_cliente}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "19. Cancelar OS antes da aprovação (opcional)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// [PASSO 19] Cancelar OS antes da aprovação (opcional)",
+							"// MODIFICADO: Executa sempre, ignorando flag e status, para validar resposta da API.",
+							"",
+							"// Validações antes de enviar",
+							"const osId = (pm.variables.get('osId') || '').trim();",
+							"const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
+							"if (!uuidRegex.test(osId)) {",
+							"  pm.collectionVariables.set('auth_reason', `Passo 19 não executado: osId ausente ou inválido (esperado UUID). Valor atual: ${osId || '(vazio)'}`);",
+							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+							"    pm.execution.skipRequest();",
+							"  }",
+							"  return;",
+							"}",
+							"",
+							"// Removida lógica de skipRequest baseada no status anterior.",
+							"pm.collectionVariables.unset('auth_reason');",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// [PASSO 19] Cancelar OS",
+							"const code = pm.response.code;",
+							"",
+							"// Aceita sucesso (200/204) ou erro de negócio (400/409/422) se a OS já estiver em estado que não permite cancelamento.",
+							"pm.test('[PASSO 19] Status HTTP esperado (2xx ou 4xx de regra de negócio)', function () {",
+							"  pm.expect([200, 204, 400, 409, 422]).to.include(code);",
+							"});",
+							"",
+							"if (code >= 200 && code < 300) {",
+							"  pm.collectionVariables.set('ultimoStatusOS', 'CANCELADA');",
+							"  console.log('OS cancelada com sucesso.');",
+							"} else {",
+							"  console.log('OS não cancelada (provavelmente já finalizada), status retornado:', code);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=CANCELADA",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "novoStatus",
+							"value": "CANCELADA"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"/**",
+					" * Auth guard (collection-level pre-request)",
+					" * Enforces Authorization header derived ONLY from collection variable {{jwt_token}}.",
+					" * Rules (non-/login):",
+					" *  0) no runner, pode forçar refresh de JWT por request (always_refresh_jwt=true)",
+					" *  1) remove any existing Authorization header",
+					" *  2) if jwt_token exists -> upsert Authorization = `Bearer ${jwt_token}`",
+					" *  3) if jwt_token missing -> in runner mode: set pending_request_name, setNextRequest to Login, and skip request",
+					" *  4) detect hardcoded Authorization values (e.g., 'Bearer eyJ...') and block request",
+					" */",
+					"",
+					"const jwtVarName = 'jwt_token';",
+					"const loginPath = '/login';",
+					"const loginRequestName = '01. Login (Obter JWT)';",
+					"const runnerFlagVar = 'runMode';",
+					"const runnerInitVar = '_runner_initialized';",
+					"const pendingVar = 'pending_request_name';",
+					"const reasonVar = 'auth_reason';",
+					"",
+					"const requestPath = pm.request.url.getPath();",
+					"const requestName = pm.info.requestName;",
+					"const isLoginRequest = requestPath === loginPath;",
+					"const isRunner = pm.collectionVariables.get(runnerFlagVar) === 'runner';",
+					"const alwaysRefreshJwt = (pm.collectionVariables.get('always_refresh_jwt') || 'true') === 'true';",
+					"",
+					"// Reset variables once at runner start (keeps existing behavior, but avoids wiping auth control vars).",
+					"if (isRunner && !pm.collectionVariables.get(runnerInitVar)) {",
+					"  Object.keys(pm.collectionVariables.toObject()).forEach(key => {",
+					"    if (![ 'baseURL', 'login_cpf', 'login_senha', runnerFlagVar, runnerInitVar, pendingVar, reasonVar, jwtVarName ].includes(key)) {",
+					"      pm.collectionVariables.set(key, '');",
+					"    }",
+					"  });",
+					"  pm.collectionVariables.set(runnerInitVar, 'true');",
+					"}",
+					"",
+					"// --- Enforce Authorization for all non-login requests ---",
+					"if (!isLoginRequest) {",
+					"  const existingAuthHeader = pm.request.headers.get('Authorization');",
+					"",
+					"  // 0) Runner: força login antes de cada request para reduzir 403 por token stale.",
+					"  if (isRunner && alwaysRefreshJwt) {",
+					"    const refreshedFor = pm.collectionVariables.get('auth_refreshed_for_request');",
+					"    if (refreshedFor !== requestName) {",
+					"      pm.collectionVariables.set('auth_refreshed_for_request', requestName);",
+					"      pm.collectionVariables.set(pendingVar, requestName);",
+					"      pm.collectionVariables.set(reasonVar, 'Refresh proativo de JWT antes da request');",
+					"      if (typeof postman !== 'undefined' && postman.setNextRequest) {",
+					"        postman.setNextRequest(loginRequestName);",
+					"      } else if (pm.execution && typeof pm.execution.setNextRequest === 'function') {",
+					"        pm.execution.setNextRequest(loginRequestName);",
+					"      }",
+					"      if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+					"        pm.execution.skipRequest();",
+					"      }",
+					"      return;",
+					"    }",
+					"    pm.collectionVariables.unset('auth_refreshed_for_request');",
+					"  }",
+					"",
+					"  // 4) Detect hardcoded JWTs and block.",
+					"  // We treat as hardcoded if it looks like 'Bearer <jwt>' and does NOT contain a variable placeholder.",
+					"  const looksLikeHardcodedJwt = !!existingAuthHeader",
+					"    && /^Bearer\\s+eyJ[A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-]+\\s*$/i.test(existingAuthHeader)",
+					"    && !existingAuthHeader.includes('{{');",
+					"",
+					"  if (looksLikeHardcodedJwt) {",
+					"    pm.collectionVariables.set(reasonVar, 'Authorization hardcoded detectado (Bearer eyJ...)');",
+					"    pm.collectionVariables.set(pendingVar, requestName);",
+					"    console.log('Authorization hardcoded detectado. Remova Bearer fixo e use jwt_token da collection.');",
+					"",
+					"    // Ensure the request doesn't go out with a leaked token",
+					"    if (existingAuthHeader) pm.request.headers.remove('Authorization');",
+					"",
+					"    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+					"      pm.execution.skipRequest();",
+					"    }",
+					"    return;",
+					"  }",
+					"",
+					"  // 1) Always remove Authorization to prevent conflicts.",
+					"  if (existingAuthHeader) {",
+					"    pm.request.headers.remove('Authorization');",
+					"  }",
+					"",
+					"  // 2) Apply Authorization from collection variable.",
+					"  const token = pm.collectionVariables.get(jwtVarName);",
+					"  if (token) {",
+					"    pm.request.headers.upsert({ key: 'Authorization', value: `Bearer ${token}` });",
+					"  } else {",
+					"    // 3) Missing token: runner mode => redirect to login + skip current",
+					"    pm.collectionVariables.set(reasonVar, 'JWT ausente (jwt_token não definido)');",
+					"    pm.collectionVariables.set(pendingVar, requestName);",
+					"",
+					"    if (isRunner) {",
+					"      if (typeof postman !== 'undefined' && postman.setNextRequest) {",
+					"        postman.setNextRequest(loginRequestName);",
+					"      } else if (pm.execution && typeof pm.execution.setNextRequest === 'function') {",
+					"        pm.execution.setNextRequest(loginRequestName);",
+					"      }",
+					"    }",
+					"",
+					"    if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+					"      pm.execution.skipRequest();",
+					"    }",
+					"    return;",
+					"  }",
+					"}",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"const requestPath = pm.request.url.getPath();",
+					"const requestName = pm.info.requestName;",
+					"const isLoginRequest = requestPath === '/login';",
+					"const isProtectedBySecurityConfig = requestPath.startsWith('/api/v1/');",
+					"const isRunner = pm.collectionVariables.get('runMode') === 'runner';",
+					"",
+					"// Baseado em SecurityConfig: /api/v1/** requer autenticação;",
+					"// então 401/403 são retornos válidos de segurança para endpoints protegidos.",
+					"// Regra desta collection: nunca limpar jwt_token automaticamente em retornos.",
+					"",
+					"const status = pm.response.code;",
+					"",
+					"// tenta ler JSON se existir",
+					"let response = {};",
+					"try { response = pm.response.json(); } catch (e) { response = {}; }",
+					"",
+					"if (status === 401) {",
+					"  pm.collectionVariables.set('auth_reason', '401 Unauthorized');",
+					"  pm.collectionVariables.set('pending_request_name', requestName);",
+					"  if (isRunner && typeof postman !== 'undefined' && postman.setNextRequest) {",
+					"    postman.setNextRequest('01. Login (Obter JWT)');",
+					"  }",
+					"}",
+					"",
+					"if (status === 403) {",
+					"  pm.collectionVariables.set('auth_reason', '403 Forbidden (sem permissão)');",
+					"}",
+					"",
+					"const statusByRequest = {",
+					"  '01. Login (Obter JWT)': [200, 400, 401],",
+					"  '02. Cadastrar Cliente': [201, 400, 401, 409, 422],",
+					"  '03. Cadastrar Veículo': [201, 400, 401, 409, 422],",
+					"  '04. Cadastrar Mecânico (via /funcionarios)': [201, 400, 401, 409, 422],",
+					"  '05. Cadastrar Funcionário': [201, 400, 401, 409, 422],",
+					"  '06. Realizar Agendamento': [201, 400, 401, 409, 422],",
+					"  '07. Cadastrar Peça': [201, 400, 401, 409, 422],",
+					"  '08. Abrir Ordem de Serviço': [201, 400, 401, 409, 422],",
+					"  '09. Avançar Status OS': [200, 204, 400, 401, 404, 409, 422],",
+					"  '10. Incluir Peça na OS': [200, 201, 202, 204, 400, 401, 404, 409, 422],",
+					"  '11. Consultar Detalhes da OS': [200, 400, 401, 404],",
+					"  '12. Avançar OS para AGUARDANDO_APROVACAO': [200, 204, 400, 401, 404, 409, 422],",
+					"  '13. Aprovar Orçamento da OS': [200, 204, 400, 401, 404, 409, 422],",
+					"  '14. Avançar OS para FINALIZADA': [200, 204, 400, 401, 404, 409, 422],",
+					"  '15. Avançar OS para ENTREGUE': [200, 204, 400, 401, 404, 409, 422],",
+					"  '16. Listar Ordens de Serviço (Paginado)': [200, 400, 401],",
+					"  '17. Listar Clientes': [200, 400, 401],",
+					"  '18. Listar Veículos por Dono': [200, 400, 401, 404],",
+					"  '19. Cancelar OS antes da aprovação (opcional)': [200, 204, 400, 401, 404, 409, 422]",
+					"};",
+					"",
+					"const defaultAllowed = isLoginRequest",
+					"  ? [200, 400, 401]",
+					"  : (isProtectedBySecurityConfig ? [200, 201, 202, 204, 400, 401, 404, 409, 422] : [200, 201, 202, 204, 400, 404, 409, 422]);",
+					"const allowedStatus = statusByRequest[requestName] || defaultAllowed;",
+					"const stepMatch = /^(\\d+)\\./.exec(requestName || '');",
+					"const stepPrefix = stepMatch ? `[PASSO ${stepMatch[1]}] ` : '';",
+					"",
+					"pm.test(`${stepPrefix}Status HTTP diferente de 403`, function () {",
+					"  pm.expect(status, `403 recebido em ${requestName}`).to.not.equal(403);",
+					"});",
+					"",
+					"// Mantém extração existente, se vier cpf/cpfDono",
+					"if (response && response.cpf) pm.collectionVariables.set('cpf_cliente', response.cpf);",
+					"if (response && response.cpfDono) pm.collectionVariables.set('cpf_cliente', response.cpfDono);",
+					"",
+					"pm.test(`${stepPrefix}Status HTTP ${status} dentro do esperado para ${requestName}`, function () {",
+					"  pm.expect(allowedStatus).to.include(status);",
+					"});",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "placa",
+			"value": ""
+		},
+		{
+			"key": "modelo",
+			"value": ""
+		},
+		{
+			"key": "marca",
+			"value": ""
+		},
+		{
+			"key": "ano",
+			"value": ""
+		},
+		{
+			"key": "cor",
+			"value": ""
+		},
+		{
+			"key": "nome_mecanico",
+			"value": ""
+		},
+		{
+			"key": "cpf_mecanico",
+			"value": ""
+		},
+		{
+			"key": "especialidade",
+			"value": ""
+		},
+		{
+			"key": "registroFuncional",
+			"value": ""
+		},
+		{
+			"key": "nome_funcionario",
+			"value": ""
+		},
+		{
+			"key": "cpf_funcionario",
+			"value": ""
+		},
+		{
+			"key": "email_funcionario",
+			"value": ""
+		},
+		{
+			"key": "cargo_funcionario",
+			"value": ""
+		},
+		{
+			"key": "dataHoraInicio",
+			"value": ""
+		},
+		{
+			"key": "dataHoraFim",
+			"value": ""
+		},
+		{
+			"key": "tipo",
+			"value": ""
+		},
+		{
+			"key": "peca_id",
+			"value": ""
+		},
+		{
+			"key": "novoStatus",
+			"value": "EM_DIAGNOSTICO"
+		},
+		{
+			"key": "osId",
+			"value": ""
+		},
+		{
+			"key": "nome_peca",
+			"value": ""
+		},
+		{
+			"key": "preco_peca",
+			"value": ""
+		},
+		{
+			"key": "quantidadeEstoque",
+			"value": ""
+		},
+		{
+			"key": "nome_cliente",
+			"value": ""
+		},
+		{
+			"key": "email_cliente",
+			"value": ""
+		},
+		{
+			"key": "telefone_cliente",
+			"value": ""
+		},
+		{
+			"key": "atendimentoId",
+			"value": ""
+		},
+		{
+			"key": "descricaoProblema",
+			"value": ""
+		},
+		{
+			"key": "cpf_cliente",
+			"value": ""
+		},
+		{
+			"key": "cpf_valido",
+			"value": ""
+		},
+		{
+			"key": "login_cpf",
+			"value": "25390437021"
+		},
+		{
+			"key": "login_senha",
+			"value": "Senh@316497"
+		},
+		{
+			"key": "runMode",
+			"value": ""
+		},
+		{
+			"key": "_runner_initialized",
+			"value": ""
+		},
+		{
+			"key": "jwt_token",
+			"value": ""
+		},
+		{
+			"key": "pending_request_name",
+			"value": ""
+		},
+		{
+			"key": "always_refresh_jwt",
+			"value": "true"
+		},
+		{
+			"key": "auth_refreshed_for_request",
+			"value": ""
+		},
+		{
+			"key": "mailhogBaseURL",
+			"value": "http://localhost:8025"
+		},
+		{
+			"key": "validarEmailFases",
+			"value": "false"
+		},
+		{
+			"key": "mailhogEmailCountOS",
+			"value": "0"
+		},
+		{
+			"key": "ultimoStatusOS",
+			"value": ""
+		},
+		{
+			"key": "executarCancelamentoAntesAprovacao",
+			"value": "false"
+		}
+	]
+}

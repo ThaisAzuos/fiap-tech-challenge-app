@@ -1,94 +1,195 @@
-# 🛠️ Oficina Mecânica API - Tech Challenge
+# 🛠️ Oficina Mecânica API
 
-Esta é uma API REST robusta desenvolvida para a gestão completa de uma oficina mecânica. O sistema permite o controle de clientes, veículos (incluindo especificações como cor e ano), estoque de peças e o ciclo de vida completo de uma **Ordem de Serviço (O.S.)**.
+API REST para gestão de oficina mecânica (Cadastro, Estoque, O.S., Autenticação JWT).
 
-O projeto foi construído focando em boas práticas de desenvolvimento, separação de responsabilidades e facilidade de deploy.
+## 🚀 Quick Start (Docker)
 
-## 🚀 Tecnologias Utilizadas
+Suba a aplicação completa (API + Banco + MailHog) com um comando:
 
-* **Java 21** & **Spring Boot 3**
-* **Spring Data JPA** (Persistência de dados)
-* **PostgreSQL 15** (Banco de dados relacional)
-* **Docker & Docker Compose** (Containerização e orquestração)
-* **Maven** (Gerenciamento de dependências)
-* **Postman** (Documentação e testes das rotas)
+```bash
+# Limpar e iniciar
+docker-compose down --remove-orphans
+docker-compose up --build -d
+```
 
----
+**Acessos:**
+- **API:** `http://localhost:8080`
+- **Swagger:** `http://localhost:8080/swagger-ui/index.html`
+- **MailHog (Emails):** `http://localhost:8025`
 
-## 🏗️ Principais Funcionalidades
-
-* **Gestão de Cadastros:** Registro completo de clientes e seus respectivos veículos.
-* **Controle de Estoque:** Cadastro e atualização de peças com controle de quantidade.
-* **Fluxo de Atendimento:** * Abertura de O.S. vinculada a um veículo.
-    * Adição dinâmica de peças e serviços na O.S.
-    * Atualização de status (ABERTA, EM_DIAGNOSTICO, AGUARDANDO_PECA, CONCLUIDA, etc.).
-* **Cálculos Automáticos:** Cálculo total do valor da O.S. com base nas peças utilizadas.
----
-
-## 🛠️ Diferenciais Técnicos e Arquitetura
-
-### 🆔 Uso de UUID
-Todas as entidades utilizam `UUID` como chave primária (`PK`). Esta escolha garante:
-- **Segurança:** Impede a descoberta de volume de dados por ID sequencial.
-- **Escalabilidade:** Facilita a migração e sincronização de dados entre diferentes bancos.
-
-### 🧠 Domínio Rico (DDD)
-Diferente de arquiteturas anêmicas, a lógica de negócio está protegida nas entidades:
-- **Máquina de Status:** A `OrdemServico` valida suas próprias transições de status (ex: não permite retrocesso de etapas ou alteração de O.S. finalizada).
-- **Snapshot de Preços:** Ao adicionar uma peça, o sistema grava o preço e nome no momento da venda, protegendo o histórico financeiro contra alterações futuras no cadastro de estoque.
-
-### ⚡ Performance e DTOs
-- **Lazy Loading:** Implementado para carregar coleções apenas sob demanda.
-- **Transactional Read-Only:** Consultas otimizadas com `@Transactional(readOnly = true)` para evitar processamento desnecessário do Hibernate.
-- **Records:** Uso de Java Records para DTOs de entrada e saída, garantindo imutabilidade e clareza no contrato da API.
+**Parar:**
+```bash
+docker-compose down
+```
 
 ---
 
-## 📋 Guia de Testes (Sequence Flow)
+## ☸️ Kubernetes (K8s)
 
-Siga a ordem abaixo no Postman para testar o fluxo completo:
+**Decisão rápida:** use **Primeira execução** quando o cluster estiver limpo ou for a primeira subida; use **Reexecução rápida** no dia a dia para iterar mais rápido.
 
-### 1. Contexto de Cadastro
-- **POST** `/api/v1/clientes`: Cadastre um cliente (use CPF válido).
-- **POST** `/api/v1/veiculos`: Vincule um veículo ao CPF do dono.
+### 1) Iniciar
 
-### 2. Contexto de Estoque
-- **POST** `/api/v1/pecas`: Cadastre peças (ex: Pastilha de freio, Óleo).
+**Primeira execução (setup completo):**
+```bash
+# Habilitar metrics-server para HPA
+kubectl apply -f k8s-metrics-server.yaml
 
-### 3. Contexto de Atendimento (Fluxo Principal)
-- **POST** `/api/v1/atendimento/os`: Abra uma O.S. informando apenas a placa e o problema.
-- **POST** `/api/v1/atendimento/os/{osId}/pecas`: Adicione itens à O.S. (O sistema calcula o total automaticamente).
-- **PATCH** `/api/v1/atendimento/os/{osId}/status`: Avance o status (ex: `RECEBIDA` -> `EM_DIAGNOSTICO`).
-- **GET** `/api/v1/atendimento/os/{osId}`: Veja o resumo detalhado com dados do cliente, veículo e lista de peças.
+# Aplicar somente os manifests Kubernetes do projeto (mais rapido que `-f .`)
+kubectl apply -f k8s-secret.yaml
+kubectl apply -f k8s-configmap.yaml
+kubectl apply -f k8s-postgres.yaml
+kubectl apply -f k8s-mailhog.yaml
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-service.yaml
+kubectl apply -f k8s-hpa.yaml
+
+# Aguardar a aplicacao ficar pronta antes do teste de carga
+kubectl rollout status deployment/oficina-app --timeout=180s
+```
+
+**Reexecução rápida (ambiente já criado):**
+```bash
+# Atualiza somente app e autoscaling
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-service.yaml
+kubectl apply -f k8s-hpa.yaml
+
+# Reinicia app e aguarda prontidão
+kubectl rollout restart deployment/oficina-app
+kubectl rollout status deployment/oficina-app --timeout=180s
+```
+
+### 2) Monitorar
+
+**Status geral:**
+```bash
+kubectl get pods,svc,hpa
+```
+
+**Acompanhar em tempo real (terminais separados):**
+```bash
+kubectl get pods -w
+kubectl get hpa oficina-hpa -w
+kubectl get endpoints oficina-service -w
+```
+
+**Logs da aplicação:**
+```bash
+kubectl logs -f deployment/oficina-app
+```
+
+**Métricas (CPU/memória):**
+```bash
+kubectl top pods
+kubectl top nodes
+```
+
+**Acesso local à API (port-forward):**
+```bash
+# Use 8080:80 se a porta 8080 estiver livre; caso contrario, use 8081:80
+kubectl port-forward svc/oficina-service 8080:80
+```
+
+**Teste de carga (terminal separado):**
+```bash
+python3 scripts/load-test.py
+```
+
+### 3) Encerrar
+
+**Parar acompanhamento local:**
+```bash
+# Interrompa watchers/port-forward com Ctrl+C nos terminais em execucao
+```
+
+**Remover recursos do projeto no cluster:**
+```bash
+kubectl delete -f k8s-hpa.yaml
+kubectl delete -f k8s-service.yaml
+kubectl delete -f k8s-deployment.yaml
+kubectl delete -f k8s-mailhog.yaml
+kubectl delete -f k8s-postgres.yaml
+kubectl delete -f k8s-configmap.yaml
+kubectl delete -f k8s-secret.yaml
+```
 
 ---
 
-## 🐳 Como Rodar com Docker (Recomendado)
+## 🧪 Testes e Qualidade
 
-O projeto está totalmente conteinerizado, utilizando **Docker** e **Docker Compose** para orquestrar a API e o banco de dados PostgreSQL. O processo utiliza **Multi-stage Build**, garantindo uma imagem final leve e segura.
+**Unitários/Integração:**
+```bash
+mvn clean test
+```
 
-### 🛠️ Diferenciais da Configuração:
-- **Multi-stage Build:** A compilação é feita dentro do container (imagem Maven), e a execução usa apenas o JRE (imagem Temurin), reduzindo o tamanho da imagem final.
-- **Healthcheck:** A aplicação só inicia após o PostgreSQL confirmar que está pronto para receber conexões.
-- **Persistência e Credenciais:** Variáveis de ambiente configuradas para integração imediata.
+**Automatizado (sobe MailHog + roda testes):**
+```bash
+./scripts/test-local.sh
+```
 
-### 🚀 Passo a Passo
+**Compose dedicado para testes (somente MailHog):**
+```bash
+docker compose -f docker-compose.test.yml up -d mailhog
+./mvnw clean test
+docker compose -f docker-compose.test.yml down
+```
 
-1. **Certifique-se de ter o Docker instalado em sua máquina.**
-2. No terminal, navegue até a raiz do projeto e execute:
-   ```bash
-   docker-compose up --build
+**Exemplos úteis do script:**
+```bash
+# Roda somente um teste específico
+./scripts/test-local.sh -- -Dtest=OpenApiDocumentationTest
+
+# Mantém cache Maven (sem clean) e para MailHog no final
+./scripts/test-local.sh --no-clean --down
+```
+
+**SonarQube (Local):**
+```bash
+# Fluxo automatizado (sobe Sonar, aguarda UP e executa análise)
+export SONAR_TOKEN="SEU_TOKEN"
+./scripts/sonar-local.sh
+
+# Opcional: derrubar stack ao final
+./scripts/sonar-local.sh --down
+
+# Fluxo manual equivalente
+docker-compose -f docker-compose.sonar.yml up -d
+./mvnw clean verify sonar:sonar \
+  -Dsonar.host.url="http://localhost:9000" \
+  -Dsonar.token="$SONAR_TOKEN"
+```
 
 ---
 
-## 📥 Como usar a Collection do Postman
+## 📨 Teste de Fluxo (Postman)
 
-Para facilitar os testes, incluímos o arquivo `Oficina_Mecanica.postman_collection.json` na raiz do projeto. Siga os passos abaixo para importar:
+Importe `Oficina_Mecanica_API_Tech_Challenge.postman_collection.json` e siga a ordem:
 
-1. Abra o **Postman**.
-2. No canto superior esquerdo, clique no botão **Import**.
-3. Arraste e solte o arquivo `Oficina_Mecanica.postman_collection.json` na janela que abrir.
-4. Uma nova coleção chamada **"Oficina Mecânica API - Tech Challenge"** aparecerá na sua aba lateral.
-5. As requisições já estão configuradas com os corpos (JSON) e URLs padrão (`http://localhost:8080`).
+1. **Autenticação:** `POST /login` (Gera token JWT automático para as próximas chamadas).
+2. **Cadastro:** Clientes, Veículos, Peças.
+3. **Atendimento:** Abrir O.S., Adicionar Peças, Mudar Status.
+4. **Verificação:** Checar e-mails no MailHog (`http://localhost:8025`).
 
-> **Nota:** Nas requisições de **Incluir Peça**, **Mudar Status** e **Consultar Detalhes**, lembre-se de substituir o `ID` na URL ou no corpo pelo UUID gerado nas etapas anteriores.
+Guia operacional detalhado de autenticação JWT no Postman:
+- [`docs/operacional/jwt-postman-mini-guia.md`](docs/operacional/jwt-postman-mini-guia.md)
+
+
+---
+
+## 📂 Documentação e Estrutura
+
+- **`src/`**: Código fonte Java 21 + Spring Boot 3.
+- **`docs/`**: Documentação detalhada ([Índice Completo](docs/indice.md)).
+  - **ADRs**: Decisões arquiteturais.
+  - **Operacional**: Guias do MailHog, SonarQube, Postman/JWT e AWS/Terraform no IntelliJ.
+- **`terraform/`**: Infraestrutura as Code (AWS).
+- **`k8s-*.yaml`**: Manifestos Kubernetes.
+
+Guia operacional para configurar AWS e Terraform no IntelliJ:
+- [`docs/operacional/aws-terraform-intellij.md`](docs/operacional/aws-terraform-intellij.md)
+
+---
+
+## 🛠️ Tecnologias Principais
+Java 21, Spring Boot 3, JWT, PostgreSQL, Docker/Compose, Kubernetes, Terraform, MailHog, SonarQube, Postman.
