@@ -38,6 +38,8 @@ docs/
 |---------|-----------|
 | [`arquitetura/diagrama-arquitetura.md`](arquitetura/diagrama-arquitetura.md) | Diagrama principal (Mermaid) |
 | [`arquitetura/diagrama-arquitetura-simplificado.md`](arquitetura/diagrama-arquitetura-simplificado.md) | Diagrama simplificado (PlantUML) |
+| [`arquitetura/diagrama-clean-architecture.md`](arquitetura/diagrama-clean-architecture.md) | Camadas Clean Architecture · Ports & Adapters · Grau de adoção por módulo |
+| [`arquitetura/clean-architecture.drawio`](arquitetura/clean-architecture.drawio) | ⭐ Diagrama visual draw.io (2 páginas — abrir em [diagrams.net](https://app.diagrams.net)) |
 | [`arquitetura/comparativo-fase1-fase2.md`](arquitetura/comparativo-fase1-fase2.md) | Comparativo visual Fase 1 vs Fase 2 |
 
 ## Operacional
