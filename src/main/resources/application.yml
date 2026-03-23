@@ -22,17 +22,18 @@ spring:
     open-in-view: false
 
   mail:
-    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
-    port: ${SPRING_MAIL_PORT:587}
-    username: ${SPRING_MAIL_USERNAME:your-email@gmail.com}
-    password: ${SPRING_MAIL_PASSWORD:your-app-password}
+    # Ajuste: Default para localhost (MailHog) se a variável não estiver definida
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:user}
+    password: ${SPRING_MAIL_PASSWORD:password}
     properties:
       mail:
         smtp:
-          auth: true
+          auth: false
           starttls:
-            enable: true
-            required: true
+            enable: false
+            required: false
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
@@ -85,4 +86,3 @@ springdoc:
     filter: true                # habilita campo de busca
     default-models-expand-depth: 0
   show-actuator: false
-

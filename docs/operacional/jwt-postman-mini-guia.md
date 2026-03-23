@@ -12,6 +12,45 @@ Para padronização de nomes dos testes no Runner, consulte também: [`postman-e
   - `login_cpf`
   - `login_senha`
 
+## Kubernetes (resumo operacional)
+
+Para o passo a passo completo de Kubernetes, use o `README.md` na seção `Kubernetes (K8s)`.
+
+**1) Iniciar (primeira execução):**
+
+```bash
+kubectl apply -f k8s-metrics-server.yaml
+kubectl apply -f k8s-secret.yaml
+kubectl apply -f k8s-configmap.yaml
+kubectl apply -f k8s-postgres.yaml
+kubectl apply -f k8s-mailhog.yaml
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-service.yaml
+kubectl apply -f k8s-hpa.yaml
+kubectl rollout status deployment/oficina-app --timeout=180s
+```
+
+**2) Monitorar:**
+
+```bash
+kubectl get pods,svc,hpa
+kubectl get hpa oficina-hpa -w
+kubectl get endpoints oficina-service -w
+kubectl logs -f deployment/oficina-app
+```
+
+**3) Encerrar:**
+
+```bash
+kubectl delete -f k8s-hpa.yaml
+kubectl delete -f k8s-service.yaml
+kubectl delete -f k8s-deployment.yaml
+kubectl delete -f k8s-mailhog.yaml
+kubectl delete -f k8s-postgres.yaml
+kubectl delete -f k8s-configmap.yaml
+kubectl delete -f k8s-secret.yaml
+```
+
 ## Modo manual (requisição isolada)
 
 1. Execute `0. Login (Obter JWT)`.

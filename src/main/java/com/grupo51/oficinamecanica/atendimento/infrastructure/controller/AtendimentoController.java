@@ -3,6 +3,7 @@ package com.grupo51.oficinamecanica.atendimento.infrastructure.controller;
 import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.AberturaOSResponseDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.IncluirPecaDTO;
+import com.grupo51.oficinamecanica.atendimento.application.dto.MensagemResponse;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoDetalhesDTO;
 import com.grupo51.oficinamecanica.atendimento.application.dto.OrdemServicoListDTO;
 import com.grupo51.oficinamecanica.atendimento.application.usecase.AtendimentoService;
@@ -64,12 +65,9 @@ public class AtendimentoController {
                             }))
             @Valid AberturaOSDTO dto) {
         OrdemServico os = atendimentoService.abrirOrdem(dto);
-        // Mapeamos para DTO aqui (na camada de controller) para evitar LazyInitializationException:
-        // OrdemServico.itens é @OneToMany LAZY e open-in-view=false fecha a sessão antes da
-        // serialização Jackson. Acessamos apenas campos escalares já carregados na transação.
         AberturaOSResponseDTO response = new AberturaOSResponseDTO(
                 os.getId(),
-                dto.placa(),           // usa o dto — evita acesso lazy ao proxy de veiculo
+                dto.placa(),
                 os.getStatus().name(),
                 os.getDataAbertura()
         );
@@ -81,11 +79,13 @@ public class AtendimentoController {
             description = "Fluxo normal: RECEBIDA -> EM_DIAGNOSTICO -> AGUARDANDO_APROVACAO -> EM_EXECUCAO -> FINALIZADA -> ENTREGUE." +
                     " Cancelamento: qualquer status -> CANCELADA.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Status atualizado"),
+            @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(name = "sucesso", value = "{\"mensagem\":\"Status atualizado com sucesso para CANCELADA\"}"))),
             @ApiResponse(responseCode = "400", description = "Transicao de status invalida"),
             @ApiResponse(responseCode = "401", description = "Nao autenticado")
     })
-    public ResponseEntity<Void> mudarStatus(
+    public ResponseEntity<MensagemResponse> mudarStatus(
             @Parameter(description = "UUID da O.S.", example = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
             @PathVariable UUID osId,
             @Parameter(description = "Novo status",
@@ -102,7 +102,12 @@ public class AtendimentoController {
                             }))
             @RequestParam StatusOS novoStatus) {
         atendimentoService.atualizarStatus(osId, novoStatus);
-        return ResponseEntity.noContent().build();
+        
+        String texto = novoStatus == StatusOS.CANCELADA 
+                ? "Ordem de Serviço cancelada com sucesso." 
+                : "Status atualizado com sucesso para " + novoStatus;
+                
+        return ResponseEntity.ok(new MensagemResponse(texto));
     }
 
     @GetMapping("/os/{osId}")

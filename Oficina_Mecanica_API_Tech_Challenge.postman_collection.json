@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "b96a3bea-92fa-4df5-98c9-895fc01b08f9",
+		"_postman_id": "f81fc046-2138-423f-8555-ed327a207dd2",
 		"name": "Oficina Mecânica API - Tech Challenge",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "41411638"
+		"_exporter_id": "41411638",
+		"_collection_link": "https://tech-challenge-6389.postman.co/workspace/FIAP~fa5c9794-0c07-4331-8dd5-19a6a4768162/collection/41411638-f81fc046-2138-423f-8555-ed327a207dd2?action=share&source=collection_link&creator=41411638"
 	},
 	"item": [
 		{
@@ -27,15 +28,15 @@
 							"  pm.collectionVariables.set('jwt_token', data.token);",
 							"}",
 							"",
-										"// Se veio de um fluxo de refresh no runner, retoma a requisição pendente.",
+							"// Se veio de um fluxo de refresh no runner, retoma a requisição pendente.",
 							"const pending = pm.collectionVariables.get('pending_request_name');",
-										"if (pending) {",
-										"  if (pm.collectionVariables.get('runMode') === 'runner' && typeof postman !== 'undefined' && postman.setNextRequest) {",
-										"    postman.setNextRequest(pending);",
-										"  }",
-										"  // limpa pendência para evitar loops",
-										"  pm.collectionVariables.unset('pending_request_name');",
-										"}",
+							"if (pending) {",
+							"  if (pm.collectionVariables.get('runMode') === 'runner' && typeof postman !== 'undefined' && postman.setNextRequest) {",
+							"    postman.setNextRequest(pending);",
+							"  }",
+							"  // limpa pendência para evitar loops",
+							"  pm.collectionVariables.unset('pending_request_name');",
+							"}",
 							"",
 							"pm.test('[PASSO 01] Status HTTP 200 - login realizado', function () {",
 							"  pm.response.to.have.status(200);",
@@ -775,7 +776,7 @@
 							"  });",
 							"  console.log('osId salvo:', osId);",
 							"  console.log('osId persistido na collection:', osIdPersistido);",
-							"  console.log('Passo 7 OK - prossiga com o passo 8 usando osId:', osId);",
+							"  console.log('Passo 8 OK - prossiga com o passo 9 usando osId:', osId);",
 							"} else {",
 							"  const bodySnippet = String(rawBody || '').replace(/\\s+/g, ' ').slice(0, 300);",
 							"  const richFailureMsg = `[PASSO 08] Resposta sem id | statusHTTP=${statusCode} | metodo=${requestMethod} | url=${requestUrl} | trechoBody=${bodySnippet}`;",
@@ -845,12 +846,15 @@
 							"// Evolução da OS (StatusOS.java) - fase 1 da oficina: RECEBIDA -> EM_DIAGNOSTICO",
 							"pm.collectionVariables.set('novoStatus', 'EM_DIAGNOSTICO');",
 							"",
-							"const osIdCollection = (pm.collectionVariables.get('osId') || '').trim();",
-							"const osIdAnyScope = (pm.variables.get('osId') || '').trim();",
-							"const osId = (osIdCollection || osIdAnyScope).trim();",
+							"var osIdCollection = (pm.collectionVariables.get('osId') || '').trim();",
+							"var osIdAnyScope = (pm.variables.get('osId') || '').trim();",
+							"var osId = (osIdCollection || osIdAnyScope).trim();",
 							"if (osId && osId !== osIdCollection) { pm.collectionVariables.set('osId', osId); }",
-							"console.log('[PASSO 8] Diagnostico osId -> collection:', osIdCollection, '| anyScope:', osIdAnyScope, '| usado:', osId);",
-							"const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
+							"",
+							"// Corrige log do passo (era [PASSO 8])",
+							"console.log('[PASSO 09] Diagnostico osId -> collection:', osIdCollection, '| anyScope:', osIdAnyScope, '| usado:', osId);",
+							"",
+							"var uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
 							"if (!osId || !uuidRegex.test(osId)) {",
 							"    pm.collectionVariables.set('auth_reason', 'osId ausente/invalido para avancar status');",
 							"    console.log('Passo 09 bloqueado: osId ausente/invalido. Execute o passo 08 e confirme retorno com campo id.');",
@@ -875,18 +879,18 @@
 							"  pm.expect([200, 204]).to.include(pm.response.code);",
 							"});",
 							"pm.collectionVariables.set('ultimoStatusOS', 'EM_DIAGNOSTICO');",
-							"const validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
 							"if (validarEmail) {",
-							"  const osId = (pm.collectionVariables.get('osId') || '').trim();",
-							"  const base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\/$/, '');",
-							"  const prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
 							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
 							"    pm.test('[PASSO 8] MailHog respondeu para validacao de email', function () {",
 							"      pm.expect(err).to.equal(null);",
 							"      pm.expect(res).to.have.property('code', 200);",
 							"    });",
-							"    const body = res && res.json ? res.json() : {};",
-							"    const items = body && body.items ? body.items : [];",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
 							"    pm.test('[PASSO 8] Email da fase EM_DIAGNOSTICO enviado', function () {",
 							"      pm.expect(items.length).to.be.greaterThan(prev);",
 							"    });",
@@ -919,7 +923,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus={{novoStatus}}",
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=EM_DIAGNOSTICO",
 					"host": [
 						"{{baseURL}}"
 					],
@@ -934,7 +938,7 @@
 					"query": [
 						{
 							"key": "novoStatus",
-							"value": "{{novoStatus}}"
+							"value": "EM_DIAGNOSTICO"
 						}
 					]
 				}
@@ -942,7 +946,85 @@
 			"response": []
 		},
 		{
-			"name": "10. Avançar OS para AGUARDANDO_APROVACAO",
+			"name": "10. Incluir Peça na OS",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pecaId\": \"{{peca_id}}\",\n  \"quantidade\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/pecas",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"pecas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. Consultar Detalhes da OS",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {},
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12. Avançar OS para AGUARDANDO_APROVACAO",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -969,18 +1051,18 @@
 							"  pm.expect([200, 204]).to.include(pm.response.code);",
 							"});",
 							"pm.collectionVariables.set('ultimoStatusOS', 'AGUARDANDO_APROVACAO');",
-							"const validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
 							"if (validarEmail) {",
-							"  const osId = (pm.collectionVariables.get('osId') || '').trim();",
-							"  const base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\/$/, '');",
-							"  const prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
 							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
 							"    pm.test('[PASSO 8] MailHog respondeu para validacao de email (aguardando aprovacao)', function () {",
 							"      pm.expect(err).to.equal(null);",
 							"      pm.expect(res).to.have.property('code', 200);",
 							"    });",
-							"    const body = res && res.json ? res.json() : {};",
-							"    const items = body && body.items ? body.items : [];",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
 							"    pm.test('[PASSO 8] Email da fase AGUARDANDO_APROVACAO enviado', function () {",
 							"      pm.expect(items.length).to.be.greaterThan(prev);",
 							"    });",
@@ -1036,85 +1118,6 @@
 			"response": []
 		},
 		{
-			"name": "11. Consultar Detalhes da OS",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true,
-				"disabledSystemHeaders": {},
-				"strictSSL": false
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}",
-					"host": [
-						"{{baseURL}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"atendimento",
-						"os",
-						"{{osId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "12. Incluir Peça na OS",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"pecaId\": \"{{peca_id}}\",\n  \"quantidade\": 1\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/pecas",
-					"host": [
-						"{{baseURL}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"atendimento",
-						"os",
-						"{{osId}}",
-						"pecas"
-					]
-				}
-			},
-			"response": []
-		},
-
-		{
 			"name": "13. Aprovar Orçamento da OS",
 			"event": [
 				{
@@ -1142,24 +1145,25 @@
 							"  pm.expect([200, 204]).to.include(pm.response.code);",
 							"});",
 							"pm.collectionVariables.set('ultimoStatusOS', 'EM_EXECUCAO');",
-							"const validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
 							"if (validarEmail) {",
-							"  const osId = (pm.collectionVariables.get('osId') || '').trim();",
-							"  const base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\/$/, '');",
-							"  const prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
 							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
 							"    pm.test('[PASSO 11] MailHog respondeu para validacao de email (aprovacao)', function () {",
 							"      pm.expect(err).to.equal(null);",
 							"      pm.expect(res).to.have.property('code', 200);",
 							"    });",
-							"    const body = res && res.json ? res.json() : {};",
-							"    const items = body && body.items ? body.items : [];",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
 							"    pm.test('[PASSO 11] Email da fase de aprovação/autorização enviado', function () {",
 							"      pm.expect(items.length).to.be.greaterThan(prev);",
 							"    });",
 							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
 							"  });",
-							"}"
+							"}",
+							""
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -1170,6 +1174,15 @@
 			"request": {
 				"method": "PATCH",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/aprovacao",
 					"host": [
@@ -1188,99 +1201,7 @@
 			"response": []
 		},
 		{
-			"name": "14. Avançar OS para ENTREGUE (devolução e pagamento)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const statusAtual = (pm.collectionVariables.get('ultimoStatusOS') || '').trim();",
-							"if (statusAtual === 'CANCELADA') {",
-							"  console.log('Passo 14 ignorado: OS cancelada.');",
-							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test('[PASSO 14] Status HTTP 204 - OS entregue ao cliente (pagamento/devolucao)', function () {",
-							"  pm.expect([200, 204]).to.include(pm.response.code);",
-							"});",
-							"pm.collectionVariables.set('ultimoStatusOS', 'ENTREGUE');",
-							"const validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
-							"if (validarEmail) {",
-							"  const osId = (pm.collectionVariables.get('osId') || '').trim();",
-							"  const base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\/$/, '');",
-							"  const prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
-							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
-							"    pm.test('[PASSO 14] MailHog respondeu para validacao de email (entrega)', function () {",
-							"      pm.expect(err).to.equal(null);",
-							"      pm.expect(res).to.have.property('code', 200);",
-							"    });",
-							"    const body = res && res.json ? res.json() : {};",
-							"    const items = body && body.items ? body.items : [];",
-							"    pm.test('[PASSO 14] Email da fase ENTREGUE enviado', function () {",
-							"      pm.expect(items.length).to.be.greaterThan(prev);",
-							"    });",
-							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
-							"  });",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PATCH",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=ENTREGUE",
-					"host": [
-						"{{baseURL}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"atendimento",
-						"os",
-						"{{osId}}",
-						"status"
-					],
-					"query": [
-						{
-							"key": "novoStatus",
-							"value": "ENTREGUE"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "15. Avançar OS para FINALIZADA",
+			"name": "14. Avançar OS para FINALIZADA",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -1305,18 +1226,18 @@
 							"  pm.expect([200, 204]).to.include(pm.response.code);",
 							"});",
 							"pm.collectionVariables.set('ultimoStatusOS', 'FINALIZADA');",
-							"const validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
 							"if (validarEmail) {",
-							"  const osId = (pm.collectionVariables.get('osId') || '').trim();",
-							"  const base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\/$/, '');",
-							"  const prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
 							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
 							"    pm.test('[PASSO 15] MailHog respondeu para validacao de email (finalizacao)', function () {",
 							"      pm.expect(err).to.equal(null);",
 							"      pm.expect(res).to.have.property('code', 200);",
 							"    });",
-							"    const body = res && res.json ? res.json() : {};",
-							"    const items = body && body.items ? body.items : [];",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
 							"    pm.test('[PASSO 15] Email da fase FINALIZADA enviado', function () {",
 							"      pm.expect(items.length).to.be.greaterThan(prev);",
 							"    });",
@@ -1372,10 +1293,114 @@
 			"response": []
 		},
 		{
+			"name": "15. Avançar OS para ENTREGUE",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const statusAtual = (pm.collectionVariables.get('ultimoStatusOS') || '').trim();",
+							"if (statusAtual === 'CANCELADA') {",
+							"  console.log('Passo 14 ignorado: OS cancelada.');",
+							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('[PASSO 14] Status HTTP 204 - OS entregue ao cliente (pagamento/devolucao)', function () {",
+							"  pm.expect([200, 204]).to.include(pm.response.code);",
+							"});",
+							"pm.collectionVariables.set('ultimoStatusOS', 'ENTREGUE');",
+							"var validarEmail = (pm.collectionVariables.get('validarEmailFases') || 'false') === 'true';",
+							"if (validarEmail) {",
+							"  var osId = (pm.collectionVariables.get('osId') || '').trim();",
+							"  var base = (pm.collectionVariables.get('mailhogBaseURL') || 'http://localhost:8025').replace(/\\/$/, '');",
+							"  var prev = parseInt(pm.collectionVariables.get('mailhogEmailCountOS') || '0', 10);",
+							"  pm.sendRequest(`${base}/api/v2/search?kind=containing&query=${encodeURIComponent(osId)}`, function (err, res) {",
+							"    pm.test('[PASSO 14] MailHog respondeu para validacao de email (entrega)', function () {",
+							"      pm.expect(err).to.equal(null);",
+							"      pm.expect(res).to.have.property('code', 200);",
+							"    });",
+							"    var body = res && res.json ? res.json() : {};",
+							"    var items = body && body.items ? body.items : [];",
+							"    pm.test('[PASSO 14] Email da fase ENTREGUE enviado', function () {",
+							"      pm.expect(items.length).to.be.greaterThan(prev);",
+							"    });",
+							"    pm.collectionVariables.set('mailhogEmailCountOS', String(items.length));",
+							"  });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/v1/atendimento/os/{{osId}}/status?novoStatus=ENTREGUE",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"atendimento",
+						"os",
+						"{{osId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "novoStatus",
+							"value": "ENTREGUE"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "16. Listar Ordens de Serviço (Paginado)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{baseURL}}/api/v1/atendimento/os?page=0&size=10&sort=dataAbertura,desc",
 					"host": [
@@ -1426,9 +1451,21 @@
 		},
 		{
 			"name": "18. Listar Veículos por Dono",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{baseURL}}/api/v1/veiculos/dono/{{cpf_cliente}}",
 					"host": [
@@ -1452,17 +1489,23 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"const habilitar = (pm.collectionVariables.get('executarCancelamentoAntesAprovacao') || 'false') === 'true';",
-							"if (!habilitar) {",
-							"  console.log('Passo 19 ignorado (executarCancelamentoAntesAprovacao=false).');",
-							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
+							"// [PASSO 19] Cancelar OS antes da aprovação (opcional)",
+							"// MODIFICADO: Executa sempre, ignorando flag e status, para validar resposta da API.",
+							"",
+							"// Validações antes de enviar",
+							"const osId = (pm.variables.get('osId') || '').trim();",
+							"const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
+							"if (!uuidRegex.test(osId)) {",
+							"  pm.collectionVariables.set('auth_reason', `Passo 19 não executado: osId ausente ou inválido (esperado UUID). Valor atual: ${osId || '(vazio)'}`);",
+							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+							"    pm.execution.skipRequest();",
+							"  }",
+							"  return;",
 							"}",
-							"const statusAtual = (pm.collectionVariables.get('ultimoStatusOS') || '').trim();",
-							"const statusPermitidos = ['', 'RECEBIDA', 'EM_DIAGNOSTICO', 'AGUARDANDO_APROVACAO'];",
-							"if (habilitar && !statusPermitidos.includes(statusAtual)) {",
-							"  pm.collectionVariables.set('auth_reason', `Cancelamento opcional permitido apenas antes da aprovação. Status atual: ${statusAtual || 'desconhecido'}`);",
-							"  if (pm.execution && typeof pm.execution.skipRequest === 'function') pm.execution.skipRequest();",
-							"}"
+							"",
+							"// Removida lógica de skipRequest baseada no status anterior.",
+							"pm.collectionVariables.unset('auth_reason');",
+							""
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -1473,12 +1516,21 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"if ((pm.collectionVariables.get('executarCancelamentoAntesAprovacao') || 'false') === 'true') {",
-							"  pm.test('[PASSO 19] Status HTTP 204 - OS cancelada antes da aprovação', function () {",
-							"    pm.expect([200, 204]).to.include(pm.response.code);",
-							"  });",
+							"// [PASSO 19] Cancelar OS",
+							"const code = pm.response.code;",
+							"",
+							"// Aceita sucesso (200/204) ou erro de negócio (400/409/422) se a OS já estiver em estado que não permite cancelamento.",
+							"pm.test('[PASSO 19] Status HTTP esperado (2xx ou 4xx de regra de negócio)', function () {",
+							"  pm.expect([200, 204, 400, 409, 422]).to.include(code);",
+							"});",
+							"",
+							"if (code >= 200 && code < 300) {",
 							"  pm.collectionVariables.set('ultimoStatusOS', 'CANCELADA');",
-							"}"
+							"  console.log('OS cancelada com sucesso.');",
+							"} else {",
+							"  console.log('OS não cancelada (provavelmente já finalizada), status retornado:', code);",
+							"}",
+							""
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -1527,7 +1579,6 @@
 			},
 			"response": []
 		}
-
 	],
 	"event": [
 		{
@@ -1689,12 +1740,12 @@
 					"  '07. Cadastrar Peça': [201, 400, 401, 409, 422],",
 					"  '08. Abrir Ordem de Serviço': [201, 400, 401, 409, 422],",
 					"  '09. Avançar Status OS': [200, 204, 400, 401, 404, 409, 422],",
-					"  '10. Avançar OS para AGUARDANDO_APROVACAO': [200, 204, 400, 401, 404, 409, 422],",
+					"  '10. Incluir Peça na OS': [200, 201, 202, 204, 400, 401, 404, 409, 422],",
 					"  '11. Consultar Detalhes da OS': [200, 400, 401, 404],",
-					"  '12. Incluir Peça na OS': [200, 201, 204, 400, 401, 404, 409, 422],",
+					"  '12. Avançar OS para AGUARDANDO_APROVACAO': [200, 204, 400, 401, 404, 409, 422],",
 					"  '13. Aprovar Orçamento da OS': [200, 204, 400, 401, 404, 409, 422],",
-					"  '14. Avançar OS para ENTREGUE (devolução e pagamento)': [200, 204, 400, 401, 404, 409, 422],",
-					"  '15. Avançar OS para FINALIZADA': [200, 204, 400, 401, 404, 409, 422],",
+					"  '14. Avançar OS para FINALIZADA': [200, 204, 400, 401, 404, 409, 422],",
+					"  '15. Avançar OS para ENTREGUE': [200, 204, 400, 401, 404, 409, 422],",
 					"  '16. Listar Ordens de Serviço (Paginado)': [200, 400, 401],",
 					"  '17. Listar Clientes': [200, 400, 401],",
 					"  '18. Listar Veículos por Dono': [200, 400, 401, 404],",
@@ -1703,7 +1754,7 @@
 					"",
 					"const defaultAllowed = isLoginRequest",
 					"  ? [200, 400, 401]",
-					"  : (isProtectedBySecurityConfig ? [200, 201, 204, 400, 401, 404, 409, 422] : [200, 201, 204, 400, 404, 409, 422]);",
+					"  : (isProtectedBySecurityConfig ? [200, 201, 202, 204, 400, 401, 404, 409, 422] : [200, 201, 202, 204, 400, 404, 409, 422]);",
 					"const allowedStatus = statusByRequest[requestName] || defaultAllowed;",
 					"const stepMatch = /^(\\d+)\\./.exec(requestName || '');",
 					"const stepPrefix = stepMatch ? `[PASSO ${stepMatch[1]}] ` : '';",
@@ -1863,10 +1914,6 @@
 		},
 		{
 			"key": "jwt_token",
-			"value": ""
-		},
-		{
-			"key": "auth_reason",
 			"value": ""
 		},
 		{

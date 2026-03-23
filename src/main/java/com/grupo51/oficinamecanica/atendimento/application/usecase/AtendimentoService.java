@@ -43,13 +43,19 @@ public class AtendimentoService {
         this.pecaPort = pecaPort;
         this.veiculoPort = veiculoPort;
         this.emailService = emailService.orElse(null);
+        
+        if (this.emailService != null) {
+            log.info("AtendimentoService inicializado com EmailService habilitado? {}", this.emailService.isEmailEnabled());
+        } else {
+            log.warn("AtendimentoService inicializado SEM EmailService (bean opcional vazio). Verifique a propriedade spring.mail.host");
+        }
     }
 
     @Transactional
     public OrdemServico abrirOrdem(AberturaOSDTO dto) {
         // 1. Busca o veículo pela placa
         Veiculo veiculo = veiculoPort.findById(dto.placa())
-                .orElseThrow(() -> new BusinessException("Veículo não encontrado para abertura de OS."));
+                .orElseThrow(() -> new BusinessException("Veículo não encontrado para abertura de OS: " + dto.placa()));
 
         // 2. Cria a nova OS usando construtor
         OrdemServico novaOs = new OrdemServico(veiculo, dto.descricaoProblema());
@@ -85,7 +91,7 @@ public class AtendimentoService {
     @Transactional(readOnly = true)
     public OrdemServicoDetalhesDTO consultarDetalhes(UUID osId) {
         OrdemServico os = ordemServicoPort.findByIdWithDetails(osId)
-                .orElseThrow(() -> new BusinessException("Ordem de Serviço não encontrada."));
+                .orElseThrow(() -> new BusinessException("Ordem de Serviço não encontrada com o ID: " + osId));
 
         List<OrdemServicoDetalhesDTO.ItemOSDTO> itensDTO = os.getItens().stream()
                 .map(item -> new OrdemServicoDetalhesDTO.ItemOSDTO(
@@ -124,10 +130,10 @@ public class AtendimentoService {
     @Transactional
     public void aprovarOrcamento(UUID osId) {
         OrdemServico os = ordemServicoPort.findById(osId)
-                .orElseThrow(() -> new BusinessException("OS não encontrada."));
+                .orElseThrow(() -> new BusinessException("Ordem de Serviço não encontrada com o ID: " + osId));
 
         if (os.getStatus() != StatusOS.AGUARDANDO_APROVACAO) {
-            throw new BusinessException("A OS deve estar aguardando aprovação para ser aprovada.");
+            throw new BusinessException("A OS " + osId + " deve estar aguardando aprovação para ser aprovada.");
         }
 
         os.atualizarStatus(StatusOS.EM_EXECUCAO);
@@ -140,13 +146,21 @@ public class AtendimentoService {
     @Transactional
     public void atualizarStatus(UUID osId, StatusOS novoStatus) {
         OrdemServico os = ordemServicoPort.findById(osId)
-                .orElseThrow(() -> new BusinessException("OS não encontrada."));
+                .orElseThrow(() -> new BusinessException("Ordem de Serviço não encontrada com o ID: " + osId));
 
         os.atualizarStatus(novoStatus);
         ordemServicoPort.save(os);
 
-        // Enviar e-mail de notificação
-        enviarEmailAtualizacaoStatus(os, "");
+        // Verifica se é um cancelamento para enviar o email correto
+        if (novoStatus == StatusOS.CANCELADA) {
+            enviarEmailCancelamento(os);
+            log.info("Ordem de serviço {} cancelada com sucesso via atualização de status.", osId);
+        } else if (novoStatus == StatusOS.FINALIZADA) {
+            enviarEmailConclusao(os);
+        } else {
+            // Enviar e-mail de notificação de atualização padrão
+            enviarEmailAtualizacaoStatus(os, "");
+        }
     }
 
     /**
@@ -157,7 +171,7 @@ public class AtendimentoService {
     @Transactional
     public void cancelarOrdemServico(UUID osId, String motivo) {
         OrdemServico os = ordemServicoPort.findById(osId)
-                .orElseThrow(() -> new BusinessException("OS não encontrada."));
+                .orElseThrow(() -> new BusinessException("Ordem de Serviço não encontrada com o ID: " + osId));
 
         os.cancelar(motivo);
         ordemServicoPort.save(os);
@@ -175,10 +189,10 @@ public class AtendimentoService {
     @Transactional
     public void concluirOrdemServico(UUID osId) {
         OrdemServico os = ordemServicoPort.findById(osId)
-                .orElseThrow(() -> new BusinessException("OS não encontrada."));
+                .orElseThrow(() -> new BusinessException("Ordem de Serviço não encontrada com o ID: " + osId));
 
         if (os.getStatus() != StatusOS.EM_EXECUCAO) {
-            throw new BusinessException("A OS deve estar em execução para ser finalizada.");
+            throw new BusinessException("A OS " + osId + " deve estar em execução para ser finalizada.");
         }
 
         os.atualizarStatus(StatusOS.FINALIZADA);
@@ -231,13 +245,21 @@ public class AtendimentoService {
      * Envia email de atualização de status de OS
      */
     private void enviarEmailAtualizacaoStatus(OrdemServico os, String observacoes) {
-        if (emailService == null || !emailService.isEmailEnabled()) {
-            log.debug("EmailService não configurado, pulando notificação de atualização");
+        log.info("Tentando enviar email de atualização de status para OS: {}", os.getId());
+        
+        if (emailService == null) {
+            log.warn("EmailService é NULL!");
+            return;
+        }
+        
+        if (!emailService.isEmailEnabled()) {
+            log.warn("EmailService reporta isEmailEnabled() = false");
             return;
         }
 
         try {
             String emailCliente = os.getVeiculo().getDono().getEmail();
+            log.info("Destinatário: {}", emailCliente);
             
             EmailRequest request = new EmailRequest(
                 emailCliente,
@@ -299,8 +321,16 @@ public class AtendimentoService {
             );
 
             request.addVariable("ordemServicoId", os.getId().toString());
-            request.addVariable("dataCancelamento", os.getDataCancelamento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-            request.addVariable("motivoCancelamento", os.getMotivoCancelamento());
+            request.addVariable("dataCancelamento", os.getDataCancelamento() != null 
+                ? os.getDataCancelamento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            
+            String motivo = os.getMotivoCancelamento();
+            if (motivo == null || motivo.isEmpty()) {
+                motivo = "Cancelado via atualização de status (sem motivo especificado)";
+            }
+            request.addVariable("motivoCancelamento", motivo);
+            
             request.addVariable("veiculo", os.getVeiculo().getModelo() + " " + os.getVeiculo().getMarca());
             request.addVariable("placa", os.getVeiculo().getPlaca());
 
@@ -334,14 +364,16 @@ public class AtendimentoService {
             );
 
             request.addVariable("ordemServicoId", os.getId().toString());
-            request.addVariable("dataConclusao", os.getDataConclusao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            request.addVariable("dataConclusao", os.getDataConclusao() != null 
+                ? os.getDataConclusao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             request.addVariable("veiculo", os.getVeiculo().getModelo() + " " + os.getVeiculo().getMarca());
             request.addVariable("placa", os.getVeiculo().getPlaca());
-            request.addVariable("valorTotal", os.getValorTotal().toString());
+            request.addVariable("valorTotal", os.getValorTotal() != null ? os.getValorTotal().toString() : "0.00");
             request.addVariable("quilometragem", "Consultar no sistema");
             request.addVariable("tempoServico", "Consultar no sistema");
             request.addVariable("pecasUtilizadas", os.getItens());
-            request.addVariable("valorTotalPecas", os.getValorTotal().toString());
+            request.addVariable("valorTotalPecas", os.getValorTotal() != null ? os.getValorTotal().toString() : "0.00");
             request.addVariable("valorMaoObra", "0.00");
             request.addVariable("desconto", "0.00");
             request.addVariable("observacoesMecanico", "Serviço concluído.");

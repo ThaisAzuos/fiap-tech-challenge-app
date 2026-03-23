@@ -67,7 +67,7 @@ public class OrdemServico {
     // Métodos de negócio
     public void adicionarPeca(Peca peca, int quantidade) {
         if (this.status == StatusOS.FINALIZADA || this.status == StatusOS.ENTREGUE || this.status == StatusOS.CANCELADA) {
-            throw new BusinessException("Não é possível alterar uma OS já encerrada.");
+            throw new BusinessException("Não é possível alterar uma OS já encerrada (" + this.status + ").");
         }
 
         ItemOS novoItem = new ItemOS(peca, quantidade);
@@ -80,10 +80,10 @@ public class OrdemServico {
     public void atualizarStatus(StatusOS novoStatus) {
         // 1. Validar estados terminais
         if (this.status == StatusOS.ENTREGUE) {
-            throw new BusinessException("Esta ordem de serviço já foi entregue e não pode mais ser alterada.");
+            throw new BusinessException("Esta ordem de serviço já foi ENTREGUE e não pode mais ser alterada.");
         }
         if (this.status == StatusOS.CANCELADA) {
-            throw new BusinessException("Esta ordem de serviço já foi cancelada e não pode mais ser alterada.");
+            throw new BusinessException("Esta ordem de serviço já foi CANCELADA e não pode mais ser alterada.");
         }
 
         // 2. Permitir cancelamento em qualquer status (exceto já cancelada/entregue)
@@ -107,7 +107,9 @@ public class OrdemServico {
 
         // 5. Bloqueio de retrocesso para outros casos
         if (novoStatus.ordinal() < this.status.ordinal()) {
-            throw new BusinessException("Não é permitido retornar a Ordem de Serviço para um status anterior: " + this.status);
+            throw new BusinessException(
+                String.format("Não é permitido retornar a Ordem de Serviço do status %s para %s.", this.status, novoStatus)
+            );
         }
 
         this.status = novoStatus;
@@ -124,7 +126,7 @@ public class OrdemServico {
      */
     public void cancelar(String motivo) {
         if (this.status == StatusOS.ENTREGUE || this.status == StatusOS.CANCELADA) {
-            throw new BusinessException("Esta ordem de serviço não pode mais ser cancelada.");
+            throw new BusinessException("Esta ordem de serviço já está encerrada (" + this.status + ") e não pode ser cancelada novamente.");
         }
         this.status = StatusOS.CANCELADA;
         this.motivoCancelamento = motivo;

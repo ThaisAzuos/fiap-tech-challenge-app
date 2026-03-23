@@ -20,7 +20,8 @@ spec:
     spec:
       containers:
       - name: oficina-app
-        image: thaisazuos/oficina-mecanica-api:latest
+        # Correção: Usar o nome da imagem local em vez de uma imagem remota inexistente/privada
+        image: oficina-mecanica:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -66,15 +67,29 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
+        startupProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          # Ate ~180s para bootstrap completo (Spring + JPA + conexao DB)
+          failureThreshold: 36
+          periodSeconds: 5
+          timeoutSeconds: 2
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
             port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          # Liveness so passa a contar apos startupProbe concluir
+          initialDelaySeconds: 0
+          periodSeconds: 15
+          timeoutSeconds: 2
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /actuator/health/readiness
             port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 5
+          # Evita flap no endpoint durante aquecimento inicial
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 6

@@ -37,3 +37,16 @@ build/
 
 # Dados locais gerados em runtime
 postgres/data/
+
+# Instaladores binários (não devem entrar no repositório)
+awscliv2.zip
+*.zip
+
+# AWS CLI - binários extraídos (254MB, não devem entrar no repositório)
+aws/dist/
+
+# Terraform - cache de providers e estado da infraestrutura
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+

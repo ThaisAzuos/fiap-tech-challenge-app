@@ -8,7 +8,8 @@ terraform {
 }
 
 provider "aws" {
-  region = var.region
+  region  = var.region
+  profile = var.aws_profile
 }
 
 # VPC
@@ -142,6 +143,10 @@ resource "aws_eks_cluster" "oficina_cluster" {
     subnet_ids         = aws_subnet.private[*].id
     security_group_ids = [aws_security_group.eks_sg.id]
   }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_AmazonEKSClusterPolicy
+  ]
 }
 
 # IAM Role for EKS
@@ -178,6 +183,12 @@ resource "aws_eks_node_group" "oficina_nodes" {
     min_size     = 1
   }
   instance_types = ["t3.medium"]
+
+  depends_on = [
+    aws_iam_role_policy_attachment.node_AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.node_AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.node_AmazonEC2ContainerRegistryReadOnly
+  ]
 }
 
 # IAM Role for Nodes
@@ -203,7 +214,7 @@ resource "aws_iam_role_policy_attachment" "node_AmazonEKSWorkerNodePolicy" {
 }
 
 resource "aws_iam_role_policy_attachment" "node_AmazonEKS_CNI_Policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSCNIPolicy"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.node_role.name
 }
 

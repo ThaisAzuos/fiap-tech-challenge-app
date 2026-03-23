@@ -1,9 +1,11 @@
 # Índice de Documentos — Oficina Mecânica API
 
-**Acesso rápido:** [`README`](../README.md) | [`Índice`](./indice.md) | [`Stack resumida`](#stack-resumida) | [`Mini-guia JWT/Postman`](./operacional/jwt-postman-mini-guia.md) | [`Estilo de testes Postman`](./operacional/postman-estilo-testes.md)
+**Acesso rápido:** [`README`](../README.md) | [`Índice`](./indice.md) | [`Stack resumida`](#stack-resumida) | [`Mini-guia JWT/Postman`](./operacional/jwt-postman-mini-guia.md) | [`Kubernetes (resumo no mini-guia)`](./operacional/jwt-postman-mini-guia.md#kubernetes-resumo-operacional) | [`AWS/Terraform no IntelliJ`](./operacional/aws-terraform-intellij.md) | [`Estilo de testes Postman`](./operacional/postman-estilo-testes.md)
+
+**Decisão rápida (Kubernetes):** use **Primeira execução** quando o cluster estiver limpo; use **Reexecução rápida** no dia a dia. Ambas as opções estão na seção Kubernetes do [`README`](../README.md).
 
 **Projeto:** Oficina Mecânica API — Tech Challenge  
-**Atualizado em:** 21 de Março de 2026
+**Atualizado em:** 23 de Março de 2026
 
 ## Stack resumida
 
@@ -15,7 +17,7 @@ Java 21, Spring Boot 3, JWT, PostgreSQL, Docker/Compose, Kubernetes, Terraform, 
 docs/
   ADRs/                     ← Decisões arquiteturais formais
   arquitetura/              ← Diagramas e comparativos
-  operacional/              ← Guias de operação (MailHog, SonarQube e Postman/JWT)
+  operacional/              ← Guias de operação (MailHog, SonarQube, Postman/JWT e AWS/Terraform)
   historico/                ← Registros históricos de execução
   indice.md                 ← Este arquivo
   leia-primeiro.md          ← Ponto de entrada objetivo
@@ -42,6 +44,7 @@ docs/
 
 | Arquivo | Descrição |
 |---------|-----------|
+| [`operacional/aws-terraform-intellij.md`](operacional/aws-terraform-intellij.md) | Manual passo a passo para configurar AWS e Terraform no IntelliJ |
 | [`operacional/mailhog-setup.md`](operacional/mailhog-setup.md) | Guia de setup e testes de e-mail com MailHog |
 | [`operacional/sonarqube-producao.md`](operacional/sonarqube-producao.md) | SonarQube em ambiente similar ao de produção |
 | [`operacional/jwt-postman-mini-guia.md`](operacional/jwt-postman-mini-guia.md) | Mini-guia de autenticação JWT e execução da collection no Postman |

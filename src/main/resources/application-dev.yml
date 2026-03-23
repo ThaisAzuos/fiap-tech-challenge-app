@@ -1,6 +1,6 @@
 spring:
   mail:
-    host: mailhog
+    host: localhost
     port: 1025
     properties:
       mail:

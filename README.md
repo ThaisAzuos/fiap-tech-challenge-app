@@ -26,20 +26,92 @@ docker-compose down
 
 ## ☸️ Kubernetes (K8s)
 
-**Deploy:**
+**Decisão rápida:** use **Primeira execução** quando o cluster estiver limpo ou for a primeira subida; use **Reexecução rápida** no dia a dia para iterar mais rápido.
+
+### 1) Iniciar
+
+**Primeira execução (setup completo):**
 ```bash
-# Aplica todos os manifestos (App, Banco, MailHog, HPA, Secrets)
-kubectl apply -f .
+# Habilitar metrics-server para HPA
+kubectl apply -f k8s-metrics-server.yaml
+
+# Aplicar somente os manifests Kubernetes do projeto (mais rapido que `-f .`)
+kubectl apply -f k8s-secret.yaml
+kubectl apply -f k8s-configmap.yaml
+kubectl apply -f k8s-postgres.yaml
+kubectl apply -f k8s-mailhog.yaml
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-service.yaml
+kubectl apply -f k8s-hpa.yaml
+
+# Aguardar a aplicacao ficar pronta antes do teste de carga
+kubectl rollout status deployment/oficina-app --timeout=180s
 ```
 
-**Validar:**
+**Reexecução rápida (ambiente já criado):**
+```bash
+# Atualiza somente app e autoscaling
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-service.yaml
+kubectl apply -f k8s-hpa.yaml
+
+# Reinicia app e aguarda prontidão
+kubectl rollout restart deployment/oficina-app
+kubectl rollout status deployment/oficina-app --timeout=180s
+```
+
+### 2) Monitorar
+
+**Status geral:**
 ```bash
 kubectl get pods,svc,hpa
 ```
 
-**Parar/Limpar:**
+**Acompanhar em tempo real (terminais separados):**
 ```bash
-kubectl delete -f .
+kubectl get pods -w
+kubectl get hpa oficina-hpa -w
+kubectl get endpoints oficina-service -w
+```
+
+**Logs da aplicação:**
+```bash
+kubectl logs -f deployment/oficina-app
+```
+
+**Métricas (CPU/memória):**
+```bash
+kubectl top pods
+kubectl top nodes
+```
+
+**Acesso local à API (port-forward):**
+```bash
+# Use 8080:80 se a porta 8080 estiver livre; caso contrario, use 8081:80
+kubectl port-forward svc/oficina-service 8080:80
+```
+
+**Teste de carga (terminal separado):**
+```bash
+python3 scripts/load-test.py
+```
+
+### 3) Encerrar
+
+**Parar acompanhamento local:**
+```bash
+# Interrompa watchers/port-forward com Ctrl+C nos terminais em execucao
+```
+
+**Remover recursos do projeto no cluster:**
+```bash
+kubectl delete -f k8s-hpa.yaml
+kubectl delete -f k8s-service.yaml
+kubectl delete -f k8s-deployment.yaml
+kubectl delete -f k8s-mailhog.yaml
+kubectl delete -f k8s-postgres.yaml
+kubectl delete -f k8s-configmap.yaml
+kubectl delete -f k8s-secret.yaml
 ```
 
 ---
@@ -65,10 +137,10 @@ docker compose -f docker-compose.test.yml down
 
 **Exemplos úteis do script:**
 ```bash
-# Roda somente um teste especifico
+# Roda somente um teste específico
 ./scripts/test-local.sh -- -Dtest=OpenApiDocumentationTest
 
-# Mantem cache Maven (sem clean) e para MailHog no final
+# Mantém cache Maven (sem clean) e para MailHog no final
 ./scripts/test-local.sh --no-clean --down
 ```
 
@@ -110,9 +182,12 @@ Guia operacional detalhado de autenticação JWT no Postman:
 - **`src/`**: Código fonte Java 21 + Spring Boot 3.
 - **`docs/`**: Documentação detalhada ([Índice Completo](docs/indice.md)).
   - **ADRs**: Decisões arquiteturais.
-  - **Operacional**: Guias do MailHog, SonarQube e Postman/JWT.
+  - **Operacional**: Guias do MailHog, SonarQube, Postman/JWT e AWS/Terraform no IntelliJ.
 - **`terraform/`**: Infraestrutura as Code (AWS).
 - **`k8s-*.yaml`**: Manifestos Kubernetes.
+
+Guia operacional para configurar AWS e Terraform no IntelliJ:
+- [`docs/operacional/aws-terraform-intellij.md`](docs/operacional/aws-terraform-intellij.md)
 
 ---
 
