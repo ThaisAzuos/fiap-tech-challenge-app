@@ -191,5 +191,166 @@ Guia operacional para configurar AWS e Terraform no IntelliJ:
 
 ---
 
+## 🏗️ Arquitetura da Aplicação
+
+### Clean Architecture (Hexagonal Architecture)
+
+A aplicação segue os princípios de **Clean Architecture**, com separação clara entre camadas e isolamento do domínio de negócio das tecnologias específicas:
+
+```
+📁 src/main/java/com/grupo37/oficinamecanica/
+├── 📂 comum/                    # Camada compartilhada
+│   ├── config/                  # Configurações (Security, Email, etc.)
+│   └── email/                   # Serviço de email
+├── 📂 atendimento/              # Módulo de Atendimento (OS)
+│   ├── domain/                  # 🎯 DOMÍNIO PURO (regras de negócio)
+│   │   ├── model/               # Entidades de domínio (sem JPA)
+│   │   └── exception/           # Exceções de negócio
+│   ├── application/             # 🧠 LÓGICA DE APLICAÇÃO
+│   │   ├── dto/                 # Data Transfer Objects
+│   │   ├── port/                # Interfaces (Ports)
+│   │   │   ├── in/              # Input Ports (use cases)
+│   │   │   └── out/             # Output Ports (repos, external)
+│   │   └── usecase/             # Casos de uso (Services)
+│   └── infrastructure/          # 🔌 INFRAESTRUTURA (adapters)
+│       ├── controller/          # REST Controllers (Input Adapters)
+│       └── repository/          # JPA Repositories (Output Adapters)
+├── 📂 cadastro/                 # Módulo de Cadastro
+└── 📂 estoque/                  # Módulo de Estoque
+```
+
+### Diagrama de Arquitetura Geral
+
+```mermaid
+flowchart TD
+    subgraph "👤 Usuário"
+        A[Cliente/Usuário] -->|HTTP/REST| B[API Gateway / Controllers]
+    end
+
+    subgraph "🧠 Aplicação (Clean Architecture)"
+        B --> C[Application Services / Use Cases]
+        C --> D[Domain Entities & Business Rules]
+        D --> E[Ports & Interfaces]
+        E --> F[Infrastructure Adapters]
+    end
+
+    subgraph "💾 Infraestrutura"
+        F --> G[JPA Repositories]
+        G --> H[(PostgreSQL)]
+        F --> I[Email Service]
+        I --> J[MailHog/SMTP]
+    end
+
+    subgraph "🐳 Containerização"
+        K[Dockerfile] --> L[Container Image]
+        L --> M[Kubernetes Deployment]
+        M --> N[Service & HPA]
+    end
+
+    subgraph "☁️ Infraestrutura como Código"
+        O[Terraform] --> P[AWS EKS Cluster]
+        O --> Q[RDS PostgreSQL]
+    end
+
+    subgraph "🔄 CI/CD"
+        R[GitHub Actions] --> S[Build & Test]
+        S --> T[Docker Image]
+        T --> U[Deploy to K8s]
+    end
+```
+
+### Principais Benefícios da Arquitetura
+
+- **🔒 Isolamento do Domínio**: Regras de negócio independentes de frameworks/tecnologias
+- **🧪 Testabilidade**: Domínio puro facilita testes unitários
+- **🔄 Manutenibilidade**: Mudanças em infraestrutura não afetam o negócio
+- **📦 Independência Tecnológica**: Fácil troca de banco, frameworks, etc.
+- **🎯 Foco no Valor**: Desenvolvedores focam em regras de negócio
+
+### Fluxo de Aprovação Externa de Orçamento
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant A as Atendente
+    participant S as Sistema
+    participant E as Email
+
+    A->>S: Cria OS com peças/serviços
+    A->>S: Muda status para AGUARDANDO_APROVACAO
+    S->>E: Envia email com link de aprovação
+    E->>C: Email com botão "APROVAR ORÇAMENTO"
+    C->>S: Clica no link público (sem auth)
+    S->>S: Valida status e aprova orçamento
+    S->>S: Muda status para EM_EXECUCAO
+    S->>E: Envia email de confirmação
+```
+
+---
+
+## 📋 Funcionalidades Implementadas
+
+### ✅ Atendimento (Ordem de Serviço)
+- **Abertura completa**: Cliente + Veículo + Peças + Serviços
+- **Gestão de status**: RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO → EM_EXECUCAO → FINALIZADA → ENTREGUE
+- **Aprovação externa**: Cliente aprova orçamento via link público (sem autenticação)
+- **Histórico**: Snapshots de preços e nomes no momento da venda
+- **Regras de negócio**: Validações de transição de status, cálculo automático de valores
+
+### ✅ Cadastro
+- **Clientes**: Dados pessoais e contato
+- **Veículos**: Placa, modelo, marca, ano, dono
+- **Funcionários**: Atendentes, Mecânicos, Gerentes (com roles JWT)
+
+### ✅ Estoque
+- **Peças**: Controle de quantidade, preços, fornecedores
+- **Validações**: Estoque insuficiente, preços atualizados
+
+### ✅ Segurança
+- **JWT Authentication**: Login com geração de tokens
+- **Role-based Access**: ATENDENTE, MECANICO, GERENTE
+- **Endpoint público**: Aprovação de orçamento sem autenticação
+
+### ✅ Notificações
+- **Email automático**: Criação OS, mudança status, conclusão, cancelamento
+- **Templates Thymeleaf**: Emails personalizados e responsivos
+- **MailHog**: Ambiente local para testes de email
+
+### ✅ Qualidade & DevOps
+- **Testes automatizados**: Unitários + Integração
+- **SonarQube**: Análise de qualidade de código
+- **Docker**: Containerização completa
+- **Kubernetes**: Orquestração com HPA (CPU + Memória)
+- **Terraform**: Infraestrutura AWS (EKS + RDS)
+- **CI/CD**: Pipeline automatizada
+
+---
+
+## 🔗 Links Importantes
+
+- **📖 Documentação Completa**: [`docs/indice.md`](docs/indice.md)
+- **🏛️ Arquitetura Detalhada**: [`docs/arquitetura/`](docs/arquitetura/)
+- **🔐 Autenticação JWT**: [`docs/operacional/jwt-postman-mini-guia.md`](docs/operacional/jwt-postman-mini-guia.md)
+- **☁️ AWS + Terraform**: [`docs/operacional/aws-terraform-intellij.md`](docs/operacional/aws-terraform-intellij.md)
+- **📧 MailHog Setup**: [`docs/operacional/mailhog-setup.md`](docs/operacional/mailhog-setup.md)
+- **🧪 Postman Collection**: `Oficina_Mecanica_API_Tech_Challenge.postman_collection.json`
+
+---
+
 ## 🛠️ Tecnologias Principais
-Java 21, Spring Boot 3, JWT, PostgreSQL, Docker/Compose, Kubernetes, Terraform, MailHog, SonarQube, Postman.
+
+| Categoria | Tecnologias |
+|-----------|-------------|
+| **Backend** | Java 21, Spring Boot 3, Spring Security, JWT |
+| **Banco** | PostgreSQL, JPA/Hibernate, Flyway |
+| **APIs** | REST, OpenAPI/Swagger, Jackson |
+| **Testes** | JUnit 5, Mockito, Testcontainers |
+| **Container** | Docker, Docker Compose |
+| **Orquestração** | Kubernetes, Helm, HPA |
+| **IaC** | Terraform, AWS (EKS + RDS) |
+| **CI/CD** | GitHub Actions, Maven |
+| **Qualidade** | SonarQube, JaCoCo |
+| **Email** | JavaMail, Thymeleaf, MailHog |
+| **Documentação** | Markdown, Mermaid, Postman |
+
+---

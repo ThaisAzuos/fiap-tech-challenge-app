@@ -23,7 +23,7 @@ Senha inicial: `admin` (será solicitado trocar no primeiro login)
 
 ## 2) Criar token e projeto
 
-1. Em SonarQube, crie um projeto com a chave `com.grupo51:oficinamecanica`.
+1. Em SonarQube, crie um projeto com a chave `com.grupo37:oficinamecanica`.
 2. Gere um token de análise em **My Account > Security**.
 3. Guarde o token para usar no pipeline.
 

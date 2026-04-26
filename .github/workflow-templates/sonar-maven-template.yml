@@ -51,7 +51,7 @@ jobs:
       - name: Executar análise SonarQube
         run: |
           ./mvnw sonar:sonar \
-            -Dsonar.projectKey=com.grupo51:oficinamecanica \
+            -Dsonar.projectKey=com.grupo37:oficinamecanica \
             -Dsonar.projectName="Oficina Mecanica API" \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \

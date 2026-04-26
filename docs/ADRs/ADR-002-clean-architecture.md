@@ -25,7 +25,7 @@ Para a Fase 2, precisamos implementar Clean Code e Clean Architecture para:
 Adotar **Clean Architecture/Hexagonal** com a seguinte estrutura por feature:
 
 ```
-src/main/java/com/grupo51/oficinamecanica/
+src/main/java/com/grupo37/oficinamecanica/
 ├── {feature}/
 │   ├── domain/
 │   │   ├── model/          # Entidades, Value Objects

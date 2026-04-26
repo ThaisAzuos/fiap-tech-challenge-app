@@ -7,7 +7,7 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.2</version> <relativePath/>
     </parent>
-	<groupId>com.grupo51</groupId>
+	<groupId>com.grupo37</groupId>
 	<artifactId>oficinamecanica</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>oficinamecanica</name>
@@ -17,7 +17,7 @@
         <java.version>21</java.version>
 
         <!-- SonarQube Configuration -->
-        <sonar.projectKey>com.grupo51:oficinamecanica</sonar.projectKey>
+        <sonar.projectKey>com.grupo37:oficinamecanica</sonar.projectKey>
         <sonar.projectName>Oficina Mecânica API</sonar.projectName>
         <sonar.sources>src/main/java</sonar.sources>
         <sonar.tests>src/test/java</sonar.tests>

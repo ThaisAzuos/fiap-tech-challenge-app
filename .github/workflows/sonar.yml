@@ -65,7 +65,7 @@ jobs:
         if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
         run: |
           ./mvnw sonar:sonar \
-            -Dsonar.projectKey=com.grupo51:oficinamecanica \
+            -Dsonar.projectKey=com.grupo37:oficinamecanica \
             -Dsonar.projectName="Oficina Mecânica API" \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \

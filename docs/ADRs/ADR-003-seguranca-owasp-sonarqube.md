@@ -84,7 +84,7 @@ X-XSS-Protection: 1; mode=block
 ### Arquivos para Criar/Modificar
 
 ```
-src/main/java/com/grupo51/oficinamecanica/
+src/main/java/com/grupo37/oficinamecanica/
 ├── comum/
 │   ├── validation/
 │   │   ├── SanitizationValidator.java       (novo)
@@ -141,7 +141,7 @@ pom.xml                                      (SonarQube ativo)
 ### pom.xml Properties
 ```xml
 <sonarqube.enabled>true</sonarqube.enabled>
-<sonar.projectKey>com.grupo51:oficinamecanica</sonar.projectKey>
+<sonar.projectKey>com.grupo37:oficinamecanica</sonar.projectKey>
 <sonar.projectName>Oficina Mecânica API</sonar.projectName>
 <sonar.projectVersion>${project.version}</sonar.projectVersion>
 <sonar.sources>src/main/java</sonar.sources>

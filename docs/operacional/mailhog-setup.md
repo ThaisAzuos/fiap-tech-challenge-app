@@ -418,7 +418,7 @@ mvn clean test -Dspring.profiles.active=dev
 
 ### EmailServiceIntegrationTest
 
-Localização: `src/test/java/com/grupo51/oficinamecanica/comum/email/integration/`
+Localização: `src/test/java/com/grupo37/oficinamecanica/comum/email/integration/`
 
 Testes:
 - ✅ `shouldSendEmailOrdenServioCriada` - Enviar email de criação

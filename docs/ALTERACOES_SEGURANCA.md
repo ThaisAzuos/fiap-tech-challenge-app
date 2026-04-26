@@ -6,7 +6,7 @@ Foi realizada uma atualização no arquivo `SecurityConfig.java` para permitir q
 
 ## Mudanças Realizadas
 
-### Arquivo: `src/main/java/com/grupo51/oficinamecanica/comum/config/SecurityConfig.java`
+### Arquivo: `src/main/java/com/grupo37/oficinamecanica/comum/config/SecurityConfig.java`
 
 **Antes:**
 ```java
@@ -91,7 +91,7 @@ Todos esses requests agora funcionarão com qualquer usuário autenticado (indep
 
 ### 🔧 Como Funciona:
 
-A aplicação possui um **DataInitializer** (`src/main/java/com/grupo51/oficinamecanica/cadastro/config/DataInitializer.java`) que:
+A aplicação possui um **DataInitializer** (`src/main/java/com/grupo37/oficinamecanica/cadastro/config/DataInitializer.java`) que:
 
 1. **Executa apenas em ambiente DEV** (`@Profile("dev")`)
 2. **Verifica se os usuários já existem** antes de criá-los:

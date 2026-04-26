@@ -39,6 +39,7 @@ def main():
 
     print(f"Carga iniciada! Acompanhe o HPA em outro terminal: kubectl get hpa -w")
 
+
     # Aguarda o tempo definido
     try:
         time.sleep(DURATION_SECONDS)

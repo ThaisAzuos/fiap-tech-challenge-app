@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprovação de Orçamento - Ordem de Serviço</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #f39c12;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .approval-section {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #fff3cd;
+            border-radius: 5px;
+            border-left: 4px solid #f39c12;
+            text-align: center;
+        }
+        .approval-button {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px 0;
+            border: none;
+            cursor: pointer;
+        }
+        .approval-button:hover {
+            background-color: #229954;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .info-row {
+            margin: 8px 0;
+        }
+        .label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .footer {
+            background-color: #ecf0f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+        }
+        .warning {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Aprovação de Orçamento</h1>
+            <p>Ordem de Serviço Aguardando Aprovação</p>
+        </div>
+
+        <div class="content">
+            <p>Prezado cliente,</p>
+
+            <p>O orçamento para o serviço do seu veículo foi preparado e está aguardando sua aprovação. Confira os detalhes abaixo:</p>
+
+            <div class="section">
+                <div class="section-title">📋 Detalhes da OS</div>
+
+                <div class="info-row">
+                    <span class="label">ID da OS:</span>
+                    <span th:text="${ordemServicoId}">OS-00001</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Veículo:</span>
+                    <span th:text="${veiculo}">Honda Civic 2020</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Placa:</span>
+                    <span th:text="${placa}">ABC-1234</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Valor Total:</span>
+                    <span th:text="${valorTotal}">R$ 150,00</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Data do Orçamento:</span>
+                    <span th:text="${dataOrcamento}">16/03/2026 14:30</span>
+                </div>
+            </div>
+
+            <div class="approval-section">
+                <h3>Para aprovar o orçamento, clique no botão abaixo:</h3>
+                <a th:href="${linkAprovacao}" class="approval-button">APROVAR ORÇAMENTO</a>
+                <p class="warning">Atenção: Após a aprovação, o serviço será iniciado automaticamente.</p>
+            </div>
+
+            <p>Se você não concordar com o orçamento, entre em contato conosco pelo email <strong th:text="${supportEmail}">suporte@oficinamecanica.com</strong> para discutir alternativas.</p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <span th:text="${currentYear}">2026</span> <span th:text="${applicationName}">Oficina Mecânica</span> - Todos os direitos reservados</p>
+            <p>Este é um email automático, não responda</p>
+        </div>
+    </div>
+</body>
+</html></content>
+<parameter name="filePath">E:\FIAP - Software Architecture\fiap-tech-challenge-oficina\src\main\resources\templates\email\ordem-servico-aprovacao.html

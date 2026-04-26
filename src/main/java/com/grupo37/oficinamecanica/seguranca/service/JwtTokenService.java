@@ -1,0 +1,65 @@
+
+package com.grupo37.oficinamecanica.seguranca.service;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.grupo37.oficinamecanica.seguranca.model.Usuario;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+
+@Service
+public class JwtTokenService {
+
+    @Value("${api.security.token.secret}")
+    private String secret;
+
+    @Value("${api.security.token.expiration-minutes:30}")
+    private long expirationMinutes;
+
+    public String gerarToken(Usuario usuario) {
+        try {
+            var algoritmo = Algorithm.HMAC256(secret);
+            return JWT.create()
+                    .withIssuer("API Oficina Mecanica")
+                    .withSubject(usuario.getLogin())
+                    .withExpiresAt(dataExpiracao())
+                    .sign(algoritmo);
+        } catch (JWTCreationException exception){
+            throw new RuntimeException("erro ao gerar token jwt", exception);
+        }
+    }
+
+    public boolean validarToken(String token) {
+        try {
+            var algoritmo = Algorithm.HMAC256(secret);
+            JWT.require(algoritmo)
+                    .withIssuer("API Oficina Mecanica")
+                    .build()
+                    .verify(token);
+            return true;
+        } catch (JWTVerificationException exception) {
+            return false;
+        }
+    }
+
+    public String getSubject(String tokenJWT) {
+        try {
+            var algoritmo = Algorithm.HMAC256(secret);
+            return JWT.require(algoritmo)
+                    .withIssuer("API Oficina Mecanica")
+                    .build()
+                    .verify(tokenJWT)
+                    .getSubject();
+        } catch (JWTVerificationException exception) {
+            throw new RuntimeException("Token JWT inválido ou expirado!");
+        }
+    }
+
+    private Instant dataExpiracao() {
+        return Instant.now().plusSeconds(expirationMinutes * 60);
+    }
+}
