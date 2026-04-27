@@ -15,6 +15,13 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServicoEntity
     @Query("SELECT DISTINCT os FROM OrdemServicoEntity os LEFT JOIN FETCH os.itens LEFT JOIN FETCH os.servicos LEFT JOIN FETCH os.veiculo v LEFT JOIN FETCH v.dono WHERE os.id = :id")
     Optional<OrdemServicoEntity> findByIdWithDetails(@Param("id") UUID id);
 
-    @Query("SELECT os FROM OrdemServicoEntity os JOIN FETCH os.veiculo v JOIN FETCH v.dono WHERE os.status NOT IN ('FINALIZADA', 'ENTREGUE') ORDER BY os.status, os.dataAbertura")
+    @Query("SELECT os FROM OrdemServicoEntity os JOIN FETCH os.veiculo v JOIN FETCH v.dono WHERE os.status NOT IN ('FINALIZADA', 'ENTREGUE') ORDER BY " +
+           "CASE os.status " +
+           "WHEN 'AGUARDANDO_APROVACAO' THEN 1 " +
+           "WHEN 'EM_DIAGNOSTICO' THEN 2 " +
+           "WHEN 'RECEBIDA' THEN 3 " +
+           "WHEN 'EM_EXECUCAO' THEN 4 " +
+           "ELSE 5 END, " +
+           "os.dataAbertura ASC")
     Page<OrdemServicoEntity> findAllAtivas(Pageable pageable);
 }

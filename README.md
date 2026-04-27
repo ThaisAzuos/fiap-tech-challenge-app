@@ -259,31 +259,99 @@ flowchart TD
     end
 ```
 
-### Principais Benefícios da Arquitetura
+### Diagrama de Arquitetura de Módulos
 
-- **🔒 Isolamento do Domínio**: Regras de negócio independentes de frameworks/tecnologias
-- **🧪 Testabilidade**: Domínio puro facilita testes unitários
-- **🔄 Manutenibilidade**: Mudanças em infraestrutura não afetam o negócio
-- **📦 Independência Tecnológica**: Fácil troca de banco, frameworks, etc.
-- **🎯 Foco no Valor**: Desenvolvedores focam em regras de negócio
+```mermaid
+graph TB
+    subgraph "🎯 Camada de Domínio (Pura)"
+        DM[Domain Models] --> BR[Business Rules]
+        BR --> EX[Domain Exceptions]
+    end
 
-### Fluxo de Aprovação Externa de Orçamento
+    subgraph "🧠 Camada de Aplicação"
+        UC[Use Cases] --> DTO[DTOs]
+        UC --> IP[Input Ports]
+        UC --> OP[Output Ports]
+    end
+
+    subgraph "🔌 Camada de Infraestrutura"
+        IC[Input Adapters<br/>REST Controllers] --> UC
+        OP --> OA[Output Adapters<br/>JPA Repositories]
+        OA --> DB[(PostgreSQL)]
+        IC --> ES[External Services<br/>Email, Auth]
+    end
+
+    subgraph "📦 Módulos do Sistema"
+        AT[Atendimento<br/>OS Management] --> DM
+        CD[Cadastro<br/>Clientes/Veículos] --> DM
+        ES[Estoque<br/>Peças] --> DM
+        CM[Comum<br/>Config/Email] --> DM
+    end
+
+    subgraph "🔄 Fluxo de Dependências"
+        IC -.->|depends| UC
+        UC -.->|depends| DM
+        UC -.->|depends| OP
+        OA -.->|depends| OP
+    end
+
+    style DM fill:#e1f5fe
+    style UC fill:#f3e5f5
+    style IC fill:#e8f5e8
+    style AT fill:#fff3e0
+    style CD fill:#fce4ec
+    style ES fill:#f1f8e9
+```
+
+### Diagrama de Sequência - Abertura Completa de OS
 
 ```mermaid
 sequenceDiagram
     participant C as Cliente
+    participant V as Veículo
+    participant P as Peças
+    participant S as Serviços
     participant A as Atendente
-    participant S as Sistema
-    participant E as Email
+    participant SY as Sistema
 
-    A->>S: Cria OS com peças/serviços
-    A->>S: Muda status para AGUARDANDO_APROVACAO
-    S->>E: Envia email com link de aprovação
-    E->>C: Email com botão "APROVAR ORÇAMENTO"
-    C->>S: Clica no link público (sem auth)
-    S->>S: Valida status e aprova orçamento
-    S->>S: Muda status para EM_EXECUCAO
-    S->>E: Envia email de confirmação
+    A->>SY: Solicitar abertura de OS
+    SY->>C: Validar cliente (CPF)
+    SY->>V: Validar veículo (Placa)
+    SY->>P: Validar peças no estoque
+    SY->>S: Validar serviços disponíveis
+
+    alt Tudo válido
+        SY->>SY: Criar OS com cliente + veículo
+        SY->>SY: Adicionar peças (com snapshots)
+        SY->>SY: Adicionar serviços (com snapshots)
+        SY->>SY: Calcular valor total
+        SY->>SY: Salvar OS (status: RECEBIDA)
+        SY->>A: Retornar OS completa
+        SY->>C: Enviar email de criação
+    else Alguma validação falha
+        SY->>A: Retornar erro específico
+    end
+```
+
+### Diagrama de Estados - Ordem de Serviço
+
+```mermaid
+stateDiagram-v2
+    [*] --> RECEBIDA
+    RECEBIDA --> EM_DIAGNOSTICO: Atendente
+    EM_DIAGNOSTICO --> AGUARDANDO_APROVACAO: Atendente
+    AGUARDANDO_APROVACAO --> EM_DIAGNOSTICO: Cliente rejeita
+    AGUARDANDO_APROVACAO --> EM_EXECUCAO: Cliente aprova
+    EM_EXECUCAO --> FINALIZADA: Mecânico
+    FINALIZADA --> ENTREGUE: Atendente
+
+    RECEBIDA --> CANCELADA: Qualquer momento
+    EM_DIAGNOSTICO --> CANCELADA: Qualquer momento
+    AGUARDANDO_APROVACAO --> CANCELADA: Qualquer momento
+    EM_EXECUCAO --> CANCELADA: Qualquer momento
+
+    CANCELADA --> [*]
+    ENTREGUE --> [*]
 ```
 
 ---
@@ -353,4 +421,3 @@ sequenceDiagram
 | **Email** | JavaMail, Thymeleaf, MailHog |
 | **Documentação** | Markdown, Mermaid, Postman |
 
----

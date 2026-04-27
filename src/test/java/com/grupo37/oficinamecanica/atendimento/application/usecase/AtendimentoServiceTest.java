@@ -89,7 +89,7 @@ class AtendimentoServiceTest {
     @Test
     void deveAbrirOrdemServicoComSucesso() {
         // Dado
-        AberturaOSDTO dto = new AberturaOSDTO("ABC1234", "Problema no freio", null);
+        AberturaOSDTO dto = new AberturaOSDTO("ABC1234", "Problema no freio", null, null);
         when(veiculoPort.findById("ABC1234")).thenReturn(Optional.of(veiculo));
         when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -107,7 +107,7 @@ class AtendimentoServiceTest {
     @Test
     void deveLancarExcecaoQuandoVeiculoNaoEncontrado() {
         // Dado
-        AberturaOSDTO dto = new AberturaOSDTO("PLACA_INVALIDA", "Problema", null);
+        AberturaOSDTO dto = new AberturaOSDTO("PLACA_INVALIDA", "Problema", null, null);
         when(veiculoPort.findById("PLACA_INVALIDA")).thenReturn(Optional.empty());
 
         // Quando/Então

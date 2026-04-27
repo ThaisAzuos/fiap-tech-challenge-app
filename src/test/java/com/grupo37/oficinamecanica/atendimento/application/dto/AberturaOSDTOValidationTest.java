@@ -21,7 +21,7 @@ class AberturaOSDTOValidationTest {
     @Test
     @DisplayName("Abertura OS válida deve passar na validação")
     void shouldAcceptValidAberturaOS() {
-        var abertura = new AberturaOSDTO("ABC1D23", "Barulho estranho no motor e problema na suspensão", null);
+        var abertura = new AberturaOSDTO("ABC1D23", "Barulho estranho no motor e problema na suspensão", null, null);
         Set<ConstraintViolation<AberturaOSDTO>> violations = validator.validate(abertura);
         assertTrue(violations.isEmpty());
     }
@@ -29,7 +29,7 @@ class AberturaOSDTOValidationTest {
     @Test
     @DisplayName("Deve aceitar placa em padrão Mercosul")
     void shouldAcceptMercosulPlate() {
-        var abertura = new AberturaOSDTO("XYZ9K45", "Barulho estranho no motor e problema na suspensão", null);
+        var abertura = new AberturaOSDTO("XYZ9K45", "Barulho estranho no motor e problema na suspensão", null, null);
         Set<ConstraintViolation<AberturaOSDTO>> violations = validator.validate(abertura);
         assertTrue(violations.isEmpty());
     }
@@ -37,7 +37,7 @@ class AberturaOSDTOValidationTest {
     @Test
     @DisplayName("Deve rejeitar placa inválida")
     void shouldRejectInvalidPlate() {
-        var abertura = new AberturaOSDTO("INVALID", "Barulho estranho no motor", null);
+        var abertura = new AberturaOSDTO("INVALID", "Barulho estranho no motor", null, null);
         Set<ConstraintViolation<AberturaOSDTO>> violations = validator.validate(abertura);
         assertFalse(violations.isEmpty());
     }
@@ -45,7 +45,7 @@ class AberturaOSDTOValidationTest {
     @Test
     @DisplayName("Deve rejeitar descrição vazia")
     void shouldRejectEmptyDescription() {
-        var abertura = new AberturaOSDTO("ABC1D23", "", null);
+        var abertura = new AberturaOSDTO("ABC1D23", "", null, null);
         Set<ConstraintViolation<AberturaOSDTO>> violations = validator.validate(abertura);
         assertFalse(violations.isEmpty());
     }
@@ -53,7 +53,7 @@ class AberturaOSDTOValidationTest {
     @Test
     @DisplayName("Deve rejeitar descrição muito curta")
     void shouldRejectShortDescription() {
-        var abertura = new AberturaOSDTO("ABC1D23", "Problema", null);
+        var abertura = new AberturaOSDTO("ABC1D23", "Problema", null, null);
         Set<ConstraintViolation<AberturaOSDTO>> violations = validator.validate(abertura);
         assertFalse(violations.isEmpty());
     }
@@ -61,7 +61,7 @@ class AberturaOSDTOValidationTest {
     @Test
     @DisplayName("Deve rejeitar descrição com SQL injection")
     void shouldRejectDescriptionWithSqlInjection() {
-        var abertura = new AberturaOSDTO("ABC1D23", "'; DROP TABLE ordens--problemas", null);
+        var abertura = new AberturaOSDTO("ABC1D23", "'; DROP TABLE ordens--problemas", null, null);
         Set<ConstraintViolation<AberturaOSDTO>> violations = validator.validate(abertura);
         assertFalse(violations.isEmpty());
     }
@@ -69,7 +69,7 @@ class AberturaOSDTOValidationTest {
     @Test
     @DisplayName("Deve rejeitar descrição com XSS")
     void shouldRejectDescriptionWithXss() {
-        var abertura = new AberturaOSDTO("ABC1D23", "<script>alert('XSS')</script> pista do problema", null);
+        var abertura = new AberturaOSDTO("ABC1D23", "<script>alert('XSS')</script> pista do problema", null, null);
         Set<ConstraintViolation<AberturaOSDTO>> violations = validator.validate(abertura);
         assertFalse(violations.isEmpty());
     }

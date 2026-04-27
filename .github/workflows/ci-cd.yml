@@ -147,14 +147,16 @@ jobs:
       run: |
         # Atualizar imagem no deployment
         sed -i 's|image:.*|image: ${{ env.IMAGE_NAME }}:latest|g' k8s-deployment.yaml
-        # Aplicar manifestos
+        # Aplicar manifestos na ordem correta
         kubectl apply -f k8s-configmap.yaml
+        kubectl apply -f k8s-postgres.yaml
         kubectl apply -f k8s-secret.yaml
+        kubectl apply -f k8s-mailhog.yaml
         kubectl apply -f k8s-deployment.yaml
         kubectl apply -f k8s-service.yaml
         kubectl apply -f k8s-hpa.yaml
         # Aguardar rollout
-        kubectl rollout status deployment/oficina-deployment
+        kubectl rollout status deployment/oficina-app
 
     - name: Verificar deploy
       if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
