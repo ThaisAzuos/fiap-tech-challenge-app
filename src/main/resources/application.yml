@@ -86,3 +86,8 @@ springdoc:
     filter: true                # habilita campo de busca
     default-models-expand-depth: 0
   show-actuator: false
+
+# Configuração Lambda Auth
+lambda:
+  auth:
+    url: ${LAMBDA_AUTH_URL:http://localhost:8080}

@@ -1,0 +1,96 @@
+{
+  "info": {
+    "_postman_id": "f81fc046-2138-423f-8555-ed327a207dd2",
+    "name": "Oficina Mecânica API - Tech Challenge (Lambda Auth)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Authenticate (CPF via Lambda)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Authenticate: salvar JWT em pm.collectionVariables jwt_token",
+              "let data = {};",
+              "try { data = pm.response.json(); } catch (e) { data = {}; }",
+              "",
+              "pm.test('[PASSO 01] Authenticate - token JWT retornado', function () {",
+              "  pm.expect(data).to.have.property('token');",
+              "  pm.expect(data.token).to.be.a('string').and.not.empty;",
+              "  pm.expect(data).to.have.property('expiry');",
+              "  pm.expect(data).to.have.property('userId');",
+              "  pm.expect(data).to.have.property('correlationId');",
+              "});",
+              "",
+              "if (data && data.token) {",
+              "  pm.collectionVariables.set('jwt_token', data.token);",
+              "}",
+              "",
+              "pm.test('[PASSO 01] Status HTTP 200 - autenticação realizada', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"cpf\":\"52998224725\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/authenticate",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "02. Testar API com JWT",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/clientes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "clientes"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "jwt_token",
+      "value": ""
+    }
+  ]
+}

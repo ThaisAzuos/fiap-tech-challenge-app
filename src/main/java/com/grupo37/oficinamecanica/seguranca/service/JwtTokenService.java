@@ -1,4 +1,3 @@
-
 package com.grupo37.oficinamecanica.seguranca.service;
 
 import com.auth0.jwt.JWT;
@@ -36,26 +35,46 @@ public class JwtTokenService {
     public boolean validarToken(String token) {
         try {
             var algoritmo = Algorithm.HMAC256(secret);
-            JWT.require(algoritmo)
+            var verifier = JWT.require(algoritmo)
                     .withIssuer("API Oficina Mecanica")
-                    .build()
-                    .verify(token);
+                    .build();
+            verifier.verify(token);
             return true;
-        } catch (JWTVerificationException exception) {
-            return false;
+        } catch (JWTVerificationException localException) {
+            // Try validating as Lambda token
+            try {
+                var algoritmo = Algorithm.HMAC256(secret);
+                var verifier = JWT.require(algoritmo)
+                        .withIssuer("fiap-tech-challenge-lambda-auth")
+                        .build();
+                verifier.verify(token);
+                return true;
+            } catch (JWTVerificationException lambdaException) {
+                return false;
+            }
         }
     }
 
     public String getSubject(String tokenJWT) {
         try {
             var algoritmo = Algorithm.HMAC256(secret);
-            return JWT.require(algoritmo)
+            var verifier = JWT.require(algoritmo)
                     .withIssuer("API Oficina Mecanica")
-                    .build()
-                    .verify(tokenJWT)
-                    .getSubject();
-        } catch (JWTVerificationException exception) {
-            throw new RuntimeException("Token JWT inválido ou expirado!");
+                    .build();
+            return verifier.verify(tokenJWT).getSubject();
+        } catch (JWTVerificationException localException) {
+            // Try getting subject from Lambda token
+            try {
+                var algoritmo = Algorithm.HMAC256(secret);
+                var verifier = JWT.require(algoritmo)
+                        .withIssuer("fiap-tech-challenge-lambda-auth")
+                        .build();
+                var decoded = verifier.verify(tokenJWT);
+                // Lambda tokens use 'cpf' claim instead of 'sub'
+                return decoded.getClaim("cpf").asString();
+            } catch (JWTVerificationException lambdaException) {
+                throw new RuntimeException("Token JWT inválido ou expirado!");
+            }
         }
     }
 
