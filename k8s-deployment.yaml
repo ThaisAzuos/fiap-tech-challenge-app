@@ -19,77 +19,107 @@ spec:
         app: oficina-app
     spec:
       containers:
-      - name: oficina-app
-        # Correção: Usar o nome da imagem local em vez de uma imagem remota inexistente/privada
-        image: oficina-mecanica:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_DATASOURCE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: oficina-config
-              key: db-url
-        - name: SPRING_DATASOURCE_USERNAME
-          valueFrom:
-            configMapKeyRef:
-              name: oficina-config
-              key: db-username
-        - name: SPRING_DATASOURCE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: oficina-secrets
-              key: db-password
-        - name: API_SECURITY_TOKEN_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oficina-secrets
-              key: jwt-secret
-        - name: SPRING_MAIL_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: oficina-config
-              key: mail-host
-        - name: SPRING_MAIL_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: oficina-config
-              key: mail-port
-        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
-          value: "false"
-        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
-          value: "false"
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-        startupProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          # Ate ~180s para bootstrap completo (Spring + JPA + conexao DB)
-          failureThreshold: 36
-          periodSeconds: 5
-          timeoutSeconds: 2
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          # Liveness so passa a contar apos startupProbe concluir
-          initialDelaySeconds: 0
-          periodSeconds: 15
-          timeoutSeconds: 2
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          # Evita flap no endpoint durante aquecimento inicial
-          initialDelaySeconds: 0
-          periodSeconds: 10
-          timeoutSeconds: 2
-          failureThreshold: 6
+        - name: oficina-app
+          # Correção: Usar o nome da imagem local em vez de uma imagem remota inexistente/privada
+          image: oficina-mecanica:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: db-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: db-password
+            - name: API_SECURITY_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: jwt-secret
+            - name: SPRING_MAIL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: mail-host
+            - name: SPRING_MAIL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: mail-port
+            - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+              value: "false"
+            - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+              value: "false"
+            - name: NEW_RELIC_APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: new-relic-app-name
+            - name: NEW_RELIC_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: new-relic-environment
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: new-relic-distributed-tracing-enabled
+            - name: NEW_RELIC_APPLICATION_LOGGING_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: new-relic-application-logging-enabled
+            - name: NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: new-relic-application-logging-forwarding-enabled
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: new-relic-license-key
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            # Ate ~180s para bootstrap completo (Spring + JPA + conexao DB)
+            failureThreshold: 36
+            periodSeconds: 5
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            # Liveness so passa a contar apos startupProbe concluir
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            # Evita flap no endpoint durante aquecimento inicial
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
