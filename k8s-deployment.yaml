@@ -20,9 +20,8 @@ spec:
     spec:
       containers:
         - name: oficina-app
-          # Correção: Usar o nome da imagem local em vez de uma imagem remota inexistente/privada
-          image: oficina-mecanica:latest
-          imagePullPolicy: IfNotPresent
+          image: ${ECR_REPOSITORY_URL}:${IMAGE_TAG} # Alterado para placeholder de imagem ECR
+          imagePullPolicy: Always # Alterado para Always para garantir a imagem mais recente do ECR
           ports:
             - containerPort: 8080
           env:
@@ -41,11 +40,12 @@ spec:
                 secretKeyRef:
                   name: oficina-secrets
                   key: db-password
-            - name: API_SECURITY_TOKEN_SECRET
+            # API_SECURITY_TOKEN_SECRET removido, pois a aplicação não gera mais JWTs
+            - name: API_SECURITY_TOKEN_PUBLIC_KEY # Adicionado para validação JWT
               valueFrom:
                 secretKeyRef:
                   name: oficina-secrets
-                  key: jwt-secret
+                  key: jwt-public-key
             - name: SPRING_MAIL_HOST
               valueFrom:
                 configMapKeyRef:

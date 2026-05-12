@@ -1,423 +1,115 @@
-# 🛠️ Oficina Mecânica API
+# fiap-tech-challenge-app
 
-API REST para gestão de oficina mecânica (Cadastro, Estoque, O.S., Autenticação JWT).
+## 🎯 Propósito
+Este repositório contém a aplicação principal Spring Boot para o sistema de oficina mecânica. Ela foi refatorada para consumir um serviço de autenticação externo (AWS Lambda) para validação de CPF e geração de JWT, e para rodar em um cluster Kubernetes (EKS) utilizando um banco de dados PostgreSQL gerenciado (RDS).
 
-## 🚀 Quick Start (Docker)
+## 🛠️ Tech Stack
+- **Linguagem**: Java 21
+- **Framework**: Spring Boot 3.x
+- **Banco de Dados**: PostgreSQL (via AWS RDS)
+- **ORM**: Spring Data JPA / Hibernate
+- **Migrações DB**: Flyway
+- **Segurança**: Spring Security (validação JWT RS256)
+- **Observabilidade**: New Relic APM
+- **Containerização**: Docker
+- **Orquestração**: Kubernetes (EKS)
 
-Suba a aplicação completa (API + Banco + MailHog) com um comando:
-
-```bash
-# Limpar e iniciar
-docker-compose down --remove-orphans
-docker-compose up --build -d
-```
-
-**Acessos:**
-- **API:** `http://localhost:8080`
-- **Swagger:** `http://localhost:8080/swagger-ui/index.html`
-- **MailHog (Emails):** `http://localhost:8025`
-
-**Parar:**
-```bash
-docker-compose down
-```
-
----
-
-## ☸️ Kubernetes (K8s)
-
-**Decisão rápida:** use **Primeira execução** quando o cluster estiver limpo ou for a primeira subida; use **Reexecução rápida** no dia a dia para iterar mais rápido.
-
-### 1) Iniciar
-
-**Primeira execução (setup completo):**
-```bash
-# Habilitar metrics-server para HPA
-kubectl apply -f k8s-metrics-server.yaml
-
-# Aplicar somente os manifests Kubernetes do projeto (mais rapido que `-f .`)
-kubectl apply -f k8s-secret.yaml
-kubectl apply -f k8s-configmap.yaml
-kubectl apply -f k8s-postgres.yaml
-kubectl apply -f k8s-mailhog.yaml
-kubectl apply -f k8s-deployment.yaml
-kubectl apply -f k8s-service.yaml
-kubectl apply -f k8s-hpa.yaml
-
-# Aguardar a aplicacao ficar pronta antes do teste de carga
-kubectl rollout status deployment/oficina-app --timeout=180s
-```
-
-**Reexecução rápida (ambiente já criado):**
-```bash
-# Atualiza somente app e autoscaling
-kubectl apply -f k8s-deployment.yaml
-kubectl apply -f k8s-service.yaml
-kubectl apply -f k8s-hpa.yaml
-
-# Reinicia app e aguarda prontidão
-kubectl rollout restart deployment/oficina-app
-kubectl rollout status deployment/oficina-app --timeout=180s
-```
-
-### 2) Monitorar
-
-**Status geral:**
-```bash
-kubectl get pods,svc,hpa
-```
-
-**Acompanhar em tempo real (terminais separados):**
-```bash
-kubectl get pods -w
-kubectl get hpa oficina-hpa -w
-kubectl get endpoints oficina-service -w
-```
-
-**Logs da aplicação:**
-```bash
-kubectl logs -f deployment/oficina-app
-```
-
-**Métricas (CPU/memória):**
-```bash
-kubectl top pods
-kubectl top nodes
-```
-
-**Acesso local à API (port-forward):**
-```bash
-# Use 8080:80 se a porta 8080 estiver livre; caso contrario, use 8081:80
-kubectl port-forward svc/oficina-service 8080:80
-```
-
-**Teste de carga (terminal separado):**
-```bash
-python3 scripts/load-test.py
-```
-
-### 3) Encerrar
-
-**Parar acompanhamento local:**
-```bash
-# Interrompa watchers/port-forward com Ctrl+C nos terminais em execucao
-```
-
-**Remover recursos do projeto no cluster:**
-```bash
-kubectl delete -f k8s-hpa.yaml
-kubectl delete -f k8s-service.yaml
-kubectl delete -f k8s-deployment.yaml
-kubectl delete -f k8s-mailhog.yaml
-kubectl delete -f k8s-postgres.yaml
-kubectl delete -f k8s-configmap.yaml
-kubectl delete -f k8s-secret.yaml
-```
-
----
-
-## 🧪 Testes e Qualidade
-
-**Unitários/Integração:**
-```bash
-mvn clean test
-```
-
-**Automatizado (sobe MailHog + roda testes):**
-```bash
-./scripts/test-local.sh
-```
-
-**Compose dedicado para testes (somente MailHog):**
-```bash
-docker compose -f docker-compose.test.yml up -d mailhog
-./mvnw clean test
-docker compose -f docker-compose.test.yml down
-```
-
-**Exemplos úteis do script:**
-```bash
-# Roda somente um teste específico
-./scripts/test-local.sh -- -Dtest=OpenApiDocumentationTest
-
-# Mantém cache Maven (sem clean) e para MailHog no final
-./scripts/test-local.sh --no-clean --down
-```
-
-**SonarQube (Local):**
-```bash
-# Fluxo automatizado (sobe Sonar, aguarda UP e executa análise)
-export SONAR_TOKEN="SEU_TOKEN"
-./scripts/sonar-local.sh
-
-# Opcional: derrubar stack ao final
-./scripts/sonar-local.sh --down
-
-# Fluxo manual equivalente
-docker-compose -f docker-compose.sonar.yml up -d
-./mvnw clean verify sonar:sonar \
-  -Dsonar.host.url="http://localhost:9000" \
-  -Dsonar.token="$SONAR_TOKEN"
-```
-
----
-
-## 📨 Teste de Fluxo (Postman)
-
-Importe `Oficina_Mecanica_API_Tech_Challenge.postman_collection.json` e siga a ordem:
-
-1. **Autenticação:** `POST /login` (Gera token JWT automático para as próximas chamadas).
-2. **Cadastro:** Clientes, Veículos, Peças.
-3. **Atendimento:** Abrir O.S., Adicionar Peças, Mudar Status.
-4. **Verificação:** Checar e-mails no MailHog (`http://localhost:8025`).
-
-Guia operacional detalhado de autenticação JWT no Postman:
-- [`docs/operacional/jwt-postman-mini-guia.md`](docs/operacional/jwt-postman-mini-guia.md)
-
-
----
-
-## 📂 Documentação e Estrutura
-
-- **`src/`**: Código fonte Java 21 + Spring Boot 3.
-- **`docs/`**: Documentação detalhada ([Índice Completo](docs/indice.md)).
-  - **ADRs**: Decisões arquiteturais.
-  - **Operacional**: Guias do MailHog, SonarQube, Postman/JWT e AWS/Terraform no IntelliJ.
-- **`terraform/`**: Infraestrutura as Code (AWS).
-- **`k8s-*.yaml`**: Manifestos Kubernetes.
-
-Guia operacional para configurar AWS e Terraform no IntelliJ:
-- [`docs/operacional/aws-terraform-intellij.md`](docs/operacional/aws-terraform-intellij.md)
-
----
-
-## 🏗️ Arquitetura da Aplicação
-
-### Clean Architecture (Hexagonal Architecture)
-
-A aplicação segue os princípios de **Clean Architecture**, com separação clara entre camadas e isolamento do domínio de negócio das tecnologias específicas:
-
-```
-📁 src/main/java/com/grupo37/oficinamecanica/
-├── 📂 comum/                    # Camada compartilhada
-│   ├── config/                  # Configurações (Security, Email, etc.)
-│   └── email/                   # Serviço de email
-├── 📂 atendimento/              # Módulo de Atendimento (OS)
-│   ├── domain/                  # 🎯 DOMÍNIO PURO (regras de negócio)
-│   │   ├── model/               # Entidades de domínio (sem JPA)
-│   │   └── exception/           # Exceções de negócio
-│   ├── application/             # 🧠 LÓGICA DE APLICAÇÃO
-│   │   ├── dto/                 # Data Transfer Objects
-│   │   ├── port/                # Interfaces (Ports)
-│   │   │   ├── in/              # Input Ports (use cases)
-│   │   │   └── out/             # Output Ports (repos, external)
-│   │   └── usecase/             # Casos de uso (Services)
-│   └── infrastructure/          # 🔌 INFRAESTRUTURA (adapters)
-│       ├── controller/          # REST Controllers (Input Adapters)
-│       └── repository/          # JPA Repositories (Output Adapters)
-├── 📂 cadastro/                 # Módulo de Cadastro
-└── 📂 estoque/                  # Módulo de Estoque
-```
-
-### Diagrama de Arquitetura Geral
-
+## 📊 Arquitetura
 ```mermaid
-flowchart TD
-    subgraph "👤 Usuário"
-        A[Cliente/Usuário] -->|HTTP/REST| B[API Gateway / Controllers]
-    end
-
-    subgraph "🧠 Aplicação (Clean Architecture)"
-        B --> C[Application Services / Use Cases]
-        C --> D[Domain Entities & Business Rules]
-        D --> E[Ports & Interfaces]
-        E --> F[Infrastructure Adapters]
-    end
-
-    subgraph "💾 Infraestrutura"
-        F --> G[JPA Repositories]
-        G --> H[(PostgreSQL)]
-        F --> I[Email Service]
-        I --> J[MailHog/SMTP]
-    end
-
-    subgraph "🐳 Containerização"
-        K[Dockerfile] --> L[Container Image]
-        L --> M[Kubernetes Deployment]
-        M --> N[Service & HPA]
-    end
-
-    subgraph "☁️ Infraestrutura como Código"
-        O[Terraform] --> P[AWS EKS Cluster]
-        O --> Q[RDS PostgreSQL]
-    end
-
-    subgraph "🔄 CI/CD"
-        R[GitHub Actions] --> S[Build & Test]
-        S --> T[Docker Image]
-        T --> U[Deploy to K8s]
+graph TD
+    User[Usuário] --> |1. POST /login {cpf}| App[Spring Boot App]
+    App --> |2. POST /authenticate {cpf}| LambdaAuth[Lambda Auth Service]
+    LambdaAuth --> RDS[RDS PostgreSQL]
+    LambdaAuth --> |3. Retorna JWT| App
+    App --> |4. Retorna JWT| User
+    User --> |5. Requisições com JWT| App
+    App -- Valida JWT --> LambdaAuth
+    App -- Persistência --> RDS
+    App -- Métricas & Logs --> NewRelic[New Relic Platform]
+    subgraph Kubernetes Cluster
+        App
     end
 ```
 
-### Diagrama de Arquitetura de Módulos
+## 🚀 Quick Start (Setup Local)
+Para rodar a aplicação localmente, você precisará de:
+- Java 21
+- Maven
+- Docker (opcional, para rodar o PostgreSQL e MailHog localmente)
+- Um banco de dados PostgreSQL (pode ser via Docker)
+- Uma chave pública RSA (para `API_SECURITY_TOKEN_PUBLIC_KEY`)
+- Uma URL para o serviço de autenticação Lambda (para `LAMBDA_AUTH_URL`)
 
-```mermaid
-graph TB
-    subgraph "🎯 Camada de Domínio (Pura)"
-        DM[Domain Models] --> BR[Business Rules]
-        BR --> EX[Domain Exceptions]
-    end
+1.  **Configurar Banco de Dados Local**:
+    Você pode usar o `docker-compose.yml` para levantar um PostgreSQL e MailHog localmente:
+    ```bash
+    docker-compose up -d postgres mailhog
+    ```
+2.  **Configurar Variáveis de Ambiente**:
+    Crie um arquivo `.env` na raiz do projeto ou defina as seguintes variáveis de ambiente:
+    ```
+    SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/oficina_db
+    SPRING_DATASOURCE_USERNAME=oficina_admin
+    SPRING_DATASOURCE_PASSWORD=oficina_password
+    API_SECURITY_TOKEN_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+    LAMBDA_AUTH_URL=http://localhost:8080 # Ou a URL do seu API Gateway da Lambda Auth
+    NEW_RELIC_LICENSE_KEY=YOUR_NEW_RELIC_LICENSE_KEY # Opcional, para testar APM localmente
+    ```
+    **Nota**: A `API_SECURITY_TOKEN_PUBLIC_KEY` deve ser a chave pública RSA completa, incluindo os cabeçalhos `BEGIN/END` e com quebras de linha (`\n`). Esta chave deve corresponder à chave privada usada pela Lambda Auth.
 
-    subgraph "🧠 Camada de Aplicação"
-        UC[Use Cases] --> DTO[DTOs]
-        UC --> IP[Input Ports]
-        UC --> OP[Output Ports]
-    end
+3.  **Build da Aplicação**:
+    ```bash
+    ./mvnw clean install
+    ```
 
-    subgraph "🔌 Camada de Infraestrutura"
-        IC[Input Adapters<br/>REST Controllers] --> UC
-        OP --> OA[Output Adapters<br/>JPA Repositories]
-        OA --> DB[(PostgreSQL)]
-        IC --> ES[External Services<br/>Email, Auth]
-    end
+4.  **Executar Migrações Flyway (se não usar Docker Compose)**:
+    Se você não estiver usando o Docker Compose para o banco de dados, certifique-se de que o Flyway execute as migrações. Ao iniciar a aplicação, o Flyway fará isso automaticamente.
 
-    subgraph "📦 Módulos do Sistema"
-        AT[Atendimento<br/>OS Management] --> DM
-        CD[Cadastro<br/>Clientes/Veículos] --> DM
-        ES[Estoque<br/>Peças] --> DM
-        CM[Comum<br/>Config/Email] --> DM
-    end
+5.  **Executar a Aplicação (com New Relic Agent)**:
+    Baixe o `newrelic.jar` e `newrelic.yml` do site do New Relic e coloque-os na pasta `target/`.
+    ```bash
+    java -javaagent:target/newrelic.jar -Dnewrelic.environment=development -jar target/oficinamecanica-0.0.1-SNAPSHOT.jar
+    ```
+    Ou, sem o agente New Relic:
+    ```bash
+    java -jar target/oficinamecanica-0.0.1-SNAPSHOT.jar
+    ```
 
-    subgraph "🔄 Fluxo de Dependências"
-        IC -.->|depends| UC
-        UC -.->|depends| DM
-        UC -.->|depends| OP
-        OA -.->|depends| OP
-    end
+## 📋 Deploy (CI/CD com GitHub Actions)
+Este repositório utiliza GitHub Actions para automação de CI/CD.
+O workflow `main.yml` (localizado em `.github/workflows/main.yml`) executa as seguintes etapas:
+1.  **`build-and-test`**:
+    *   Compila o código Java com Maven.
+    *   Executa testes unitários.
+    *   Realiza um scan com SonarQube (se configurado).
+2.  **`build-and-push-docker`**:
+    *   Autentica no AWS ECR.
+    *   Constrói a imagem Docker da aplicação e a envia para o ECR com a tag do SHA do commit.
+3.  **`deploy-kubernetes`**:
+    *   **Aprovação Manual**: Para deploys na branch `main` (ou ambiente `production`), é necessária uma aprovação manual (configurada via GitHub Environments).
+    *   Configura o `kubectl` para o cluster EKS.
+    *   Substitui placeholders nos manifestos Kubernetes (`k8s-deployment.yaml`, `k8s-configmap.yaml`, `k8s-secret.yaml`) com valores de Secrets e variáveis de ambiente.
+    *   Aplica os manifestos no cluster Kubernetes (Deployment, Service, HPA).
 
-    style DM fill:#e1f5fe
-    style UC fill:#f3e5f5
-    style IC fill:#e8f5e8
-    style AT fill:#fff3e0
-    style CD fill:#fce4ec
-    style ES fill:#f1f8e9
-```
+**Configuração Necessária no GitHub:**
+*   **Secrets**: Configure os seguintes GitHub Secrets no seu repositório:
+    *   `AWS_ACCOUNT_ID`: O ID da sua conta AWS.
+    *   `EKS_CLUSTER_NAME`: O nome do seu cluster EKS.
+    *   `DB_HOST`: Host do seu RDS PostgreSQL (obtido do output do `fiap-tech-challenge-db-terraform`).
+    *   `DB_USERNAME`: Usuário do banco de dados.
+    *   `DB_PASSWORD`: Senha do banco de dados.
+    *   `JWT_PUBLIC_KEY`: Sua chave pública RS256 para validação de JWTs.
+    *   `NEW_RELIC_LICENSE_KEY`: Sua chave de licença do New Relic.
+    *   `LAMBDA_AUTH_URL`: A URL do API Gateway do seu serviço de autenticação Lambda.
+    *   `SONAR_TOKEN`: Token para autenticação no SonarQube (se usar).
+    *   `SONAR_HOST_URL`: URL do seu servidor SonarQube (se usar).
+*   **IAM Roles**: Crie os seguintes IAM Roles na AWS e configure-os para serem assumidos pelo GitHub Actions:
+    *   `github-actions-app-ecr-role`: Com permissões para ECR.
+    *   `github-actions-app-eks-deploy-role`: Com permissões para deploy no EKS (incluindo `eks:UpdateKubeconfig`, `sts:AssumeRole` para o role do EKS, e permissões para `kubectl apply`).
+*   **Environments**: Crie um ambiente chamado `production` (ou o nome que você usou no workflow) nas configurações do seu repositório GitHub e adicione "Required reviewers" para aprovação manual.
 
-### Diagrama de Sequência - Abertura Completa de OS
-
-```mermaid
-sequenceDiagram
-    participant C as Cliente
-    participant V as Veículo
-    participant P as Peças
-    participant S as Serviços
-    participant A as Atendente
-    participant SY as Sistema
-
-    A->>SY: Solicitar abertura de OS
-    SY->>C: Validar cliente (CPF)
-    SY->>V: Validar veículo (Placa)
-    SY->>P: Validar peças no estoque
-    SY->>S: Validar serviços disponíveis
-
-    alt Tudo válido
-        SY->>SY: Criar OS com cliente + veículo
-        SY->>SY: Adicionar peças (com snapshots)
-        SY->>SY: Adicionar serviços (com snapshots)
-        SY->>SY: Calcular valor total
-        SY->>SY: Salvar OS (status: RECEBIDA)
-        SY->>A: Retornar OS completa
-        SY->>C: Enviar email de criação
-    else Alguma validação falha
-        SY->>A: Retornar erro específico
-    end
-```
-
-### Diagrama de Estados - Ordem de Serviço
-
-```mermaid
-stateDiagram-v2
-    [*] --> RECEBIDA
-    RECEBIDA --> EM_DIAGNOSTICO: Atendente
-    EM_DIAGNOSTICO --> AGUARDANDO_APROVACAO: Atendente
-    AGUARDANDO_APROVACAO --> EM_DIAGNOSTICO: Cliente rejeita
-    AGUARDANDO_APROVACAO --> EM_EXECUCAO: Cliente aprova
-    EM_EXECUCAO --> FINALIZADA: Mecânico
-    FINALIZADA --> ENTREGUE: Atendente
-
-    RECEBIDA --> CANCELADA: Qualquer momento
-    EM_DIAGNOSTICO --> CANCELADA: Qualquer momento
-    AGUARDANDO_APROVACAO --> CANCELADA: Qualquer momento
-    EM_EXECUCAO --> CANCELADA: Qualquer momento
-
-    CANCELADA --> [*]
-    ENTREGUE --> [*]
-```
-
----
-
-## 📋 Funcionalidades Implementadas
-
-### ✅ Atendimento (Ordem de Serviço)
-- **Abertura completa**: Cliente + Veículo + Peças + Serviços
-- **Gestão de status**: RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO → EM_EXECUCAO → FINALIZADA → ENTREGUE
-- **Aprovação externa**: Cliente aprova orçamento via link público (sem autenticação)
-- **Histórico**: Snapshots de preços e nomes no momento da venda
-- **Regras de negócio**: Validações de transição de status, cálculo automático de valores
-
-### ✅ Cadastro
-- **Clientes**: Dados pessoais e contato
-- **Veículos**: Placa, modelo, marca, ano, dono
-- **Funcionários**: Atendentes, Mecânicos, Gerentes (com roles JWT)
-
-### ✅ Estoque
-- **Peças**: Controle de quantidade, preços, fornecedores
-- **Validações**: Estoque insuficiente, preços atualizados
-
-### ✅ Segurança
-- **JWT Authentication**: Login com geração de tokens
-- **Role-based Access**: ATENDENTE, MECANICO, GERENTE
-- **Endpoint público**: Aprovação de orçamento sem autenticação
-
-### ✅ Notificações
-- **Email automático**: Criação OS, mudança status, conclusão, cancelamento
-- **Templates Thymeleaf**: Emails personalizados e responsivos
-- **MailHog**: Ambiente local para testes de email
-
-### ✅ Qualidade & DevOps
-- **Testes automatizados**: Unitários + Integração
-- **SonarQube**: Análise de qualidade de código
-- **Docker**: Containerização completa
-- **Kubernetes**: Orquestração com HPA (CPU + Memória)
-- **Terraform**: Infraestrutura AWS (EKS + RDS)
-- **CI/CD**: Pipeline automatizada
-
----
-
-## 🔗 Links Importantes
-
-- **📖 Documentação Completa**: [`docs/indice.md`](docs/indice.md)
-- **🏛️ Arquitetura Detalhada**: [`docs/arquitetura/`](docs/arquitetura/)
-- **🔐 Autenticação JWT**: [`docs/operacional/jwt-postman-mini-guia.md`](docs/operacional/jwt-postman-mini-guia.md)
-- **☁️ AWS + Terraform**: [`docs/operacional/aws-terraform-intellij.md`](docs/operacional/aws-terraform-intellij.md)
-- **📧 MailHog Setup**: [`docs/operacional/mailhog-setup.md`](docs/operacional/mailhog-setup.md)
-- **🧪 Postman Collection**: `Oficina_Mecanica_API_Tech_Challenge.postman_collection.json`
-
----
-
-## 🛠️ Tecnologias Principais
-
-| Categoria | Tecnologias |
-|-----------|-------------|
-| **Backend** | Java 21, Spring Boot 3, Spring Security, JWT |
-| **Banco** | PostgreSQL, JPA/Hibernate, Flyway |
-| **APIs** | REST, OpenAPI/Swagger, Jackson |
-| **Testes** | JUnit 5, Mockito, Testcontainers |
-| **Container** | Docker, Docker Compose |
-| **Orquestração** | Kubernetes, Helm, HPA |
-| **IaC** | Terraform, AWS (EKS + RDS) |
-| **CI/CD** | GitHub Actions, Maven |
-| **Qualidade** | SonarQube, JaCoCo |
-| **Email** | JavaMail, Thymeleaf, MailHog |
-| **Documentação** | Markdown, Mermaid, Postman |
-
+## 🔗 Links Relacionados
+- [Autenticação Lambda (fiap-tech-challenge-lambda-auth)](../fiap-tech-challenge-lambda-auth/README.md)
+- [Infraestrutura Kubernetes (fiap-tech-challenge-k8s-terraform)](../fiap-tech-challenge-k8s-terraform/README.md)
+- [Banco de Dados Terraform (fiap-tech-challenge-db-terraform)](../fiap-tech-challenge-db-terraform/README.md)
+- [Documentação Geral da Fase 3](../../docs/Fase03/QuickStart-Fase3d-3e.md)

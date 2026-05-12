@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: oficina-config
 data:
-  db-url: jdbc:postgresql://db-service:5432/oficina_db
+  db-url: ${SPRING_DATASOURCE_URL} # Alterado para placeholder, será preenchido via CI/CD ou Secret
   db-username: oficina_admin
   mail-host: oficina-mailhog
   mail-port: "1025"
