@@ -10,6 +10,7 @@ RUN chmod +x mvnw && ./mvnw dependency:go-offline
 # Copia o restante do código-fonte e compila a aplicação
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
+RUN ./mvnw dependency:copy -Dartifact=com.newrelic.agent.java:newrelic-agent:8.12.0 -DoutputDirectory=/app/target/newrelic
 
 # Estágio de Produção: Usa uma imagem leve apenas com o JRE
 FROM eclipse-temurin:21-jre-jammy
@@ -17,6 +18,7 @@ WORKDIR /app
 
 # Copia o .jar compilado do estágio de build
 COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/target/newrelic/newrelic-agent-8.12.0.jar newrelic.jar
 
 # Executa sem privilégios de root
 RUN useradd --system --uid 1001 spring
@@ -26,4 +28,4 @@ USER 1001
 EXPOSE 8080
 
 # Comando para iniciar a aplicação
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-javaagent:/app/newrelic.jar", "-jar", "app.jar"]

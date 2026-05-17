@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers("/actuator/**").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/login").permitAll();
+                    req.requestMatchers(HttpMethod.POST, "/authenticate").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/api/public/atendimento/*/aprovacao").permitAll();
 
                     // Endpoints de cadastro: qualquer usuário autenticado
