@@ -16,10 +16,7 @@ import java.util.UUID;
 public class ClienteEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(nullable = false)
+    @Column(nullable = false, length = 11)
     private String cpf;
 
     @Column(nullable = false)
@@ -36,7 +33,6 @@ public class ClienteEntity {
 
     // Construtor para criar entidade a partir do domínio
     public ClienteEntity(Cliente domain) {
-        this.id = domain.getId();
         this.cpf = domain.getCpf();
         this.nome = domain.getNome();
         this.email = domain.getEmail();
@@ -47,7 +43,6 @@ public class ClienteEntity {
     // Método para converter entidade para domínio
     public Cliente toDomain() {
         return new Cliente(
-            this.id,
             this.cpf,
             this.nome,
             this.email,

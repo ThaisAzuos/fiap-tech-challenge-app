@@ -1,6 +1,6 @@
 package com.grupo37.oficinamecanica.atendimento.application.port.out;
 
-import com.grupo37.oficinamecanica.cadastro.model.Veiculo;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
 
 import java.util.Optional;
 

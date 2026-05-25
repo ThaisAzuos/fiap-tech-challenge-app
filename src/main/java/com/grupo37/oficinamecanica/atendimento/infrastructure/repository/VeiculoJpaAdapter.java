@@ -1,7 +1,8 @@
 package com.grupo37.oficinamecanica.atendimento.infrastructure.repository;
 
 import com.grupo37.oficinamecanica.atendimento.application.port.out.VeiculoPort;
-import com.grupo37.oficinamecanica.cadastro.model.Veiculo;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.VeiculoEntity;
 import com.grupo37.oficinamecanica.cadastro.repository.VeiculoRepository;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ public class VeiculoJpaAdapter implements VeiculoPort {
 
     @Override
     public Optional<Veiculo> findById(String placa) {
-        return veiculoRepository.findById(placa);
+        return veiculoRepository.findById(placa)
+                .map(VeiculoEntity::toDomain); // converte para domínio
     }
 }
-

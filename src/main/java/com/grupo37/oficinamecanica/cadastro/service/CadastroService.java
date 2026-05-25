@@ -1,7 +1,11 @@
 package com.grupo37.oficinamecanica.cadastro.service;
 
-import com.grupo37.oficinamecanica.cadastro.model.*;
-import com.grupo37.oficinamecanica.cadastro.model.dto.ClienteDTO;
+import com.grupo37.oficinamecanica.cadastro.controller.dto.ClienteDTO;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Cliente;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Cpf;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Email;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Endereco;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.ClienteEntity;
 import com.grupo37.oficinamecanica.cadastro.repository.ClienteRepository;
 import com.grupo37.oficinamecanica.comum.exception.BusinessException;
 import jakarta.transaction.Transactional;
@@ -9,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -22,11 +27,9 @@ public class CadastroService {
             throw new BusinessException("Cliente já cadastrado com este CPF.");
         }
 
-        // 1. Converter Strings/DTOs para Objetos de Valor (Aqui dispara as validações)
         Cpf cpfValidado = new Cpf(dto.cpf());
         Email emailValidado = new Email(dto.email());
 
-        // 2. Converter EnderecoDTO para a Entidade/Value Object Endereco
         Endereco enderecoDominio = new Endereco(
                 dto.endereco().logradouro(),
                 dto.endereco().numero(),
@@ -37,7 +40,6 @@ public class CadastroService {
                 dto.endereco().cep()
         );
 
-        // 3. Agora passamos os tipos corretos para o construtor rico da Entidade
         Cliente novoCliente = new Cliente(
                 dto.nome(),
                 cpfValidado,
@@ -46,9 +48,14 @@ public class CadastroService {
                 enderecoDominio
         );
 
-        return clienteRepository.save(novoCliente);
+        // Converte para entity, salva, e retorna como domínio
+        return clienteRepository.save(new ClienteEntity(novoCliente)).toDomain();
     }
+
     public List<Cliente> listarTodos() {
-        return clienteRepository.findAll();
+        return clienteRepository.findAll()
+                .stream()
+                .map(ClienteEntity::toDomain)
+                .collect(Collectors.toList());
     }
 }

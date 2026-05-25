@@ -1,10 +1,11 @@
 package com.grupo37.oficinamecanica.cadastro.service;
 
 import com.grupo37.oficinamecanica.cadastro.controller.dto.FuncionarioCadastroDTO;
-import com.grupo37.oficinamecanica.cadastro.model.Cargo;
-import com.grupo37.oficinamecanica.cadastro.model.Cpf;
-import com.grupo37.oficinamecanica.cadastro.model.Email;
-import com.grupo37.oficinamecanica.cadastro.model.Funcionario;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Cargo;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Cpf;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Email;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Funcionario;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.FuncionarioEntity;
 import com.grupo37.oficinamecanica.cadastro.repository.FuncionarioRepository;
 import com.grupo37.oficinamecanica.seguranca.model.Perfil;
 import com.grupo37.oficinamecanica.seguranca.model.Usuario;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FuncionarioService {
@@ -31,18 +33,19 @@ public class FuncionarioService {
     public Funcionario salvar(FuncionarioCadastroDTO dados) {
         var senhaCriptografada = passwordEncoder.encode(dados.senha());
         var emailUnico = new Email("funcionario." + dados.cpf() + "@oficina.com");
-        
+
         var funcionario = new Funcionario(
-            dados.nome(), 
-            new Cpf(dados.cpf()), 
-            emailUnico,
-            dados.cargo(), 
-            senhaCriptografada,
-            dados.especialidade(),
-            dados.registroFuncional()
+                dados.nome(),
+                new Cpf(dados.cpf()),
+                emailUnico,
+                dados.cargo(),
+                senhaCriptografada,
+                dados.especialidade(),
+                dados.registroFuncional()
         );
 
-        funcionarioRepository.save(funcionario);
+        // Converte para entity antes de salvar
+        funcionarioRepository.save(new FuncionarioEntity(funcionario));
 
         var perfil = converterCargoParaPerfil(dados.cargo());
         var usuario = new Usuario(null, funcionario.getCpf(), senhaCriptografada, perfil);
@@ -52,7 +55,11 @@ public class FuncionarioService {
     }
 
     public List<Funcionario> listarTodos() {
-        return funcionarioRepository.findAll();
+        // Converte lista de FuncionarioEntity para Funcionario
+        return funcionarioRepository.findAll()
+                .stream()
+                .map(FuncionarioEntity::toDomain)
+                .collect(Collectors.toList());
     }
 
     private Perfil converterCargoParaPerfil(Cargo cargo) {

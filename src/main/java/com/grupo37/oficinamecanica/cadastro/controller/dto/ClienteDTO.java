@@ -1,4 +1,4 @@
-package com.grupo37.oficinamecanica.cadastro.model.dto;
+package com.grupo37.oficinamecanica.cadastro.controller.dto;
 
 import com.grupo37.oficinamecanica.comum.validation.NoSqlInjection;
 import com.grupo37.oficinamecanica.comum.validation.NoXss;

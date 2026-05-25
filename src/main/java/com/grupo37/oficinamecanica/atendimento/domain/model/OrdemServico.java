@@ -1,6 +1,6 @@
 package com.grupo37.oficinamecanica.atendimento.domain.model;
 
-import com.grupo37.oficinamecanica.cadastro.model.Veiculo;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
 import com.grupo37.oficinamecanica.comum.exception.BusinessException;
 import com.grupo37.oficinamecanica.estoque.model.Peca;
 

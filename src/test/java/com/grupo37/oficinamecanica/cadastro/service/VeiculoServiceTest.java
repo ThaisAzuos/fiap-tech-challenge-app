@@ -1,8 +1,10 @@
 package com.grupo37.oficinamecanica.cadastro.service;
 
-import com.grupo37.oficinamecanica.cadastro.model.Cliente;
-import com.grupo37.oficinamecanica.cadastro.model.Veiculo;
-import com.grupo37.oficinamecanica.cadastro.model.dto.VeiculoDTO;
+import com.grupo37.oficinamecanica.cadastro.controller.dto.VeiculoDTO;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Cliente;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.ClienteEntity;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.VeiculoEntity;
 import com.grupo37.oficinamecanica.cadastro.repository.ClienteRepository;
 import com.grupo37.oficinamecanica.cadastro.repository.VeiculoRepository;
 import com.grupo37.oficinamecanica.comum.exception.BusinessException;
@@ -14,10 +16,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,11 +40,23 @@ class VeiculoServiceTest {
     @Test
     void deveSalvarVeiculoQuandoDadosForemValidos() {
         VeiculoDTO dto = new VeiculoDTO("ABC1D23", "Civic", "Honda", 2024, "Preto", "12345678901");
-        Cliente dono = org.mockito.Mockito.mock(Cliente.class);
+
+        ClienteEntity donoEntity = mock(ClienteEntity.class);
+        Cliente dono = mock(Cliente.class);
+        when(donoEntity.toDomain()).thenReturn(dono);
+
+        VeiculoEntity veiculoEntity = mock(VeiculoEntity.class);
+        Veiculo veiculoSalvo = mock(Veiculo.class);
+        when(veiculoEntity.toDomain()).thenReturn(veiculoSalvo);
+        when(veiculoSalvo.getPlaca()).thenReturn("ABC1D23");
+        when(veiculoSalvo.getModelo()).thenReturn("Civic");
+        when(veiculoSalvo.getMarca()).thenReturn("Honda");
+        when(veiculoSalvo.getAno()).thenReturn(2024);
+        when(veiculoSalvo.getCor()).thenReturn("Preto");
 
         when(veiculoRepository.existsById(dto.placa())).thenReturn(false);
-        when(clienteRepository.findById(dto.cpfDono())).thenReturn(Optional.of(dono));
-        when(veiculoRepository.save(any(Veiculo.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(clienteRepository.findById("12345678901")).thenReturn(Optional.of(donoEntity));
+        when(veiculoRepository.save(any(VeiculoEntity.class))).thenReturn(veiculoEntity);
 
         Veiculo salvo = veiculoService.salvarVeiculo(dto);
 
@@ -50,7 +66,7 @@ class VeiculoServiceTest {
         assertThat(salvo.getMarca()).isEqualTo("Honda");
         assertThat(salvo.getAno()).isEqualTo(2024);
         assertThat(salvo.getCor()).isEqualTo("Preto");
-        verify(veiculoRepository).save(any(Veiculo.class));
+        verify(veiculoRepository).save(any(VeiculoEntity.class));
     }
 
     @Test
@@ -67,7 +83,7 @@ class VeiculoServiceTest {
     void deveLancarExcecaoQuandoDonoNaoForEncontrado() {
         VeiculoDTO dto = new VeiculoDTO("ABC1D23", "Civic", "Honda", 2024, "Preto", "12345678901");
         when(veiculoRepository.existsById(dto.placa())).thenReturn(false);
-        when(clienteRepository.findById(dto.cpfDono())).thenReturn(Optional.empty());
+        when(clienteRepository.findById("12345678901")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> veiculoService.salvarVeiculo(dto))
                 .isInstanceOf(BusinessException.class)
@@ -77,15 +93,19 @@ class VeiculoServiceTest {
     @Test
     void deveListarVeiculosPorCpfDoDono() {
         String cpf = "12345678901";
-        List<Veiculo> veiculos = List.of(org.mockito.Mockito.mock(Veiculo.class));
+
+        VeiculoEntity veiculoEntity = mock(VeiculoEntity.class);
+        Veiculo veiculo = mock(Veiculo.class);
+        when(veiculoEntity.toDomain()).thenReturn(veiculo);
+
         when(clienteRepository.existsById(cpf)).thenReturn(true);
-        when(veiculoRepository.findByDonoCpf(cpf)).thenReturn(veiculos);
+        when(veiculoRepository.findByDonoCpf(cpf)).thenReturn(List.of(veiculoEntity));
 
         List<Veiculo> resultado = veiculoService.listarPorCpfDono(cpf);
 
-        assertThat(resultado).hasSize(1).isEqualTo(veiculos);
+        assertThat(resultado).hasSize(1);
+        assertThat(resultado.get(0)).isEqualTo(veiculo);
         verify(clienteRepository).existsById(cpf);
         verify(veiculoRepository).findByDonoCpf(cpf);
     }
 }
-

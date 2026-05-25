@@ -1,13 +1,12 @@
 package com.grupo37.oficinamecanica.cadastro.infrastructure.repository;
 
+import com.grupo37.oficinamecanica.cadastro.domain.model.Placa;
 import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "veiculos")
@@ -16,11 +15,8 @@ import java.util.UUID;
 public class VeiculoEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(nullable = false)
-    private String placa;
+    @Column(nullable = false, length = 7)
+    private String placa; // Alinhado com o ID Natural do domínio
 
     private String modelo;
     private String marca;
@@ -32,27 +28,28 @@ public class VeiculoEntity {
     @JsonIgnore
     private ClienteEntity dono;
 
-    // Construtor para criar entidade a partir do domínio
+    // Construtor para criar entidade a partir do domínio (Salvar no Banco)
     public VeiculoEntity(Veiculo domain) {
-        this.id = domain.getId();
         this.placa = domain.getPlaca();
         this.modelo = domain.getModelo();
         this.marca = domain.getMarca();
         this.ano = domain.getAno();
         this.cor = domain.getCor();
-        // dono será setado separadamente se necessário
+
+        // Mapeia o dono se ele estiver presente no domínio
+        this.dono = domain.getDono() != null ? new ClienteEntity(domain.getDono()) : null;
     }
 
-    // Método para converter entidade para domínio
+    // Dentro de VeiculoEntity.java
+
     public Veiculo toDomain() {
         return new Veiculo(
-            this.id,
-            this.placa,
-            this.modelo,
-            this.marca,
-            this.ano,
-            this.cor,
-            this.dono != null ? this.dono.toDomain() : null
+                new Placa(this.placa), // Ajustado: Convertendo String do banco para o VO do Domínio
+                this.modelo,
+                this.marca,
+                this.ano,
+                this.cor,
+                this.dono != null ? this.dono.toDomain() : null
         );
     }
 }

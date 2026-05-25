@@ -1,6 +1,6 @@
 package com.grupo37.oficinamecanica.cadastro.controller;
-import com.grupo37.oficinamecanica.cadastro.model.Cliente;
-import com.grupo37.oficinamecanica.cadastro.model.dto.ClienteDTO;
+import com.grupo37.oficinamecanica.cadastro.controller.dto.ClienteDTO;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Cliente;
 import com.grupo37.oficinamecanica.cadastro.service.CadastroService;
 import com.grupo37.oficinamecanica.config.OpenApiConfig;
 import io.swagger.v3.oas.annotations.Operation;
