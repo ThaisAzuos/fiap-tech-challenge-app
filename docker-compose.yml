@@ -1,29 +1,9 @@
 version: '3.8'
 
 services:
-  app:
-    container_name: oficina-app
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://oficina-db:5432/oficina_db}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-oficina_admin}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-oficina_password}
-      API_SECURITY_TOKEN_SECRET: ${API_SECURITY_TOKEN_SECRET:-dev_secret_key_for_jwt_development}
-      API_SECURITY_TOKEN_EXPIRATION_MINUTES: ${API_SECURITY_TOKEN_EXPIRATION_MINUTES:-30}
-      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-mailhog}
-      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-1025}
-    depends_on:
-      - db
-    networks:
-      - app-network
-
   db:
     container_name: oficina-db
-    image: postgres:13
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-oficina_db}
       POSTGRES_USER: ${POSTGRES_USER:-oficina_admin}
@@ -37,13 +17,67 @@ services:
       retries: 5
     networks:
       - app-network
+    ports:
+      - "5432:5432"
 
   mailhog:
     container_name: oficina-mailhog
     image: mailhog/mailhog:latest
     ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - app-network
+
+  lambda-auth:
+    container_name: oficina-lambda-auth
+    build:
+      context: ../fiap-tech-challenge-lambda-auth
+      dockerfile: Dockerfile.local
+    ports:
+      - "9000:9000"
+    volumes:
+      - ../fiap-tech-challenge-lambda-auth/private_key.pem:/app/private_key.pem:ro
+    environment:
+      JWT_PRIVATE_KEY_PATH: /app/private_key.pem
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-oficina_db}
+      DB_USER: ${POSTGRES_USER:-oficina_admin}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-oficina_password}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  app:
+    container_name: oficina-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./public_key.pem:/app/public_key.pem:ro
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/oficina_db}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-oficina_admin}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-oficina_password}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-mailhog}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-1025}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-user}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-password}
+      API_SECURITY_TOKEN_PUBLIC_KEY: /app/public_key.pem
+      LAMBDA_AUTH_URL: http://lambda-auth:9000
+      NEW_RELIC_APP_NAME: oficina-mecanica-api
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      lambda-auth:
+        condition: service_started
     networks:
       - app-network
 

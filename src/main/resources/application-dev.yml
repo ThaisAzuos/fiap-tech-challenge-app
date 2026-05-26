@@ -19,6 +19,11 @@ spring:
     encoding: UTF-8
     cache: false
 
+api:
+  security:
+    token:
+      public-key: ${API_SECURITY_TOKEN_PUBLIC_KEY:/app/public_key.pem}
+
 # Configuração de Email personalizada
 app:
   email:

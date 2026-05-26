@@ -49,12 +49,12 @@
           "raw": "{\"cpf\":\"52998224725\"}"
         },
         "url": {
-          "raw": "{{base_url}}/authenticate",
+          "raw": "{{base_url}}/login",
           "host": [
             "{{base_url}}"
           ],
           "path": [
-            "authenticate"
+            "login"
           ]
         }
       }

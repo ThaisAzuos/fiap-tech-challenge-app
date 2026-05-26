@@ -6,5 +6,6 @@ public enum Especialidade {
     SUSPENSAO,
     TRANSMISSAO,
     MOTOR,
-    SISTEMA_DE_FREIOS
+    SISTEMA_DE_FREIOS;
+    public static Especialidade MOTORES;
 }

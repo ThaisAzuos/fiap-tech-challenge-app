@@ -10,7 +10,7 @@ import com.grupo37.oficinamecanica.atendimento.application.port.out.ServicoPort;
 import com.grupo37.oficinamecanica.atendimento.domain.model.OrdemServico;
 import com.grupo37.oficinamecanica.atendimento.domain.model.StatusOS;
 import com.grupo37.oficinamecanica.atendimento.domain.model.Servico;
-import com.grupo37.oficinamecanica.cadastro.model.Veiculo;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
 import com.grupo37.oficinamecanica.comum.email.model.EmailRequest;
 import com.grupo37.oficinamecanica.comum.email.service.EmailService;
 import com.grupo37.oficinamecanica.comum.exception.BusinessException;

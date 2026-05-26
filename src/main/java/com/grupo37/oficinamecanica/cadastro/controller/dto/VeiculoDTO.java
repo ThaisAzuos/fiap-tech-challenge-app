@@ -1,4 +1,4 @@
-package com.grupo37.oficinamecanica.cadastro.model.dto;
+package com.grupo37.oficinamecanica.cadastro.controller.dto;
 
 import com.grupo37.oficinamecanica.comum.validation.NoSqlInjection;
 import com.grupo37.oficinamecanica.comum.validation.NoXss;
@@ -9,8 +9,8 @@ import jakarta.validation.constraints.*;
 public record VeiculoDTO(
         @Schema(description = "Placa no formato Mercosul ou tradicional", example = "DEF4G56")
         @NotBlank(message = "Placa é obrigatória")
-        @Pattern(regexp = "^[A-Z]{3}\\d[A-Z]\\d{2}$|^[A-Z]{3}-?\\d{4}$", 
-                 message = "Placa deve ser válida (padrão Mercosul ou tradicional)")
+        @Pattern(regexp = "^[A-Z]{3}\\d[A-Z]\\d{2}$|^[A-Z]{3}-?\\d{4}$",
+                message = "Placa deve ser válida (padrão Mercosul ou tradicional)")
         @NoSqlInjection
         String placa,
 

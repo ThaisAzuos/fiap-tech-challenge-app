@@ -1,5 +1,7 @@
 package com.grupo37.oficinamecanica.seguranca.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,10 +78,15 @@ public class LambdaAuthService {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class LambdaAuthResponse {
         private String token;
         private int expiry;
-        private int userId;
+
+        @JsonProperty("user_id")
+        private String userId;
+
+        @JsonProperty("correlation_id")
         private String correlationId;
 
         public LambdaAuthResponse() {}
@@ -100,11 +107,11 @@ public class LambdaAuthService {
             this.expiry = expiry;
         }
 
-        public int getUserId() {
+        public String getUserId() {
             return userId;
         }
 
-        public void setUserId(int userId) {
+        public void setUserId(String userId) {
             this.userId = userId;
         }
 

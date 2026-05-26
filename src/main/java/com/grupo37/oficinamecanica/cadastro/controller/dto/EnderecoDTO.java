@@ -1,4 +1,4 @@
-package com.grupo37.oficinamecanica.cadastro.model.dto;
+package com.grupo37.oficinamecanica.cadastro.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

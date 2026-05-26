@@ -1,6 +1,9 @@
 package com.grupo37.oficinamecanica.cadastro.config;
 
-import com.grupo37.oficinamecanica.cadastro.model.*;
+import com.grupo37.oficinamecanica.cadastro.domain.model.*;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.ClienteEntity;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.FuncionarioEntity;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.VeiculoEntity;
 import com.grupo37.oficinamecanica.cadastro.repository.*;
 import com.grupo37.oficinamecanica.seguranca.model.Perfil;
 import com.grupo37.oficinamecanica.seguranca.model.Usuario;
@@ -49,32 +52,34 @@ public class DataInitializer implements CommandLineRunner {
                     "11999998888",
                     new Endereco("Rua das Flores", "123", "Casa 1", "Jardim Paulista", "São Paulo", "SP", "01234-567")
             );
-            clienteRepository.save(joao);
+            clienteRepository.save(new ClienteEntity(joao));
             System.out.println(">>> Cliente de teste inserido.");
         } else {
-            joao = clienteRepository.findById(idJoao.numero()).orElseThrow();
+            joao = clienteRepository.findById(idJoao.numero()).orElseThrow().toDomain();
         }
 
         if (!veiculoRepository.existsById(idPlaca.valor())) {
-            veiculoRepository.save(new Veiculo(idPlaca, "Civic", "Honda", 2022, "Prata", joao));
+            Veiculo veiculo = new Veiculo(idPlaca, "Civic", "Honda", 2022, "Prata", joao);
+            veiculoRepository.save(new VeiculoEntity(veiculo));
             System.out.println(">>> Veículo de teste inserido.");
         }
 
         if (!funcionarioRepository.existsById(idMec.numero())) {
-            funcionarioRepository.save(new Funcionario(
+            Funcionario mecanico = new Funcionario(
                     "Mestre Ioda",
                     idMec,
                     new Email("ioda@oficina.com"),
                     Cargo.MECANICO,
                     passwordEncoder.encode("Senh@316497"),
-                    Especialidade.MOTORES,
+                    Especialidade.MOTOR,
                     "MF-001"
-            ));
+            );
+            funcionarioRepository.save(new FuncionarioEntity(mecanico));
             System.out.println(">>> Mecânico de teste inserido.");
         }
 
         if (!funcionarioRepository.existsById(idAtend.numero())) {
-            funcionarioRepository.save(new Funcionario(
+            Funcionario atendente = new Funcionario(
                     "Atendente Solo",
                     idAtend,
                     new Email("solo@oficina.com"),
@@ -82,7 +87,8 @@ public class DataInitializer implements CommandLineRunner {
                     passwordEncoder.encode("Senh@316497"),
                     null,
                     null
-            ));
+            );
+            funcionarioRepository.save(new FuncionarioEntity(atendente));
             System.out.println(">>> Funcionário de teste inserido.");
         }
 

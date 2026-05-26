@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Oficina Mecânica
+name: CI — Build & Test (PRs)
 
 on:
   push:
@@ -12,13 +12,6 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
-
-env:
-  REGISTRY: docker.io
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/oficina-mecanica-api
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
 jobs:
   build-and-test:
@@ -75,91 +68,3 @@ jobs:
         reporter: java-junit
         fail-on-error: false
 
-  build-docker:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Informar ausência de credenciais Docker Hub
-      if: ${{ env.DOCKER_USERNAME == '' || env.DOCKER_PASSWORD == '' }}
-      run: echo "Secrets DOCKER_USERNAME/DOCKER_PASSWORD não configurados. Build e push da imagem serão ignorados sem falhar o workflow."
-
-    - name: Checkout do código
-      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      uses: actions/checkout@v4
-
-    - name: Configurar Docker Buildx
-      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      uses: docker/setup-buildx-action@v3
-
-    - name: Login no Docker Hub
-      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Extrair metadados
-      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-
-    - name: Build e push da imagem Docker
-      if: ${{ env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-  deploy:
-    needs: build-docker
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Informar ausência de credenciais de deploy
-      if: ${{ github.ref != 'refs/heads/main' || github.event_name != 'push' || env.KUBE_CONFIG == '' || env.DOCKER_USERNAME == '' || env.DOCKER_PASSWORD == '' }}
-      run: echo "Pré-requisitos de deploy não atendidos. O deploy Kubernetes será ignorado sem falhar o workflow."
-
-    - name: Checkout do código
-      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      uses: actions/checkout@v4
-
-    - name: Configurar kubectl
-      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      uses: azure/k8s-set-context@v3
-      with:
-        method: kubeconfig
-        kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
-    - name: Deploy no Kubernetes
-      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      run: |
-        # Atualizar imagem no deployment
-        sed -i 's|image:.*|image: ${{ env.IMAGE_NAME }}:latest|g' k8s-deployment.yaml
-        # Aplicar manifestos na ordem correta
-        kubectl apply -f k8s-configmap.yaml
-        kubectl apply -f k8s-postgres.yaml
-        kubectl apply -f k8s-secret.yaml
-        kubectl apply -f k8s-mailhog.yaml
-        kubectl apply -f k8s-deployment.yaml
-        kubectl apply -f k8s-service.yaml
-        kubectl apply -f k8s-hpa.yaml
-        # Aguardar rollout
-        kubectl rollout status deployment/oficina-app
-
-    - name: Verificar deploy
-      if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && env.KUBE_CONFIG != '' && env.DOCKER_USERNAME != '' && env.DOCKER_PASSWORD != '' }}
-      run: |
-        kubectl get pods
-        kubectl get svc

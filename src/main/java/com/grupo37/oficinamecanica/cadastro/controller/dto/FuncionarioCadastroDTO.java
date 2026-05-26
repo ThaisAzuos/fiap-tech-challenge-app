@@ -1,7 +1,8 @@
 package com.grupo37.oficinamecanica.cadastro.controller.dto;
 
-import com.grupo37.oficinamecanica.cadastro.model.Cargo;
-import com.grupo37.oficinamecanica.cadastro.model.Especialidade;
+
+import com.grupo37.oficinamecanica.cadastro.domain.model.Cargo;
+import com.grupo37.oficinamecanica.cadastro.domain.model.Especialidade;
 import com.grupo37.oficinamecanica.comum.validation.NoSqlInjection;
 import com.grupo37.oficinamecanica.comum.validation.NoXss;
 import io.swagger.v3.oas.annotations.media.Schema;

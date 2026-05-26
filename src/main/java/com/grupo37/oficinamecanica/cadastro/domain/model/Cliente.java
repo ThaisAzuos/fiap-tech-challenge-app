@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public class Cliente {
 
-    private UUID id;
     private String cpf;
     private String nome;
     private String email;
@@ -23,8 +22,7 @@ public class Cliente {
     }
 
     // Construtor completo para infraestrutura
-    public Cliente(UUID id, String cpf, String nome, String email, String telefone, Endereco endereco) {
-        this.id = id;
+    public Cliente(String cpf, String nome, String email, String telefone, Endereco endereco) {
         this.cpf = cpf;
         this.nome = nome;
         this.email = email;
@@ -33,7 +31,6 @@ public class Cliente {
     }
 
     // Getters
-    public UUID getId() { return id; }
     public String getCpf() { return cpf; }
     public String getNome() { return nome; }
     public String getEmail() { return email; }

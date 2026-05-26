@@ -1,5 +1,6 @@
-package com.grupo37.oficinamecanica.cadastro.model.dto;
+package com.grupo37.oficinamecanica.cadastro.domain.model.dto;
 
+import com.grupo37.oficinamecanica.cadastro.controller.dto.VeiculoDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;

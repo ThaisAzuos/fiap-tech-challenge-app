@@ -4,7 +4,7 @@ import com.grupo37.oficinamecanica.atendimento.domain.model.ItemOS;
 import com.grupo37.oficinamecanica.atendimento.domain.model.ItemServicoOS;
 import com.grupo37.oficinamecanica.atendimento.domain.model.OrdemServico;
 import com.grupo37.oficinamecanica.atendimento.domain.model.StatusOS;
-import com.grupo37.oficinamecanica.cadastro.model.Veiculo;
+import com.grupo37.oficinamecanica.cadastro.infrastructure.repository.VeiculoEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class OrdemServicoEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "veiculo_id", nullable = false)
-    private Veiculo veiculo;
+    private VeiculoEntity veiculo;
 
     @Column(nullable = false)
     private String descricaoProblema;
@@ -62,9 +62,9 @@ public class OrdemServicoEntity {
     private LocalDateTime dataConclusao;
 
     // Construtor para criar entidade a partir do domínio
-    public OrdemServicoEntity(OrdemServico domain) {
+    public OrdemServicoEntity(OrdemServico domain, VeiculoEntity veiculoEntity) {
         this.id = domain.getId();
-        this.veiculo = domain.getVeiculo();
+        this.veiculo = veiculoEntity;
         this.descricaoProblema = domain.getDescricaoProblema();
         this.dataAbertura = domain.getDataAbertura();
         this.status = domain.getStatus();
@@ -92,7 +92,7 @@ public class OrdemServicoEntity {
 
         return new OrdemServico(
             this.id,
-            this.veiculo,
+            this.veiculo.toDomain(),
             this.descricaoProblema,
             this.dataAbertura,
             this.status,
