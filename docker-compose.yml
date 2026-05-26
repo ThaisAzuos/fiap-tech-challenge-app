@@ -24,8 +24,30 @@ services:
     container_name: oficina-mailhog
     image: mailhog/mailhog:latest
     ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - app-network
+
+  lambda-auth:
+    container_name: oficina-lambda-auth
+    build:
+      context: ../fiap-tech-challenge-lambda-auth
+      dockerfile: Dockerfile.local
+    ports:
+      - "9000:9000"
+    volumes:
+      - ../fiap-tech-challenge-lambda-auth/private_key.pem:/app/private_key.pem:ro
+    environment:
+      JWT_PRIVATE_KEY_PATH: /app/private_key.pem
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-oficina_db}
+      DB_USER: ${POSTGRES_USER:-oficina_admin}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-oficina_password}
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -48,13 +70,13 @@ services:
       SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-user}
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-password}
       API_SECURITY_TOKEN_PUBLIC_KEY: /app/public_key.pem
-      LAMBDA_AUTH_URL: ${LAMBDA_AUTH_URL:-http://localhost:8080}
+      LAMBDA_AUTH_URL: http://lambda-auth:9000
       NEW_RELIC_APP_NAME: oficina-mecanica-api
-      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY}
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
     depends_on:
       db:
         condition: service_healthy
-      mailhog:
+      lambda-auth:
         condition: service_started
     networks:
       - app-network

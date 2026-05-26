@@ -1,6 +1,8 @@
 package com.grupo37.oficinamecanica.comum.config;
 
+import com.grupo37.oficinamecanica.seguranca.filter.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -19,6 +21,23 @@ public class SecurityConfig {
 
     @Autowired
     private JwtTokenFilter jwtTokenFilter;
+
+    @Autowired
+    private SecurityFilter securityFilter;
+
+    @Bean
+    public FilterRegistrationBean<JwtTokenFilter> jwtFilterRegistration(JwtTokenFilter filter) {
+        FilterRegistrationBean<JwtTokenFilter> reg = new FilterRegistrationBean<>(filter);
+        reg.setEnabled(false);
+        return reg;
+    }
+
+    @Bean
+    public FilterRegistrationBean<SecurityFilter> securityFilterRegistration(SecurityFilter filter) {
+        FilterRegistrationBean<SecurityFilter> reg = new FilterRegistrationBean<>(filter);
+        reg.setEnabled(false);
+        return reg;
+    }
 
     @Bean
     @Order(1)
@@ -46,10 +65,11 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers("/actuator/**").permitAll();
-                    // NÃO há /login aqui (agora é na Lambda)
+                    req.requestMatchers(HttpMethod.POST, "/login").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/api/public/atendimento/*/aprovacao").permitAll();
                     req.anyRequest().authenticated();
                 })
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

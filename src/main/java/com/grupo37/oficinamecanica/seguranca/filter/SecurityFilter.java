@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,9 +31,13 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (tokenJWT != null && jwtTokenService.validarToken(tokenJWT)) {
             var subject = jwtTokenService.getSubject(tokenJWT);
-            UserDetails usuario = detalheUsuarioService.loadUserByUsername(subject);
-            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            try {
+                UserDetails usuario = detalheUsuarioService.loadUserByUsername(subject);
+                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (UsernameNotFoundException e) {
+                // CPF-based Lambda token — authentication handled downstream by JwtTokenFilter
+            }
         }
 
         filterChain.doFilter(request, response);
