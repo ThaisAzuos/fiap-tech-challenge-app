@@ -51,3 +51,4 @@ terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 
 private_key.pem
+public_key.pem
