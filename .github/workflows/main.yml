@@ -89,31 +89,28 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup kubectl
-        uses: aws-actions/setup-kubectl@v3
+        uses: azure/setup-kubectl@v3
 
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Deploy to Kubernetes
         env:
-          ECR_REPOSITORY_URL: ${{ steps.login-ecr.outputs.registry }}/fiap-tech-challenge-app # Obtido do passo anterior
-          IMAGE_TAG: ${{ needs.build-and-push-docker.outputs.IMAGE_TAG }} # Obtido do passo anterior
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
-          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-          LAMBDA_AUTH_URL: ${{ secrets.LAMBDA_AUTH_URL }}
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+          ECR_REPOSITORY: fiap-tech-challenge-app
+          IMAGE_TAG: ${{ needs.build-and-push-docker.outputs.IMAGE_TAG }}
         run: |
-          # Substituir placeholders nos manifestos Kubernetes
-          sed -i "s|${ECR_REPOSITORY_URL}:${IMAGE_TAG}|${{ env.ECR_REPOSITORY_URL }}:${{ env.IMAGE_TAG }}|g" k8s-deployment.yaml
-          sed -i "s|${SPRING_DATASOURCE_URL}|jdbc:postgresql://${{ env.DB_HOST }}:5432/oficina_db|g" k8s-configmap.yaml
-          
-          # Aplicar ConfigMap e Secret
-          kubectl apply -f k8s-configmap.yaml
-          kubectl apply -f k8s-secret.yaml
-          
-          # Aplicar Deployment, Service e HPA
-          kubectl apply -f k8s-deployment.yaml
-          kubectl apply -f k8s-service.yaml
-          kubectl apply -f k8s-hpa.yaml
+          # Substituir imagem no manifesto de deployment
+          sed -i "s|image: oficina-app:latest|image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}|g" k8s/deployment.yaml
+
+          # Aplicar na ordem correta: ServiceAccount → ConfigMap → Secret → Deployment → Service → HPA → Ingress
+          kubectl apply -f k8s/serviceaccount.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/secret.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/hpa.yaml
+          kubectl apply -f k8s/ingress.yaml
+
+          # Aguardar rollout completo
+          kubectl rollout status deployment/oficina-app --timeout=5m
