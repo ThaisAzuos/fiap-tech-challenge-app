@@ -104,7 +104,17 @@ jobs:
           kubectl apply -f k8s/deployment.yaml -n ${{ env.NAMESPACE }}
           kubectl rollout status deployment/oficina-app -n ${{ env.NAMESPACE }} --timeout=300s
 
-      - name: Verify deployment
+      - name: Diagnostico (sempre executado)
+        if: always()
         run: |
-          kubectl get pods -n ${{ env.NAMESPACE }} -l app=oficina-app
-          kubectl describe service oficina-app -n ${{ env.NAMESPACE }}
+          echo "=== Pods ==="
+          kubectl get pods -n ${{ env.NAMESPACE }} -l app=oficina-app -o wide
+          echo "=== Eventos ==="
+          kubectl get events -n ${{ env.NAMESPACE }} --sort-by='.lastTimestamp' | tail -30
+          echo "=== Describe pods ==="
+          kubectl describe pods -n ${{ env.NAMESPACE }} -l app=oficina-app
+          echo "=== Logs (se existir) ==="
+          for pod in $(kubectl get pods -n ${{ env.NAMESPACE }} -l app=oficina-app -o name 2>/dev/null); do
+            echo "--- $pod ---"
+            kubectl logs $pod -n ${{ env.NAMESPACE }} --tail=50 2>/dev/null || true
+          done
