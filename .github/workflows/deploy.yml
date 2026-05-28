@@ -8,6 +8,7 @@ on:
       - 'pom.xml'
       - 'Dockerfile'
       - 'k8s/**'
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-1
@@ -56,12 +57,46 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.CLUSTER_NAME }}
 
-      - name: Deploy to EKS
+      - name: Create/update app-secrets
+        run: |
+          kubectl create secret generic app-secrets \
+            --from-literal=database_url="jdbc:postgresql://${{ secrets.DB_HOST }}:5432/${{ secrets.DB_NAME }}" \
+            --from-literal=database_username="${{ secrets.DB_USER }}" \
+            --from-literal=database_password="${{ secrets.DB_PASSWORD }}" \
+            --from-literal=jwt_secret="rs256-not-used" \
+            --from-literal=jwt_expiration="3600000" \
+            --from-literal=aws_region="${{ env.AWS_REGION }}" \
+            --from-literal=aws_s3_bucket="not-used" \
+            --from-literal=mail_host="localhost" \
+            --from-literal=mail_port="1025" \
+            --from-literal=mail_username="not-used" \
+            --from-literal=mail_password="not-used" \
+            -n ${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create/update jwt-public-key secret
+        run: |
+          echo "${{ secrets.JWT_PUBLIC_KEY }}" > /tmp/public_key.pem
+          kubectl create secret generic jwt-public-key \
+            --from-file=public_key.pem=/tmp/public_key.pem \
+            -n ${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+          rm -f /tmp/public_key.pem
+
+      - name: Apply ConfigMap e outros recursos
+        run: |
+          kubectl apply -f k8s/configmap.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f k8s/serviceaccount.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f k8s/service.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f k8s/ingress.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f k8s/hpa.yaml -n ${{ env.NAMESPACE }}
+
+      - name: Deploy application
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          kubectl set image deployment/oficina-app -n ${{ env.NAMESPACE }} \
-            app=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          sed -i "s|image: oficina-app:latest|image: $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ github.sha }}|g" k8s/deployment.yaml
+          kubectl apply -f k8s/deployment.yaml -n ${{ env.NAMESPACE }}
           kubectl rollout status deployment/oficina-app -n ${{ env.NAMESPACE }} --timeout=300s
 
       - name: Verify deployment

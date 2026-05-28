@@ -35,6 +35,9 @@ data:
   SPRINGDOC_API_VERSION: "1.0.0"
   SPRINGDOC_SWAGGER_UI_ENABLED: "true"
 
+  # Lambda Auth
+  LAMBDA_AUTH_URL: "https://gs9sfvolq0.execute-api.us-east-1.amazonaws.com/prod"
+
   # CORS
   CORS_ALLOWED_ORIGINS: "*"
   CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
