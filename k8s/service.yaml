@@ -8,7 +8,7 @@ metadata:
   annotations:
     description: "Service for Oficina Mecanica API"
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   sessionAffinity: None
   selector:
     app: oficina-app
