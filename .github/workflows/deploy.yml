@@ -72,10 +72,10 @@ jobs:
             --from-literal=jwt_expiration="3600000" \
             --from-literal=aws_region="${{ env.AWS_REGION }}" \
             --from-literal=aws_s3_bucket="not-used" \
-            --from-literal=mail_host="localhost" \
+            --from-literal=mail_host="oficina-mailhog" \
             --from-literal=mail_port="1025" \
-            --from-literal=mail_username="not-used" \
-            --from-literal=mail_password="not-used" \
+            --from-literal=mail_username="" \
+            --from-literal=mail_password="" \
             -n ${{ env.NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
@@ -90,6 +90,7 @@ jobs:
 
       - name: Apply ConfigMap e outros recursos
         run: |
+          kubectl apply -f k8s-mailhog.yaml -n ${{ env.NAMESPACE }}
           kubectl apply -f k8s/configmap.yaml -n ${{ env.NAMESPACE }}
           kubectl apply -f k8s/serviceaccount.yaml -n ${{ env.NAMESPACE }}
           kubectl apply -f k8s/service.yaml -n ${{ env.NAMESPACE }}
