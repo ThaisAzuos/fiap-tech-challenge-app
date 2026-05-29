@@ -79,6 +79,13 @@ jobs:
             -n ${{ env.NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Create/update newrelic-secret
+        run: |
+          kubectl create secret generic newrelic-secret \
+            --from-literal=NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}" \
+            -n ${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Create/update jwt-public-key secret
         run: |
           echo "${{ secrets.JWT_PUBLIC_KEY }}" > /tmp/public_key.pem

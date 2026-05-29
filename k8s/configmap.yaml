@@ -37,6 +37,10 @@ data:
   # Lambda Auth
   LAMBDA_AUTH_URL: "https://gs9sfvolq0.execute-api.us-east-1.amazonaws.com/prod"
 
+  # New Relic
+  NEW_RELIC_APP_NAME: "oficina-mecanica-api"
+  NEW_RELIC_LOG_LEVEL: "info"
+
   # CORS
   CORS_ALLOWED_ORIGINS: "*"
   CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
