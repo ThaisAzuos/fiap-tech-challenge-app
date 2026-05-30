@@ -1,115 +1,143 @@
 # fiap-tech-challenge-app
 
-## 🎯 Propósito
-Este repositório contém a aplicação principal Spring Boot para o sistema de oficina mecânica. Ela foi refatorada para consumir um serviço de autenticação externo (AWS Lambda) para validação de CPF e geração de JWT, e para rodar em um cluster Kubernetes (EKS) utilizando um banco de dados PostgreSQL gerenciado (RDS).
+## Propósito
 
-## 🛠️ Tech Stack
-- **Linguagem**: Java 21
-- **Framework**: Spring Boot 3.x
-- **Banco de Dados**: PostgreSQL (via AWS RDS)
-- **ORM**: Spring Data JPA / Hibernate
-- **Migrações DB**: Flyway
-- **Segurança**: Spring Security (validação JWT RS256)
-- **Observabilidade**: New Relic APM
-- **Containerização**: Docker
-- **Orquestração**: Kubernetes (EKS)
+Aplicação principal Spring Boot para o sistema de gerenciamento de oficina mecânica. Autentica usuários via CPF usando AWS Lambda (RS256 JWT), persiste dados no RDS PostgreSQL e roda em cluster Kubernetes (EKS) com observabilidade via New Relic.
 
-## 📊 Arquitetura
+**Faz parte do Tech Challenge Fase 3 — FIAP SOAT.**
+
+## Arquitetura
+
 ```mermaid
 graph TD
-    User[Usuário] --> |1. POST /login {cpf}| App[Spring Boot App]
-    App --> |2. POST /authenticate {cpf}| LambdaAuth[Lambda Auth Service]
-    LambdaAuth --> RDS[RDS PostgreSQL]
-    LambdaAuth --> |3. Retorna JWT| App
-    App --> |4. Retorna JWT| User
-    User --> |5. Requisições com JWT| App
-    App -- Valida JWT --> LambdaAuth
-    App -- Persistência --> RDS
-    App -- Métricas & Logs --> NewRelic[New Relic Platform]
-    subgraph Kubernetes Cluster
+    User[Usuário] -->|POST /authenticate - cpf| LambdaGW[API Gateway]
+    LambdaGW --> Lambda[Lambda Auth]
+    Lambda --> RDS[(RDS PostgreSQL)]
+    Lambda -->|JWT RS256| User
+    User -->|Requisições com JWT| App[Spring Boot - EKS]
+    App -->|Valida JWT com chave pública| App
+    App -->|Persistência| RDS
+    App -->|Métricas e Logs| NewRelic[New Relic APM]
+    subgraph Kubernetes EKS
         App
+        MailHog[MailHog SMTP]
     end
+    App -->|E-mail| MailHog
 ```
 
-## 🚀 Quick Start (Setup Local)
-Para rodar a aplicação localmente, você precisará de:
-- Java 21
-- Maven
-- Docker (opcional, para rodar o PostgreSQL e MailHog localmente)
-- Um banco de dados PostgreSQL (pode ser via Docker)
-- Uma chave pública RSA (para `API_SECURITY_TOKEN_PUBLIC_KEY`)
-- Uma URL para o serviço de autenticação Lambda (para `LAMBDA_AUTH_URL`)
+## Tech Stack
 
-1.  **Configurar Banco de Dados Local**:
-    Você pode usar o `docker-compose.yml` para levantar um PostgreSQL e MailHog localmente:
-    ```bash
-    docker-compose up -d postgres mailhog
-    ```
-2.  **Configurar Variáveis de Ambiente**:
-    Crie um arquivo `.env` na raiz do projeto ou defina as seguintes variáveis de ambiente:
-    ```
-    SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/oficina_db
-    SPRING_DATASOURCE_USERNAME=oficina_admin
-    SPRING_DATASOURCE_PASSWORD=oficina_password
-    API_SECURITY_TOKEN_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
-    LAMBDA_AUTH_URL=http://localhost:8080 # Ou a URL do seu API Gateway da Lambda Auth
-    NEW_RELIC_LICENSE_KEY=YOUR_NEW_RELIC_LICENSE_KEY # Opcional, para testar APM localmente
-    ```
-    **Nota**: A `API_SECURITY_TOKEN_PUBLIC_KEY` deve ser a chave pública RSA completa, incluindo os cabeçalhos `BEGIN/END` e com quebras de linha (`\n`). Esta chave deve corresponder à chave privada usada pela Lambda Auth.
+- **Java 21** + **Spring Boot 3.x**
+- **Spring Security** — validação JWT RS256 com chave pública RSA
+- **Spring Data JPA / Hibernate** — ORM com PostgreSQL
+- **Flyway** — migrações de banco de dados
+- **New Relic APM** — observabilidade e métricas
+- **Docker** + **Amazon ECR** — containerização e registro de imagens
+- **Kubernetes (EKS)** — orquestração com HPA, probes e LoadBalancer
+- **MailHog** — servidor SMTP in-cluster para testes de e-mail
 
-3.  **Build da Aplicação**:
-    ```bash
-    ./mvnw clean install
-    ```
+## Estrutura do Projeto
 
-4.  **Executar Migrações Flyway (se não usar Docker Compose)**:
-    Se você não estiver usando o Docker Compose para o banco de dados, certifique-se de que o Flyway execute as migrações. Ao iniciar a aplicação, o Flyway fará isso automaticamente.
+```
+.
+├── src/                      ← Código-fonte Spring Boot
+├── k8s/
+│   ├── deployment.yaml       ← Deployment com startupProbe/liveness/readiness
+│   ├── service.yaml          ← Service tipo LoadBalancer (AWS ELB)
+│   ├── configmap.yaml        ← Variáveis de configuração (Lambda URL, New Relic…)
+│   ├── serviceaccount.yaml   ← ServiceAccount do pod
+│   ├── ingress.yaml          ← Ingress (opcional)
+│   └── hpa.yaml              ← HorizontalPodAutoscaler
+├── k8s-mailhog.yaml          ← Deployment + Service do MailHog in-cluster
+├── Dockerfile
+└── .github/workflows/
+    └── deploy.yml            ← Pipeline CI/CD (build → ECR → EKS)
+```
 
-5.  **Executar a Aplicação (com New Relic Agent)**:
-    Baixe o `newrelic.jar` e `newrelic.yml` do site do New Relic e coloque-os na pasta `target/`.
-    ```bash
-    java -javaagent:target/newrelic.jar -Dnewrelic.environment=development -jar target/oficinamecanica-0.0.1-SNAPSHOT.jar
-    ```
-    Ou, sem o agente New Relic:
-    ```bash
-    java -jar target/oficinamecanica-0.0.1-SNAPSHOT.jar
-    ```
+## Pré-requisitos
 
-## 📋 Deploy (CI/CD com GitHub Actions)
-Este repositório utiliza GitHub Actions para automação de CI/CD.
-O workflow `main.yml` (localizado em `.github/workflows/main.yml`) executa as seguintes etapas:
-1.  **`build-and-test`**:
-    *   Compila o código Java com Maven.
-    *   Executa testes unitários.
-    *   Realiza um scan com SonarQube (se configurado).
-2.  **`build-and-push-docker`**:
-    *   Autentica no AWS ECR.
-    *   Constrói a imagem Docker da aplicação e a envia para o ECR com a tag do SHA do commit.
-3.  **`deploy-kubernetes`**:
-    *   **Aprovação Manual**: Para deploys na branch `main` (ou ambiente `production`), é necessária uma aprovação manual (configurada via GitHub Environments).
-    *   Configura o `kubectl` para o cluster EKS.
-    *   Substitui placeholders nos manifestos Kubernetes (`k8s-deployment.yaml`, `k8s-configmap.yaml`, `k8s-secret.yaml`) com valores de Secrets e variáveis de ambiente.
-    *   Aplica os manifestos no cluster Kubernetes (Deployment, Service, HPA).
+- [Java 21](https://adoptium.net/)
+- [Maven](https://maven.apache.org/) (ou use o `./mvnw` incluído)
+- [Docker](https://www.docker.com/) para build da imagem
+- Cluster EKS provisionado ([k8s-terraform](https://github.com/ThaisAzuos/fiap-tech-challenge-k8s-terraform))
+- Banco RDS PostgreSQL provisionado ([db-terraform](https://github.com/ThaisAzuos/fiap-tech-challenge-db-terraform))
+- Lambda Auth implantada ([lambda-auth](https://github.com/ThaisAzuos/fiap-tech-challenge-lambda-auth))
 
-**Configuração Necessária no GitHub:**
-*   **Secrets**: Configure os seguintes GitHub Secrets no seu repositório:
-    *   `AWS_ACCOUNT_ID`: O ID da sua conta AWS.
-    *   `EKS_CLUSTER_NAME`: O nome do seu cluster EKS.
-    *   `DB_HOST`: Host do seu RDS PostgreSQL (obtido do output do `fiap-tech-challenge-db-terraform`).
-    *   `DB_USERNAME`: Usuário do banco de dados.
-    *   `DB_PASSWORD`: Senha do banco de dados.
-    *   `JWT_PUBLIC_KEY`: Sua chave pública RS256 para validação de JWTs.
-    *   `NEW_RELIC_LICENSE_KEY`: Sua chave de licença do New Relic.
-    *   `LAMBDA_AUTH_URL`: A URL do API Gateway do seu serviço de autenticação Lambda.
-    *   `SONAR_TOKEN`: Token para autenticação no SonarQube (se usar).
-    *   `SONAR_HOST_URL`: URL do seu servidor SonarQube (se usar).
-*   **IAM Roles**: Crie os seguintes IAM Roles na AWS e configure-os para serem assumidos pelo GitHub Actions:
-    *   `github-actions-app-ecr-role`: Com permissões para ECR.
-    *   `github-actions-app-eks-deploy-role`: Com permissões para deploy no EKS (incluindo `eks:UpdateKubeconfig`, `sts:AssumeRole` para o role do EKS, e permissões para `kubectl apply`).
-*   **Environments**: Crie um ambiente chamado `production` (ou o nome que você usou no workflow) nas configurações do seu repositório GitHub e adicione "Required reviewers" para aprovação manual.
+## Fluxo de Autenticação
 
-## 🔗 Links Relacionados
-- [Autenticação Lambda (fiap-tech-challenge-lambda-auth)](../fiap-tech-challenge-lambda-auth/README.md)
-- [Infraestrutura Kubernetes (fiap-tech-challenge-k8s-terraform)](../fiap-tech-challenge-k8s-terraform/README.md)
-- [Banco de Dados Terraform (fiap-tech-challenge-db-terraform)](../fiap-tech-challenge-db-terraform/README.md)
-- [Documentação Geral da Fase 3](../../docs/Fase03/QuickStart-Fase3d-3e.md)
+```
+1. Cliente POST /authenticate  {"cpf": "12345678901"}  → API Gateway → Lambda
+2. Lambda valida CPF no RDS e retorna JWT (RS256, assinado com private_key.pem)
+3. Cliente envia o JWT no header: Authorization: Bearer <token>
+4. Spring Boot valida o JWT com a public_key.pem montada em /app/public_key.pem
+```
+
+## Quick Start (Local)
+
+```bash
+# 1. Subir dependências locais
+docker-compose up -d postgres mailhog
+
+# 2. Configurar variáveis
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/oficina
+export SPRING_DATASOURCE_USERNAME=oficina_admin
+export SPRING_DATASOURCE_PASSWORD=SuaSenha
+export LAMBDA_AUTH_URL=https://gs9sfvolq0.execute-api.us-east-1.amazonaws.com/prod
+
+# 3. Build e execução
+./mvnw clean package -DskipTests
+java -jar target/oficinamecanica-0.0.1-SNAPSHOT.jar
+```
+
+Swagger disponível em: `http://localhost:8080/swagger-ui/index.html`
+
+## Deploy CI/CD (GitHub Actions)
+
+O workflow `.github/workflows/deploy.yml` é acionado por push na `main` ou `workflow_dispatch`.
+
+**Etapas:**
+1. Build com Maven (`./mvnw clean package -DskipTests`)
+2. Login no ECR + build e push da imagem Docker com tag `${{ github.sha }}`
+3. Criação/atualização dos Kubernetes Secrets (`app-secrets`, `newrelic-secret`, `jwt-public-key`)
+4. Apply dos manifestos K8s (ConfigMap, Service, Ingress, HPA, Deployment)
+5. `kubectl rollout status` aguardando estabilização (timeout 300s)
+6. Diagnóstico de pods e logs (executado sempre, mesmo em falha)
+
+**Secrets necessários no repositório:**
+
+| Secret | Descrição |
+|--------|-----------|
+| `AWS_ACCESS_KEY_ID` | Credencial AWS |
+| `AWS_SECRET_ACCESS_KEY` | Credencial AWS |
+| `AWS_SESSION_TOKEN` | Token de sessão (AWS Academy) |
+| `DB_HOST` | Endpoint do RDS (output `db_address` do db-terraform) |
+| `DB_NAME` | Nome do banco de dados |
+| `DB_USER` | Usuário do banco de dados |
+| `DB_PASSWORD` | Senha do banco de dados |
+| `JWT_PUBLIC_KEY` | Chave pública RSA (conteúdo do `public_key.pem`) |
+| `NEW_RELIC_LICENSE_KEY` | Chave de licença do New Relic |
+
+> Para atualizar as credenciais AWS em todos os repositórios de uma vez, use o script `C:\pos-fiap\fase3\update-aws-secrets.ps1`.
+
+## URLs da Aplicação (produção)
+
+| Recurso | URL |
+|---------|-----|
+| App (LoadBalancer) | `http://a6a6b06e9240f4910af0d43d399a3e39-2051355113.us-east-1.elb.amazonaws.com` |
+| Swagger UI | `.../swagger-ui/index.html` |
+| Lambda Auth | `https://gs9sfvolq0.execute-api.us-east-1.amazonaws.com/prod` |
+| MailHog (port-forward) | `kubectl port-forward svc/oficina-mailhog 8025:8025` → `http://localhost:8025` |
+
+## Observabilidade
+
+- **Health checks**: `/actuator/health/liveness` e `/actuator/health/readiness`
+- **Métricas Prometheus**: `/actuator/prometheus`
+- **New Relic**: APM auto-instrumentado via agente Java (`newrelic-secret` no cluster)
+
+## Repositórios Relacionados
+
+| Repo | Descrição |
+|------|-----------|
+| [fiap-tech-challenge-k8s-terraform](https://github.com/ThaisAzuos/fiap-tech-challenge-k8s-terraform) | Cluster EKS — provisione primeiro |
+| [fiap-tech-challenge-db-terraform](https://github.com/ThaisAzuos/fiap-tech-challenge-db-terraform) | Banco RDS PostgreSQL |
+| [fiap-tech-challenge-lambda-auth](https://github.com/ThaisAzuos/fiap-tech-challenge-lambda-auth) | Autenticação serverless Lambda |
