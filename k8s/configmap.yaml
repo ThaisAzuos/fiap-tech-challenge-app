@@ -35,7 +35,7 @@ data:
   SPRINGDOC_SWAGGER_UI_ENABLED: "true"
 
   # Lambda Auth
-  LAMBDA_AUTH_URL: "https://gs9sfvolq0.execute-api.us-east-1.amazonaws.com/prod"
+  LAMBDA_AUTH_URL: "https://6zzrltwdib.execute-api.us-east-1.amazonaws.com/prod"
 
   # New Relic
   NEW_RELIC_APP_NAME: "oficina-mecanica-api"
