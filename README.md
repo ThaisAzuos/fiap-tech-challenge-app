@@ -1,5 +1,7 @@
 # fiap-tech-challenge-app
 
+> **Fase 4 (Tech Challenge):** este repositório está em refatoração — passa a hospedar o **OS Service**, um dos microsserviços da nova arquitetura distribuída. Veja a visão geral completa em [`docs/arquitetura/fase4-visao-geral.md`](docs/arquitetura/fase4-visao-geral.md) e as decisões em [`docs/ADRs/`](docs/ADRs/).
+
 ## Propósito
 
 Aplicação principal Spring Boot para o sistema de gerenciamento de oficina mecânica. Autentica usuários via CPF usando AWS Lambda (RS256 JWT), persiste dados no RDS PostgreSQL e roda em cluster Kubernetes (EKS) com observabilidade via New Relic.
