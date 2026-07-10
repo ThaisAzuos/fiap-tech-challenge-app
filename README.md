@@ -93,6 +93,16 @@ java -jar target/oficinamecanica-0.0.1-SNAPSHOT.jar
 
 Swagger disponível em: `http://localhost:8080/swagger-ui/index.html`
 
+## Ambiente Local Completo (Fase 4 — microsservicos)
+
+Para subir também a mensageria e os bancos NoSQL usados pelos demais microsserviços (Billing Service e Execution Service):
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.fase4.yml up -d
+```
+
+Isso adiciona RabbitMQ (management UI em `http://localhost:15672`) e um MongoDB para cada um dos dois serviços. Ver `docker-compose.fase4.yml` e o diagrama geral em [`docs/arquitetura/fase4-visao-geral.md`](docs/arquitetura/fase4-visao-geral.md).
+
 ## Deploy CI/CD (GitHub Actions)
 
 O workflow `.github/workflows/deploy.yml` é acionado por push na `main` ou `workflow_dispatch`.

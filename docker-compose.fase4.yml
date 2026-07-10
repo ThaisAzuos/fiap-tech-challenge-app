@@ -1,0 +1,66 @@
+version: '3.8'
+
+# Infraestrutura adicional da Fase 4 para desenvolvimento local: RabbitMQ
+# compartilhado + um MongoDB por serviço (Billing e Execution). Roda em
+# conjunto com o docker-compose.yml já existente (Postgres do OS Service):
+#
+#   docker-compose -f docker-compose.yml -f docker-compose.fase4.yml up
+#
+# RabbitMQ management UI: http://localhost:15672 (usuário/senha abaixo).
+
+services:
+  rabbitmq:
+    container_name: oficina-rabbitmq
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-oficina_admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-oficina_password}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+
+  mongo-billing:
+    container_name: oficina-mongo-billing
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_BILLING_USER:-billing_app}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_BILLING_PASSWORD:-billing_password}
+      MONGO_INITDB_DATABASE: billing_service_db
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_billing_data:/data/db
+    networks:
+      - app-network
+
+  mongo-execution:
+    container_name: oficina-mongo-execution
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_EXECUTION_USER:-execution_app}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_EXECUTION_PASSWORD:-execution_password}
+      MONGO_INITDB_DATABASE: execution_service_db
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo_execution_data:/data/db
+    networks:
+      - app-network
+
+volumes:
+  rabbitmq_data:
+  mongo_billing_data:
+  mongo_execution_data:
+
+networks:
+  app-network:
+    driver: bridge
