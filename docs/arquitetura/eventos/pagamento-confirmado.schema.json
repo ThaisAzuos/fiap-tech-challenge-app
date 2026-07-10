@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fiap-tech-challenge/eventos/PagamentoConfirmado.schema.json",
+  "title": "PagamentoConfirmado",
+  "description": "Publicado pelo Billing Service ao confirmar o pagamento via Mercado Pago. Routing key: pagamento.confirmado",
+  "type": "object",
+  "required": ["eventId", "eventType", "eventVersion", "occurredAt", "sagaId", "ordemServicoId", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "const": "PagamentoConfirmado" },
+    "eventVersion": { "type": "string", "example": "1.0" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "sagaId": { "type": "string", "format": "uuid" },
+    "ordemServicoId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "required": ["orcamentoId", "pagamentoId", "valorPago", "metodoPagamento", "mercadoPagoPaymentId"],
+      "properties": {
+        "orcamentoId": { "type": "string", "format": "uuid" },
+        "pagamentoId": { "type": "string", "format": "uuid" },
+        "valorPago": { "type": "number", "minimum": 0 },
+        "metodoPagamento": { "type": "string", "enum": ["PIX", "CARTAO_CREDITO", "CARTAO_DEBITO", "BOLETO"] },
+        "mercadoPagoPaymentId": { "type": "string", "description": "ID do pagamento retornado pela API do Mercado Pago" }
+      }
+    }
+  }
+}

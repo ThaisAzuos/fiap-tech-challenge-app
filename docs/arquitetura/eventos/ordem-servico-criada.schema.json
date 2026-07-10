@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fiap-tech-challenge/eventos/OrdemServicoCriada.schema.json",
+  "title": "OrdemServicoCriada",
+  "description": "Publicado pelo OS Service ao abrir uma nova ordem de serviço. Routing key: os.criada",
+  "type": "object",
+  "required": ["eventId", "eventType", "eventVersion", "occurredAt", "sagaId", "ordemServicoId", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "const": "OrdemServicoCriada" },
+    "eventVersion": { "type": "string", "example": "1.0" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "sagaId": { "type": "string", "format": "uuid" },
+    "ordemServicoId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "required": ["clienteId", "veiculoId", "itensPrevistos", "status"],
+      "properties": {
+        "clienteId": { "type": "string", "format": "uuid" },
+        "veiculoId": { "type": "string", "format": "uuid" },
+        "itensPrevistos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["descricao", "tipo"],
+            "properties": {
+              "descricao": { "type": "string" },
+              "tipo": { "type": "string", "enum": ["PECA", "SERVICO"] }
+            }
+          }
+        },
+        "status": { "const": "AGUARDANDO_ORCAMENTO" }
+      }
+    }
+  }
+}
