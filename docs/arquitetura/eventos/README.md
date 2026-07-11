@@ -37,4 +37,6 @@ Todos os eventos trafegam pelo exchange `tech-challenge.saga` (tipo *topic*) no 
 - **Versionamento**: mudanças incompatíveis no payload incrementam `eventVersion` e exigem atualização deste índice.
 - **Correlação da Saga**: `sagaId` é obrigatório em todos os eventos e deve ser o mesmo para todos os eventos de uma mesma OS, do início ao fim (ou até a compensação).
 
+> **Atualização (Dia 3 / [ADR-009](../ADRs/ADR-009-refatoracao-os-service-saga.md))**: o schema `OrdemServicoCriada` foi corrigido durante a implementação — o domínio `Cliente`/`Veiculo` do OS Service não possui id UUID próprio (usa CPF e placa como chaves naturais), então o payload usa `clienteCpf`/`veiculoPlaca` em vez de `clienteId`/`veiculoId`, e `status` reflete o `StatusOS` real da OS (não um valor fixo).
+
 Ver também o fluxo completo em [`../fase4-visao-geral.md`](../fase4-visao-geral.md) e a decisão de mensageria em [`../ADRs/ADR-006-mensageria-rabbitmq.md`](../ADRs/ADR-006-mensageria-rabbitmq.md).

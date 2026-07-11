@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://fiap-tech-challenge/eventos/OrdemServicoCriada.schema.json",
   "title": "OrdemServicoCriada",
-  "description": "Publicado pelo OS Service ao abrir uma nova ordem de serviço. Routing key: os.criada",
+  "description": "Publicado pelo OS Service ao abrir uma nova ordem de serviço. Routing key: os.criada. (Corrigido no Dia 3 / ADR-009: clienteId/veiculoId trocados por clienteCpf/veiculoPlaca, pois o domínio não possui id UUID para Cliente/Veiculo; status agora reflete o StatusOS real, não um valor fixo fictício.)",
   "type": "object",
   "required": ["eventId", "eventType", "eventVersion", "occurredAt", "sagaId", "ordemServicoId", "payload"],
   "properties": {
@@ -10,14 +10,16 @@
     "eventType": { "const": "OrdemServicoCriada" },
     "eventVersion": { "type": "string", "example": "1.0" },
     "occurredAt": { "type": "string", "format": "date-time" },
-    "sagaId": { "type": "string", "format": "uuid" },
+    "sagaId": { "type": "string", "format": "uuid", "description": "Igual ao ordemServicoId nesta implementação (ADR-009)" },
     "ordemServicoId": { "type": "string", "format": "uuid" },
     "payload": {
       "type": "object",
-      "required": ["clienteId", "veiculoId", "itensPrevistos", "status"],
+      "required": ["clienteCpf", "veiculoPlaca", "itensPrevistos", "status"],
       "properties": {
-        "clienteId": { "type": "string", "format": "uuid" },
-        "veiculoId": { "type": "string", "format": "uuid" },
+        "clienteCpf": { "type": "string", "description": "CPF do cliente (chave natural; o domínio não possui id UUID para Cliente)" },
+        "clienteNome": { "type": "string" },
+        "clienteEmail": { "type": "string" },
+        "veiculoPlaca": { "type": "string", "description": "Placa do veículo (chave natural; o domínio não possui id UUID para Veiculo)" },
         "itensPrevistos": {
           "type": "array",
           "items": {
@@ -29,7 +31,8 @@
             }
           }
         },
-        "status": { "const": "AGUARDANDO_ORCAMENTO" }
+        "valorTotalPrevisto": { "type": "number", "minimum": 0 },
+        "status": { "type": "string", "enum": ["RECEBIDA", "EM_DIAGNOSTICO", "AGUARDANDO_APROVACAO", "EM_EXECUCAO", "FINALIZADA", "ENTREGUE", "CANCELADA"] }
       }
     }
   }

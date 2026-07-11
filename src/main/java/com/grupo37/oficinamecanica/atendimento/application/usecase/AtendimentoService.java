@@ -10,12 +10,14 @@ import com.grupo37.oficinamecanica.atendimento.application.port.out.ServicoPort;
 import com.grupo37.oficinamecanica.atendimento.domain.model.OrdemServico;
 import com.grupo37.oficinamecanica.atendimento.domain.model.StatusOS;
 import com.grupo37.oficinamecanica.atendimento.domain.model.Servico;
+import com.grupo37.oficinamecanica.atendimento.infrastructure.messaging.OrdemServicoEventPublisher;
 import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
 import com.grupo37.oficinamecanica.comum.email.model.EmailRequest;
 import com.grupo37.oficinamecanica.comum.email.service.EmailService;
 import com.grupo37.oficinamecanica.comum.exception.BusinessException;
 import com.grupo37.oficinamecanica.estoque.model.Peca;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -36,19 +38,34 @@ public class AtendimentoService {
     private final VeiculoPort veiculoPort;
     private final ServicoPort servicoPort;
     private final EmailService emailService;
+    private final OrdemServicoEventPublisher eventPublisher;
 
-    // Construtor com injeção de dependências
+    // Construtor original (mantido para compatibilidade com AtendimentoServiceTest,
+    // que instancia esta classe diretamente sem o publisher de eventos da Saga -
+    // Fase 4/Dia 3). Delega para o construtor completo com eventPublisher = null.
     public AtendimentoService(OrdemServicoPort ordemServicoPort,
                             PecaPort pecaPort,
                             VeiculoPort veiculoPort,
                             ServicoPort servicoPort,
                             Optional<EmailService> emailService) {
+        this(ordemServicoPort, pecaPort, veiculoPort, servicoPort, emailService, null);
+    }
+
+    // Construtor completo, usado pelo Spring (injeção de dependências) a partir da Fase 4/Dia 3.
+    @Autowired
+    public AtendimentoService(OrdemServicoPort ordemServicoPort,
+                            PecaPort pecaPort,
+                            VeiculoPort veiculoPort,
+                            ServicoPort servicoPort,
+                            Optional<EmailService> emailService,
+                            OrdemServicoEventPublisher eventPublisher) {
         this.ordemServicoPort = ordemServicoPort;
         this.pecaPort = pecaPort;
         this.veiculoPort = veiculoPort;
         this.servicoPort = servicoPort;
         this.emailService = emailService.orElse(null);
-        
+        this.eventPublisher = eventPublisher;
+
         if (this.emailService != null) {
             log.info("AtendimentoService inicializado com EmailService habilitado? {}", this.emailService.isEmailEnabled());
         } else {
@@ -98,6 +115,13 @@ public class AtendimentoService {
 
         // 6. Enviar email de criação
         enviarEmailCriacaoOS(osSalva);
+
+        // 7. Publicar evento OrdemServicoCriada para a Saga (Fase 4/Dia 3).
+        // Guardado por null-check porque o construtor "legado" (usado no teste
+        // unitário de AtendimentoService) não recebe um eventPublisher.
+        if (eventPublisher != null) {
+            eventPublisher.publicarOrdemServicoCriada(osSalva);
+        }
 
         return osSalva;
     }
@@ -274,7 +298,7 @@ public class AtendimentoService {
 
         try {
             String emailCliente = os.getVeiculo().getDono().getEmail();
-            
+
             EmailRequest request = new EmailRequest(
                 emailCliente,
                 "Sua Ordem de Serviço #" + os.getId(),
@@ -304,12 +328,12 @@ public class AtendimentoService {
      */
     private void enviarEmailAtualizacaoStatus(OrdemServico os, String observacoes) {
         log.info("Tentando enviar email de atualização de status para OS: {}", os.getId());
-        
+
         if (emailService == null) {
             log.warn("EmailService é NULL!");
             return;
         }
-        
+
         if (!emailService.isEmailEnabled()) {
             log.warn("EmailService reporta isEmailEnabled() = false");
             return;
@@ -318,7 +342,7 @@ public class AtendimentoService {
         try {
             String emailCliente = os.getVeiculo().getDono().getEmail();
             log.info("Destinatário: {}", emailCliente);
-            
+
             EmailRequest request = new EmailRequest(
                 emailCliente,
                 "Atualização: Ordem de Serviço #" + os.getId(),
@@ -371,7 +395,7 @@ public class AtendimentoService {
 
         try {
             String emailCliente = os.getVeiculo().getDono().getEmail();
-            
+
             EmailRequest request = new EmailRequest(
                 emailCliente,
                 "Ordem de Serviço #" + os.getId() + " - CANCELADA",
@@ -379,16 +403,16 @@ public class AtendimentoService {
             );
 
             request.addVariable("ordemServicoId", os.getId().toString());
-            request.addVariable("dataCancelamento", os.getDataCancelamento() != null 
+            request.addVariable("dataCancelamento", os.getDataCancelamento() != null
                 ? os.getDataCancelamento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
                 : java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-            
+
             String motivo = os.getMotivoCancelamento();
             if (motivo == null || motivo.isEmpty()) {
                 motivo = "Cancelado via atualização de status (sem motivo especificado)";
             }
             request.addVariable("motivoCancelamento", motivo);
-            
+
             request.addVariable("veiculo", os.getVeiculo().getModelo() + " " + os.getVeiculo().getMarca());
             request.addVariable("placa", os.getVeiculo().getPlaca());
 
@@ -414,7 +438,7 @@ public class AtendimentoService {
 
         try {
             String emailCliente = os.getVeiculo().getDono().getEmail();
-            
+
             EmailRequest request = new EmailRequest(
                 emailCliente,
                 "Sua Ordem de Serviço #" + os.getId() + " foi Concluída!",
@@ -422,7 +446,7 @@ public class AtendimentoService {
             );
 
             request.addVariable("ordemServicoId", os.getId().toString());
-            request.addVariable("dataConclusao", os.getDataConclusao() != null 
+            request.addVariable("dataConclusao", os.getDataConclusao() != null
                 ? os.getDataConclusao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
                 : java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             request.addVariable("veiculo", os.getVeiculo().getModelo() + " " + os.getVeiculo().getMarca());
