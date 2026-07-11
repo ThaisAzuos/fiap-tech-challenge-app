@@ -39,4 +39,6 @@ Todos os eventos trafegam pelo exchange `tech-challenge.saga` (tipo *topic*) no 
 
 > **Atualização (Dia 3 / [ADR-009](../ADRs/ADR-009-refatoracao-os-service-saga.md))**: o schema `OrdemServicoCriada` foi corrigido durante a implementação — o domínio `Cliente`/`Veiculo` do OS Service não possui id UUID próprio (usa CPF e placa como chaves naturais), então o payload usa `clienteCpf`/`veiculoPlaca` em vez de `clienteId`/`veiculoId`, e `status` reflete o `StatusOS` real da OS (não um valor fixo).
 
+> **Atualização (Dia 4 / [ADR-003 do billing-service](https://github.com/ThaisAzuos/fiap-tech-challenge-billing-service/blob/main/docs/ADRs/ADR-003-implementacao-billing-service.md))**: o schema `OrcamentoGerado` foi corrigido — `valor` por item deixou de ser obrigatório, pois o Billing Service não recebe preço por item no evento `OrdemServicoCriada` (apenas o valor total previsto). `valorTotal` (já com a taxa de mão de obra do Billing Service aplicada) é o campo autoritativo.
+
 Ver também o fluxo completo em [`../fase4-visao-geral.md`](../fase4-visao-geral.md) e a decisão de mensageria em [`../ADRs/ADR-006-mensageria-rabbitmq.md`](../ADRs/ADR-006-mensageria-rabbitmq.md).
