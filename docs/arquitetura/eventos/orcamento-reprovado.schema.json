@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fiap-tech-challenge/eventos/OrcamentoReprovado.schema.json",
+  "title": "OrcamentoReprovado",
+  "description": "Publicado pelo Billing Service quando o cliente reprova o orçamento. Dispara compensação da Saga. Routing key: orcamento.reprovado",
+  "type": "object",
+  "required": ["eventId", "eventType", "eventVersion", "occurredAt", "sagaId", "ordemServicoId", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "const": "OrcamentoReprovado" },
+    "eventVersion": { "type": "string", "example": "1.0" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "sagaId": { "type": "string", "format": "uuid" },
+    "ordemServicoId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "required": ["orcamentoId", "motivo"],
+      "properties": {
+        "orcamentoId": { "type": "string", "format": "uuid" },
+        "motivo": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fiap-tech-challenge/eventos/ExecucaoConcluida.schema.json",
+  "title": "ExecucaoConcluida",
+  "description": "Publicado pelo Execution Service ao concluir a execução da OS. Routing key: execucao.concluida",
+  "type": "object",
+  "required": ["eventId", "eventType", "eventVersion", "occurredAt", "sagaId", "ordemServicoId", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "const": "ExecucaoConcluida" },
+    "eventVersion": { "type": "string", "example": "1.0" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "sagaId": { "type": "string", "format": "uuid" },
+    "ordemServicoId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "required": ["execucaoId", "finalizadaEm"],
+      "properties": {
+        "execucaoId": { "type": "string", "format": "uuid" },
+        "finalizadaEm": { "type": "string", "format": "date-time" },
+        "observacoes": { "type": "string" }
+      }
+    }
+  }
+}

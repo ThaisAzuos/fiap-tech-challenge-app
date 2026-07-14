@@ -18,3 +18,10 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
+
+# Fase 4 - Dia 3: desliga os beans de mensageria da Saga nos testes
+# (RabbitMQConfig e SagaEventListener), pois nao ha broker RabbitMQ
+# disponivel no ambiente de testes. Ver ADR-009.
+saga:
+  messaging:
+    enabled: false

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fiap-tech-challenge/eventos/ExecucaoCancelada.schema.json",
+  "title": "ExecucaoCancelada",
+  "description": "Publicado pelo Execution Service quando a execução não pode ser concluída. Dispara compensação da Saga. Routing key: execucao.cancelada",
+  "type": "object",
+  "required": ["eventId", "eventType", "eventVersion", "occurredAt", "sagaId", "ordemServicoId", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "const": "ExecucaoCancelada" },
+    "eventVersion": { "type": "string", "example": "1.0" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "sagaId": { "type": "string", "format": "uuid" },
+    "ordemServicoId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "required": ["execucaoId", "motivo"],
+      "properties": {
+        "execucaoId": { "type": "string", "format": "uuid" },
+        "motivo": { "type": "string" }
+      }
+    }
+  }
+}
