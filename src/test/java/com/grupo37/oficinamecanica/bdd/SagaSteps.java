@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Passos do cenário de BDD da Saga (Dia 6 - Fase 4). Exercita o
@@ -80,9 +81,12 @@ public class SagaSteps {
 
     @Then("nenhuma transição adicional de status é realizada")
     public void nenhumaTransicaoAdicionalDeStatusERealizada() {
-        verify(atendimentoService, never()).aprovarOrcamento(any());
-        verify(atendimentoService, never()).cancelarOrdemServico(any(), any());
-        verify(atendimentoService, never()).concluirOrdemServico(any());
+        // "Adicional" é relativo ao que os passos anteriores já verificaram: no fluxo
+        // feliz o aprovarOrcamento legitimamente ocorreu antes deste ponto. Um
+        // verify(never()) seria cumulativo sobre toda a vida do mock e reprovaria por
+        // aquela chamada válida; verifyNoMoreInteractions afirma exatamente o que o
+        // cenário quer — o PagamentoConfirmado não disparou nenhuma transição nova.
+        verifyNoMoreInteractions(atendimentoService);
     }
 
     @Then("a Ordem de Serviço é finalizada")

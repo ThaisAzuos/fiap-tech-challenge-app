@@ -16,6 +16,10 @@
     <properties>
         <java.version>21</java.version>
 
+        <!-- BDD: cucumber e o junit-bom precisam andar juntos (ver dependencyManagement) -->
+        <cucumber.version>7.34.3</cucumber.version>
+        <junit.bom.version>5.13.4</junit.bom.version>
+
         <!-- SonarQube Configuration -->
         <sonar.projectKey>com.grupo37:oficinamecanica</sonar.projectKey>
         <sonar.projectName>Oficina Mecânica API</sonar.projectName>
@@ -177,10 +181,38 @@
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
-            <version>7.34.3</version>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- O Spring Boot 3.4.2 gerencia o junit-bom em 5.11.4 (platform 1.11.4),
+                 mas o cucumber-junit-platform-engine 7.x precisa de
+                 org.junit.platform.engine.support.discovery.DiscoveryIssueReporter,
+                 introduzida no platform 1.13. Sem este override a descoberta de testes
+                 do engine "cucumber" falha com NoClassDefFoundError. -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 	<build>
 		<plugins>
@@ -189,14 +221,11 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.5</version>
 				<configuration>
-					<!-- Configure JUnit Platform to exclude Cucumber engine locally -->
 					<properties>
 						<configurationParameters>
 							junit.jupiter.execution.parallel.enabled=false
 						</configurationParameters>
 					</properties>
-					<!-- Skip the test class that triggers Cucumber BDD -->
-					<excludedGroups>bdd</excludedGroups>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -278,52 +307,5 @@
 		</plugins>
 	</build>
 
-	<profiles>
-		<!-- BDD Profile for running Cucumber tests - mvn verify -P bdd -->
-		<profile>
-			<id>bdd</id>
-			<dependencies>
-				<dependency>
-					<groupId>io.cucumber</groupId>
-					<artifactId>cucumber-junit-platform-engine</artifactId>
-					<version>7.34.3</version>
-					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.junit.platform</groupId>
-					<artifactId>junit-platform-suite</artifactId>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-
-		<!-- Default profile for unit tests only (active by default) -->
-		<profile>
-			<id>unit-tests</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-							<!-- Exclude BDD test classes for local unit testing -->
-							<testExcludes>
-								<testExclude>**/bdd/**/*.java</testExclude>
-							</testExcludes>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 </project>

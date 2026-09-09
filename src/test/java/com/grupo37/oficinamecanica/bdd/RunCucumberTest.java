@@ -5,7 +5,6 @@ import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
 import org.junit.platform.suite.api.Suite;
-import org.junit.jupiter.api.Disabled;
 
 /**
  * Ponto de entrada JUnit 5 para os cenários de BDD (Cucumber) da Saga.
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Disabled;
  * com a configuração correta do engine Cucumber.
  */
 @Suite
-@Disabled("Disabled locally for coverage measurement; enable in CI with proper Cucumber engine configuration")
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
 @ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = "com.grupo37.oficinamecanica.bdd")
