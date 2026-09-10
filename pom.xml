@@ -16,6 +16,10 @@
     <properties>
         <java.version>21</java.version>
 
+        <!-- BDD: cucumber e o junit-bom precisam andar juntos (ver dependencyManagement) -->
+        <cucumber.version>7.34.3</cucumber.version>
+        <junit.bom.version>5.13.4</junit.bom.version>
+
         <!-- SonarQube Configuration -->
         <sonar.projectKey>com.grupo37:oficinamecanica</sonar.projectKey>
         <sonar.projectName>Oficina Mecânica API</sonar.projectName>
@@ -69,6 +73,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- RabbitMQ / Saga (Fase 4 - Dia 3) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
         <dependency>
@@ -167,10 +177,57 @@
             <version>10.15.0</version>
         </dependency>
 
+        <!-- BDD (Cucumber) - Fase 4 / Dia 6 -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
-    <build>
+    <dependencyManagement>
+        <dependencies>
+            <!-- O Spring Boot 3.4.2 gerencia o junit-bom em 5.11.4 (platform 1.11.4),
+                 mas o cucumber-junit-platform-engine 7.x precisa de
+                 org.junit.platform.engine.support.discovery.DiscoveryIssueReporter,
+                 introduzida no platform 1.13. Sem este override a descoberta de testes
+                 do engine "cucumber" falha com NoClassDefFoundError. -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.5</version>
+				<configuration>
+					<properties>
+						<configurationParameters>
+							junit.jupiter.execution.parallel.enabled=false
+						</configurationParameters>
+					</properties>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -209,6 +266,37 @@
                             <goal>report</goal>
                         </goals>
                     </execution>
+                    <!-- Gate de cobertura minima (Dia 6).
+                         Cobertura >= 80% confirmada localmente, portanto o gate volta a bloquear falhas. -->
+                    <execution>
+                        <id>jacoco-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <haltOnFailure>true</haltOnFailure>
+                            <excludes>
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/entity/**</exclude>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/infrastructure/messaging/**</exclude>
+                                <exclude>**/*Application.class</exclude>
+                            </excludes>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -218,5 +306,6 @@
             </plugin>
 		</plugins>
 	</build>
+
 
 </project>

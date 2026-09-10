@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fiap-tech-challenge/eventos/OrcamentoGerado.schema.json",
+  "title": "OrcamentoGerado",
+  "description": "Publicado pelo Billing Service ao gerar o orçamento de uma OS. Routing key: orcamento.gerado. (Corrigido no Dia 4 / ADR-003 do billing-service: 'valor' por item não é mais obrigatório — o Billing Service não recebe preço por item no evento OrdemServicoCriada, apenas o valor total previsto; valorTotal é o campo autoritativo.)",
+  "type": "object",
+  "required": ["eventId", "eventType", "eventVersion", "occurredAt", "sagaId", "ordemServicoId", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "eventType": { "const": "OrcamentoGerado" },
+    "eventVersion": { "type": "string", "example": "1.0" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "sagaId": { "type": "string", "format": "uuid", "description": "Igual ao ordemServicoId nesta implementação (ADR-009)" },
+    "ordemServicoId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "required": ["orcamentoId", "valorTotal", "itens", "validadeAte"],
+      "properties": {
+        "orcamentoId": { "type": "string", "format": "uuid" },
+        "valorTotal": { "type": "number", "minimum": 0, "description": "Valor autoritativo do orçamento (inclui a taxa de mão de obra aplicada pelo Billing Service)" },
+        "itens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["descricao"],
+            "properties": {
+              "descricao": { "type": "string" },
+              "tipo": { "type": "string", "enum": ["PECA", "SERVICO"] },
+              "valor": { "type": ["number", "null"], "minimum": 0, "description": "Opcional — o Billing Service não recebe preço por item do OS Service" }
+            }
+          }
+        },
+        "validadeAte": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

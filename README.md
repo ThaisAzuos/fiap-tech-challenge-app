@@ -1,5 +1,7 @@
 # fiap-tech-challenge-app
 
+> **Fase 4 (Tech Challenge):** este repositório está em refatoração — passa a hospedar o **OS Service**, um dos microsserviços da nova arquitetura distribuída. Veja a visão geral completa em [`docs/arquitetura/fase4-visao-geral.md`](docs/arquitetura/fase4-visao-geral.md) e as decisões em [`docs/ADRs/`](docs/ADRs/).
+
 ## Propósito
 
 Aplicação principal Spring Boot para o sistema de gerenciamento de oficina mecânica. Autentica usuários via CPF usando AWS Lambda (RS256 JWT), persiste dados no RDS PostgreSQL e roda em cluster Kubernetes (EKS) com observabilidade via New Relic.
@@ -90,6 +92,16 @@ java -jar target/oficinamecanica-0.0.1-SNAPSHOT.jar
 ```
 
 Swagger disponível em: `http://localhost:8080/swagger-ui/index.html`
+
+## Ambiente Local Completo (Fase 4 — microsservicos)
+
+Para subir também a mensageria e os bancos NoSQL usados pelos demais microsserviços (Billing Service e Execution Service):
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.fase4.yml up -d
+```
+
+Isso adiciona RabbitMQ (management UI em `http://localhost:15672`) e um MongoDB para cada um dos dois serviços. Ver `docker-compose.fase4.yml` e o diagrama geral em [`docs/arquitetura/fase4-visao-geral.md`](docs/arquitetura/fase4-visao-geral.md).
 
 ## Deploy CI/CD (GitHub Actions)
 

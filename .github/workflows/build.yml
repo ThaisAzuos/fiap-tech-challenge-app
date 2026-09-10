@@ -7,7 +7,9 @@ on:
     branches: [develop]
 
 env:
-  JAVA_VERSION: '17'
+  # Deve acompanhar <java.version> do pom.xml — em 17 o build falha com
+  # "release version 21 not supported".
+  JAVA_VERSION: '21'
   MAVEN_VERSION: '3.8.1'
 
 jobs:

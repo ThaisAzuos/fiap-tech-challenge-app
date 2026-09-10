@@ -8,6 +8,7 @@ import com.grupo37.oficinamecanica.atendimento.application.port.out.PecaPort;
 import com.grupo37.oficinamecanica.atendimento.application.port.out.ServicoPort;
 import com.grupo37.oficinamecanica.atendimento.application.port.out.VeiculoPort;
 import com.grupo37.oficinamecanica.atendimento.domain.model.OrdemServico;
+import com.grupo37.oficinamecanica.atendimento.domain.model.Servico;
 import com.grupo37.oficinamecanica.atendimento.domain.model.StatusOS;
 import com.grupo37.oficinamecanica.cadastro.domain.model.Cliente;
 import com.grupo37.oficinamecanica.cadastro.domain.model.Veiculo;
@@ -58,8 +59,10 @@ class AtendimentoServiceTest {
     private Veiculo veiculo;
     private Peca peca;
     private OrdemServico ordemServico;
+    private Servico servico;
     private UUID osId;
     private UUID pecaId;
+    private UUID servicoId;
 
     @BeforeEach
     void setUp() {
@@ -81,6 +84,12 @@ class AtendimentoServiceTest {
 
         osId = UUID.randomUUID();
         pecaId = peca.getId();
+        servicoId = UUID.randomUUID();
+
+        servico = mock(Servico.class);
+        lenient().when(servico.getId()).thenReturn(servicoId);
+        lenient().when(servico.getNome()).thenReturn("Troca de Correia");
+        lenient().when(servico.getPreco()).thenReturn(BigDecimal.valueOf(220.00));
 
         ordemServico = new OrdemServico(veiculo, "Problema no freio");
         ordemServico.atualizarStatus(StatusOS.EM_DIAGNOSTICO);
@@ -248,5 +257,69 @@ class AtendimentoServiceTest {
         // Então
         assertThat(ordemServico.getStatus()).isEqualTo(StatusOS.AGUARDANDO_APROVACAO);
         verify(ordemServicoPort).save(ordemServico);
+    }
+
+    @Test
+    void deveIncluirServicoNaOrdemServicoComSucesso() {
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(servicoPort.findById(servicoId)).thenReturn(Optional.of(servico));
+        when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        atendimentoService.incluirServicoNaOS(osId, servicoId);
+
+        verify(ordemServicoPort).save(ordemServico);
+        assertThat(ordemServico.getServicos()).hasSize(1);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoOSNaoEncontradaParaIncluirServico() {
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> atendimentoService.incluirServicoNaOS(osId, servicoId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("OS não encontrada com o ID: " + osId);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoServicoNaoEncontrado() {
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(servicoPort.findById(servicoId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> atendimentoService.incluirServicoNaOS(osId, servicoId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Serviço não encontrado com o ID: " + servicoId);
+    }
+
+    @Test
+    void deveCancelarOrdemServicoComSucesso() {
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        atendimentoService.cancelarOrdemServico(osId, "Cliente desistiu");
+
+        assertThat(ordemServico.getStatus()).isEqualTo(StatusOS.CANCELADA);
+        verify(ordemServicoPort).save(ordemServico);
+    }
+
+    @Test
+    void deveConcluirOrdemServicoComSucesso() {
+        ordemServico.atualizarStatus(StatusOS.AGUARDANDO_APROVACAO);
+        ordemServico.atualizarStatus(StatusOS.EM_EXECUCAO);
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+        when(ordemServicoPort.save(any(OrdemServico.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        atendimentoService.concluirOrdemServico(osId);
+
+        assertThat(ordemServico.getStatus()).isEqualTo(StatusOS.FINALIZADA);
+        verify(ordemServicoPort).save(ordemServico);
+    }
+
+    @Test
+    void deveLancarExcecaoAoConcluirOrdemServicoForaDoStatusCorreto() {
+        when(ordemServicoPort.findById(osId)).thenReturn(Optional.of(ordemServico));
+
+        assertThatThrownBy(() -> atendimentoService.concluirOrdemServico(osId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("A OS " + osId + " deve estar em execução para ser finalizada.");
     }
 }
