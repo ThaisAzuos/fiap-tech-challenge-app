@@ -52,3 +52,6 @@ terraform/terraform.tfstate.backup
 
 private_key.pem
 public_key.pem
+
+# Logs de build/verificacao (nao versionar)
+*.log
